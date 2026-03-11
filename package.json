@@ -15,7 +15,7 @@
     "import:mysql": "node scripts/import-legacy-mysql-dump.mjs"
   },
   "engines": {
-    "node": ">=20.18.0"
+    "node": ">=20.18.0 <23"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

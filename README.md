@@ -83,6 +83,7 @@ A repo tartalmaz egy Render Blueprint-kompatibilis `render.yaml` fájlt.
 A blueprint jelenleg ezt definiálja:
 
 - 1 db Node alapú Web Service
+- Renderen 20.x vagy 22.x LTS Node célverzió
 - build közben teljes `npm run check` futtatás
 - `/api/health` health check
 - Render persistent disk az `uploads` mappának
