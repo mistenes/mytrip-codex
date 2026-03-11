@@ -169,7 +169,12 @@ export function createApp() {
 export async function start() {
   const app = createApp();
   const port = Number(process.env.PORT || 3001);
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/myTrip';
+  const isProductionRuntime = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
+  const mongoUri = process.env.MONGODB_URI || (!isProductionRuntime ? 'mongodb://localhost:27017/myTrip' : '');
+
+  if (!mongoUri) {
+    throw new Error('MONGODB_URI is required in production/Render. Set it in the Render service environment before starting the app.');
+  }
 
   await mongoose.connect(mongoUri, {
     serverSelectionTimeoutMS: 15000,

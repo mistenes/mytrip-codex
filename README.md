@@ -112,6 +112,7 @@ Fontos megjegyzések:
 - a service a Render által adott `PORT` értéken indul
 - a feltöltött fájlok az `/opt/render/project/src/uploads` útvonalra kerülnek
 - ha nincs `APP_URL`, az email linkek a bejövő host alapján épülnek fel
+- ha a logban `localhost:27017` kapcsolat hibát látsz, akkor nincs beállítva a `MONGODB_URI`
 - a blueprint csak a futó alkalmazást deployolja, a legacy MySQL import nem része az automatikus deploynak
 
 Ajánlott deploy folyamat:
