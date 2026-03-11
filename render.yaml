@@ -1,0 +1,45 @@
+services:
+  - type: web
+    name: mytrip-app
+    runtime: node
+    plan: starter
+    region: frankfurt
+    autoDeployTrigger: commit
+    buildCommand: npm ci && npm run check
+    startCommand: npm start
+    healthCheckPath: /api/health
+    disk:
+      name: uploads
+      mountPath: /opt/render/project/src/uploads
+      sizeGB: 5
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: UPLOAD_DIR
+        value: /opt/render/project/src/uploads
+      - key: APP_URL
+        sync: false
+      - key: CORS_ORIGIN
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER_EMAIL
+        sync: false
+      - key: BREVO_SENDER_NAME
+        value: myTrip
+      - key: BREVO_REPLY_TO_EMAIL
+        sync: false
+      - key: PROBLEM_REPORT_EMAIL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

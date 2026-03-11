@@ -1,0 +1,31 @@
+.beta-banner {
+  background: #ffeb3b;
+  color: #000;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+.beta-banner-icon {
+  font-weight: 700;
+}
+
+.beta-banner-text {
+  flex: 1;
+  text-align: center;
+}
+
+.beta-banner-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
