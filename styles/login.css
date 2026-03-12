@@ -1,6 +1,7 @@
 /* --- Login Page --- */
 .login-container {
   display: flex;
+  gap: 2rem;
   justify-content: center;
   align-items: center;
   height: 100%;
@@ -22,7 +23,7 @@
 
 
 .login-box {
-  background: var(--color-surface);
+  background: rgba(255,255,255,0.78);
   backdrop-filter: blur(10px);
   padding: 2.5rem;
   border-radius: 16px;
@@ -37,6 +38,39 @@
 html[data-theme='dark'] .login-box {
   background: rgba(30, 30, 30, 0.85);
   border: 1px solid rgba(255,255,255,0.1);
+}
+
+.login-hero {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+  color: white;
+  padding: 2rem;
+}
+
+.login-kicker {
+  display: inline-flex;
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.28);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.login-hero h2 {
+  margin: 1rem 0 0.75rem;
+  font-size: clamp(2.25rem, 4vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.05em;
+}
+
+.login-hero p {
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.84);
+  margin-bottom: 0;
 }
 
 .login-box h1 {
@@ -166,6 +200,14 @@ html[data-theme='dark'] .signup-note {
 }
 
 @media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+  }
+
+  .login-hero {
+    padding: 1rem 0.5rem 0;
+  }
+
   .login-box { padding: 2rem; }
   .login-box h1 { font-size: 2rem; }
 }

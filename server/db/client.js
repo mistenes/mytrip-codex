@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 
 const APP_TABLES = [
   'site_settings',
+  'payment_transactions',
   'messages',
   'itinerary_items',
   'financial_records',
@@ -190,6 +191,28 @@ export async function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS payment_transactions (
+      id TEXT PRIMARY KEY,
+      trip_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      provider TEXT NOT NULL,
+      provider_reference TEXT NOT NULL,
+      provider_payment_reference TEXT DEFAULT '',
+      amount DOUBLE PRECISION NOT NULL DEFAULT 0,
+      currency TEXT NOT NULL DEFAULT 'HUF',
+      description TEXT DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'pending',
+      financial_record_id TEXT DEFAULT '',
+      approval_url TEXT DEFAULT '',
+      raw_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+      completed_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE UNIQUE INDEX IF NOT EXISTS payment_transactions_provider_reference_unique
+      ON payment_transactions (provider, provider_reference);
 
     CREATE TABLE IF NOT EXISTS site_settings (
       id TEXT PRIMARY KEY,

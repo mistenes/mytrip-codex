@@ -56,6 +56,23 @@ export interface FinancialRecord {
   date: string;
 }
 
+export interface PaymentTransaction {
+  id: string;
+  tripId: string;
+  userId: string;
+  provider: 'stripe' | 'paypal';
+  amount: number;
+  currency: string;
+  description: string;
+  status: 'pending' | 'completed' | 'failed';
+  providerReference: string;
+  providerPaymentReference?: string;
+  financialRecordId?: string;
+  approvalUrl?: string;
+  completedAt?: string;
+  createdAt?: string;
+}
+
 export interface Document {
   id: string;
   tripId: string;

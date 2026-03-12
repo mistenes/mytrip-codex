@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import SignupPage from "./components/SignupPage";
 import Dashboard from "./components/Dashboard";
@@ -10,13 +10,17 @@ import ResetPasswordPage from "./components/ResetPasswordPage";
 import ResetPasswordConfirmPage from "./components/ResetPasswordConfirmPage";
 import BetaBanner from "./components/BetaBanner";
 import { INITIAL_TRIPS, INITIAL_FINANCIAL_RECORDS, DEFAULT_PERSONAL_DATA_FIELD_CONFIGS, INITIAL_PERSONAL_DATA_RECORDS, INITIAL_ITINERARY_ITEMS, INITIAL_MESSAGES } from "./mockData";
-import { User, Trip, FinancialRecord, Document, PersonalDataRecord, PersonalDataFieldConfig, PersonalDataUpdatePayload, ItineraryItem, Theme, Message } from "./types";
+import { User, Trip, FinancialRecord, Document, PersonalDataRecord, PersonalDataFieldConfig, PersonalDataUpdatePayload, ItineraryItem, Theme, Message, PaymentTransaction } from "./types";
 import { API_BASE, SESSION_EXPIRED_EVENT } from "./api";
 
 const App = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isSessionLoading, setIsSessionLoading] = useState(true);
   const [trips, setTrips] = useState<Trip[]>(INITIAL_TRIPS);
+  const [paymentTransactions, setPaymentTransactions] = useState<PaymentTransaction[]>([]);
+  const [paymentFeedback, setPaymentFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   const refreshTrips = () => {
     const token = currentUser?.token || localStorage.getItem('sessionToken');
@@ -46,6 +50,54 @@ const App = () => {
         }))
       }))))
       .catch(err => console.error('Failed to fetch trips', err));
+  };
+
+  const refreshFinancials = () => {
+    const token = currentUser?.token || localStorage.getItem('sessionToken');
+    if (!token) {
+      setFinancialRecords([]);
+      return Promise.resolve();
+    }
+
+    return fetch(`${API_BASE}/api/financials`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.json())
+      .then(data => setFinancialRecords(data.map((r: any) => ({
+        id: r.id,
+        tripId: r.tripId,
+        userId: r.userId,
+        description: r.description,
+        amount: r.amount,
+        date: r.date,
+      }))))
+      .catch(() => {});
+  };
+
+  const refreshPaymentTransactions = () => {
+    const token = currentUser?.token || localStorage.getItem('sessionToken');
+    if (!token) {
+      setPaymentTransactions([]);
+      return Promise.resolve();
+    }
+
+    return fetch(`${API_BASE}/api/payment-transactions`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => res.json())
+      .then(data => setPaymentTransactions(data.map((transaction: any) => ({
+        id: transaction.id,
+        tripId: transaction.tripId,
+        userId: transaction.userId,
+        provider: transaction.provider,
+        amount: transaction.amount,
+        currency: transaction.currency,
+        description: transaction.description,
+        status: transaction.status,
+        providerReference: transaction.providerReference,
+        providerPaymentReference: transaction.providerPaymentReference,
+        financialRecordId: transaction.financialRecordId,
+        approvalUrl: transaction.approvalUrl,
+        completedAt: transaction.completedAt,
+        createdAt: transaction.createdAt,
+      }))))
+      .catch(() => {});
   };
 
   useEffect(() => {
@@ -154,21 +206,11 @@ const App = () => {
   }, [currentUser?.token]);
 
   useEffect(() => {
-    if (currentUser?.token) {
-      fetch(`${API_BASE}/api/financials`, { headers: { Authorization: `Bearer ${currentUser.token}` } })
-        .then(res => res.json())
-        .then(data => setFinancialRecords(data.map((r: any) => ({
-          id: r.id,
-          tripId: r.tripId,
-          userId: r.userId,
-          description: r.description,
-          amount: r.amount,
-          date: r.date,
-        }))))
-        .catch(() => { });
-    } else {
-      setFinancialRecords([]);
-    }
+    refreshFinancials();
+  }, [currentUser]);
+
+  useEffect(() => {
+    refreshPaymentTransactions();
   }, [currentUser]);
 
   useEffect(() => {
@@ -230,6 +272,71 @@ const App = () => {
       setMessages([]);
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser?.token) {
+      return;
+    }
+
+    const searchParams = new URLSearchParams(location.search);
+    const paymentState = searchParams.get('payment');
+
+    if (!paymentState) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const finalize = async () => {
+      try {
+        if (paymentState === 'paypal-return') {
+          const orderId = searchParams.get('token') || '';
+          const paymentTransactionId = searchParams.get('paymentTransactionId') || '';
+          const res = await fetch(`${API_BASE}/api/payments/paypal/capture`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${currentUser.token}`,
+            },
+            body: JSON.stringify({ orderId, paymentTransactionId }),
+          });
+
+          if (!res.ok) {
+            throw new Error('paypal_capture_failed');
+          }
+
+          await Promise.all([refreshFinancials(), refreshPaymentTransactions()]);
+          if (!cancelled) {
+            setPaymentFeedback({ type: 'success', message: 'A PayPal befizetes sikeresen jovairasra kerult.' });
+          }
+        } else if (paymentState === 'stripe-success') {
+          await new Promise((resolve) => window.setTimeout(resolve, 1500));
+          await Promise.all([refreshFinancials(), refreshPaymentTransactions()]);
+          if (!cancelled) {
+            setPaymentFeedback({ type: 'success', message: 'A Stripe fizetes visszaigazolasa elindult, az egyenleg frissult.' });
+          }
+        } else if (paymentState === 'stripe-cancel' || paymentState === 'paypal-cancel') {
+          if (!cancelled) {
+            setPaymentFeedback({ type: 'info', message: 'A fizetesi folyamat megszakadt, nem tortent jovairas.' });
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setPaymentFeedback({ type: 'error', message: 'A fizetes feldolgozasa nem sikerult. Kerjuk, ellenorizd az egyenleget es probald ujra.' });
+        }
+      } finally {
+        if (!cancelled) {
+          navigate(location.pathname, { replace: true });
+        }
+      }
+    };
+
+    void finalize();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser?.token, location.pathname, location.search, navigate]);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
@@ -540,6 +647,50 @@ const App = () => {
     }).catch(() => { });
   };
 
+  const handleStartStripePayment = async (tripId: string, amount: number, description: string) => {
+    if (!currentUser?.token) {
+      throw new Error('Nincs aktiv munkamenet.');
+    }
+
+    const res = await fetch(`${API_BASE}/api/trips/${tripId}/payments/stripe/checkout`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${currentUser.token}`,
+      },
+      body: JSON.stringify({ amount, description }),
+    });
+
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok || !payload.checkoutUrl) {
+      throw new Error(payload?.message || 'Nem sikerult Stripe fizetest inditani.');
+    }
+
+    window.location.href = payload.checkoutUrl;
+  };
+
+  const handleStartPaypalPayment = async (tripId: string, amount: number, description: string) => {
+    if (!currentUser?.token) {
+      throw new Error('Nincs aktiv munkamenet.');
+    }
+
+    const res = await fetch(`${API_BASE}/api/trips/${tripId}/payments/paypal/order`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${currentUser.token}`,
+      },
+      body: JSON.stringify({ amount, description }),
+    });
+
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok || !payload.approvalUrl) {
+      throw new Error(payload?.message || 'Nem sikerult PayPal fizetest inditani.');
+    }
+
+    window.location.href = payload.approvalUrl;
+  };
+
   if (isSessionLoading) {
     return (
       <div className="login-container">
@@ -572,9 +723,12 @@ const App = () => {
               onLogout={handleLogout}
               onCreateTrip={handleCreateTrip}
               financialRecords={financialRecords}
+              paymentTransactions={paymentTransactions}
               onAddFinancialRecord={handleAddFinancialRecord}
               onUpdateFinancialRecord={handleUpdateFinancialRecord}
               onRemoveFinancialRecord={handleRemoveFinancialRecord}
+              onStartStripePayment={handleStartStripePayment}
+              onStartPaypalPayment={handleStartPaypalPayment}
               documents={documents}
               onAddDocument={handleAddDocument}
               onUpdateDocument={handleUpdateDocument}
@@ -597,6 +751,8 @@ const App = () => {
               theme={theme}
               onThemeChange={setTheme}
               currentTheme={currentTheme}
+              paymentFeedback={paymentFeedback}
+              onDismissPaymentFeedback={() => setPaymentFeedback(null)}
             />
           )
         } />

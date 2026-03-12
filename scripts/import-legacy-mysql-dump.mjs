@@ -19,6 +19,7 @@ function parseArgs(argv) {
         mode: 'dry-run',
         sqlPath: '',
         filesRoot: '',
+        force: false,
     };
 
     for (let index = 0; index < argv.length; index += 1) {
@@ -30,6 +31,10 @@ function parseArgs(argv) {
         }
         if (arg === '--dry-run') {
             args.mode = 'dry-run';
+            continue;
+        }
+        if (arg === '--force') {
+            args.force = true;
             continue;
         }
         if (arg === '--sql') {
@@ -87,10 +92,14 @@ async function runDatabaseCheck(required) {
     }
 }
 
-async function applyImport(data, copyOperations) {
+async function applyImport(data, copyOperations, { force = false } = {}) {
     const copiedFiles = [];
 
     try {
+        if (force) {
+            await clearAppTables();
+        }
+
         await fs.mkdir(uploadDir, { recursive: true });
 
         for (const operation of copyOperations) {
@@ -136,7 +145,9 @@ async function main() {
     const databaseCheck = await runDatabaseCheck(args.mode === 'apply');
     importResult.report.databaseCheck = databaseCheck;
 
-    if (databaseCheck.status === 'failed') {
+    if (databaseCheck.status === 'failed' && args.force) {
+        importResult.report.warnings.push('Target database is not empty. Existing app tables will be cleared because --force was provided.');
+    } else if (databaseCheck.status === 'failed') {
         importResult.report.ok = false;
     }
 
@@ -147,7 +158,7 @@ async function main() {
             return;
         }
 
-        await applyImport(importResult.data, importResult.copyOperations);
+        await applyImport(importResult.data, importResult.copyOperations, { force: args.force });
         importResult.report.insertedCounts = { ...importResult.report.preparedCounts };
     }
 

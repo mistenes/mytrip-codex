@@ -151,3 +151,148 @@
     border-color: var(--color-border);
     color: var(--color-text-primary);
 }
+
+.financials-hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.financials-hero-cards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+    gap: 1rem;
+}
+
+.summary-card.compact .balance {
+    font-size: 1.5rem;
+}
+
+.online-payment-panel {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 1.5rem;
+    padding: 1.6rem;
+    margin-bottom: 2rem;
+}
+
+.online-payment-form {
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+}
+
+.provider-toggle {
+    display: inline-flex;
+    padding: 0.35rem;
+    border-radius: 9999px;
+    background: rgba(255,255,255,0.72);
+    border: 1px solid rgba(255,255,255,0.78);
+    width: fit-content;
+}
+
+.provider-toggle button {
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    padding: 0.65rem 1rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.provider-toggle button.active {
+    background: var(--color-primary);
+    color: var(--color-text-on-primary);
+}
+
+.payment-activity-list {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.payment-activity-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.2rem;
+    border-radius: 18px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: 0 8px 18px rgba(15, 41, 48, 0.05);
+}
+
+.payment-activity-provider {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.5rem;
+}
+
+.payment-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.payment-status-badge.status-completed {
+    background: rgba(25, 135, 84, 0.12);
+    color: var(--color-positive);
+}
+
+.payment-status-badge.status-pending {
+    background: rgba(245, 158, 11, 0.14);
+    color: #a16207;
+}
+
+.payment-status-badge.status-failed {
+    background: rgba(217, 72, 95, 0.12);
+    color: var(--color-negative);
+}
+
+.payment-activity-card h4 {
+    margin-bottom: 0.2rem;
+}
+
+.payment-activity-card p,
+.payment-activity-card span {
+    color: var(--color-text-secondary);
+}
+
+.payment-activity-meta {
+    text-align: right;
+    display: grid;
+    align-content: center;
+    gap: 0.2rem;
+}
+
+@media (max-width: 900px) {
+    .financials-hero,
+    .online-payment-panel,
+    .payment-activity-card {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .financials-hero-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .payment-activity-meta {
+        text-align: left;
+    }
+}
+
+@media (max-width: 640px) {
+    .financials-hero-cards {
+        grid-template-columns: 1fr;
+    }
+}

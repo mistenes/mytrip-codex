@@ -17,6 +17,7 @@ import messageRoutes from './server/routes/messages.js';
 import invitationRoutes from './server/routes/invitations.js';
 import settingsRoutes from './server/routes/settings.js';
 import generalRoutes from './server/routes/general.js';
+import paymentRoutes, { stripeWebhookHandler } from './server/routes/payments.js';
 
 import { closeDatabase, ensureSchema } from './server/db/client.js';
 import { ensureAdminUser, ensureDefaultFieldConfigs } from './server/utils/startup.js';
@@ -82,6 +83,8 @@ export function createApp() {
     return next();
   });
 
+  app.post('/api/webhooks/stripe', express.raw({ type: 'application/json' }), stripeWebhookHandler);
+
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
@@ -117,6 +120,7 @@ export function createApp() {
   app.use('/api', invitationRoutes);
   app.use('/api', settingsRoutes);
   app.use('/api', generalRoutes);
+  app.use('/api', paymentRoutes);
 
   app.use('/api', (_req, res) => {
     res.status(404).json({ message: 'API endpoint not found' });

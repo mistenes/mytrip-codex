@@ -6,6 +6,7 @@ Teljes stackes utazásszervező alkalmazás:
 - Express backend
 - Supabase Postgres adatbázis
 - Cloudinary alapú branding és képkiválasztás
+- Stripe es PayPal online befizetes automatikus jovairassal
 - szerepkörök: admin, organizer, traveler
 
 ## Production felállás
@@ -68,11 +69,18 @@ npm run import:mysql -- --sql /abs/path/to/dump.sql --files-root /abs/path/to/fo
 npm run import:mysql -- --sql /abs/path/to/dump.sql --files-root /abs/path/to/folder-containing-user_files --apply
 ```
 
+Éles import felülírással nem üres cél adatbázisra:
+
+```bash
+npm run import:mysql -- --sql /abs/path/to/dump.sql --files-root /abs/path/to/folder-containing-user_files --apply --force
+```
+
 Fontos:
 
 - az import alapból dry-run
 - `--apply` nélkül nem ír adatbázisba
 - az import csak üres cél adatbázisra fut le
+- ha mégis meglévő app adatbázisra kell importálni, az csak explicit `--force` mellett engedett
 - a dokumentumfájlokhoz a `user_files` mappa tényleges tartalma is kell
 - az import után a rendszer már kizárólag Supabase Postgrest használ
 
@@ -105,6 +113,13 @@ Ajánlott további változók:
 - `CLOUDINARY_CLOUD_NAME`
 - `CLOUDINARY_API_KEY`
 - `CLOUDINARY_API_SECRET`
+- `PAYMENT_CURRENCY`
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `PAYPAL_ENV`
+- `PAYPAL_CLIENT_ID`
+- `PAYPAL_CLIENT_SECRET`
+- `PAYPAL_WEBHOOK_ID`
 
 Fontos megjegyzések:
 
@@ -113,6 +128,8 @@ Fontos megjegyzések:
 - a feltöltött fájlok az `/opt/render/project/src/uploads` útvonalra kerülnek
 - ha nincs `APP_URL`, az email linkek a bejövő host alapján épülnek fel
 - ha a backend induláskor adatbázis URL hibát ír, akkor nincs beállítva a `DATABASE_URL`
+- Stripe webhook endpoint: `/api/webhooks/stripe`
+- PayPal webhook endpoint: `/api/webhooks/paypal`
 - a blueprint csak a futó alkalmazást deployolja, a legacy MySQL import nem része az automatikus deploynak
 
 Ajánlott deploy folyamat:

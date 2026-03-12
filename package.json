@@ -28,7 +28,8 @@
     "pg": "^8.20.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.13.1"
+    "react-router-dom": "^7.13.1",
+    "stripe": "^18.5.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { API_BASE } from "../api";
-import { User, Trip, FinancialRecord, Document, PersonalDataFieldConfig, PersonalDataRecord, PersonalDataUpdatePayload, ItineraryItem, Role, TripView, Theme, Message, SiteSettings } from "../types";
+import { User, Trip, FinancialRecord, Document, PersonalDataFieldConfig, PersonalDataRecord, PersonalDataUpdatePayload, ItineraryItem, Role, TripView, Theme, Message, SiteSettings, PaymentTransaction } from "../types";
 import AccountSettings from "./AccountSettings";
 import SiteSettingsView from "./SiteSettings";
 import PassportReaderModal from "./PassportReaderModal";
@@ -870,9 +870,30 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
 
     return (
         <div className="trip-summary">
-            <h2 className="trip-title">{trip.name}</h2>
-            <div className="trip-countdown">Indulásig: {countdown}</div>
-            <div className="summary-tiles">
+            <div className="trip-summary-hero">
+                <div className="trip-summary-copy">
+                    <span className="trip-summary-eyebrow">Trip command center</span>
+                    <h2 className="trip-title">{trip.name}</h2>
+                    <p className="trip-summary-subtitle">
+                        Egy helyen latod a dokumentumokat, uzeneteket, penzugyeket es a teendoket.
+                    </p>
+                </div>
+                <div className="trip-summary-metrics">
+                    <div className="trip-metric-card">
+                        <span className="trip-metric-label">Indulasig</span>
+                        <strong>{countdown}</strong>
+                    </div>
+                    <div className="trip-metric-card">
+                        <span className="trip-metric-label">Szervezok</span>
+                        <strong>{trip.organizerNames?.length || 0}</strong>
+                    </div>
+                    <div className="trip-metric-card">
+                        <span className="trip-metric-label">Utasok</span>
+                        <strong>{trip.travelerIds.length}</strong>
+                    </div>
+                </div>
+            </div>
+            <div className="summary-tiles summary-tiles-refresh">
                 {tiles.map(t => (
                     <button
                         key={t.key}
@@ -880,10 +901,29 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
                         onClick={() => onSelectView(t.key)}
                     >
                         <span>{t.label}</span>
+                        <small>Megnyitas</small>
                     </button>
                 ))}
             </div>
-            <div className="emergency-contacts">
+            <div className="trip-summary-side-grid">
+                <div className="trip-summary-panel">
+                    <h3>Utazasi attekintes</h3>
+                    <div className="trip-summary-facts">
+                        <div>
+                            <span>Kezdes</span>
+                            <strong>{trip.startDate}</strong>
+                        </div>
+                        <div>
+                            <span>Befejezes</span>
+                            <strong>{trip.endDate}</strong>
+                        </div>
+                        <div>
+                            <span>Szervezok</span>
+                            <strong>{trip.organizerNames?.join(', ') || 'Nincs megadva'}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div className="emergency-contacts trip-summary-panel">
                 <h3>Vészhelyzeti kapcsolattartó{emergencyContacts.length === 1 ? '' : 'k'}</h3>
                 {emergencyContacts.length > 0 ? (
                     emergencyContacts.map((o, index) => {
@@ -901,8 +941,96 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
                 ) : (
                     <p className="contact-empty">Jelenleg nincs megadott vészhelyzeti kapcsolattartó.</p>
                 )}
+                </div>
             </div>
         </div>
+    );
+};
+
+const PaymentStatusBadge = ({ status }: { status: PaymentTransaction['status'] }) => (
+    <span className={`payment-status-badge status-${status}`}>{status === 'completed' ? 'Jovairva' : status === 'failed' ? 'Sikertelen' : 'Folyamatban'}</span>
+);
+
+const OnlinePaymentPanel = ({
+    trip,
+    user,
+    onStartStripePayment,
+    onStartPaypalPayment,
+}: {
+    trip: Trip;
+    user: User;
+    onStartStripePayment: (tripId: string, amount: number, description: string) => Promise<void> | void;
+    onStartPaypalPayment: (tripId: string, amount: number, description: string) => Promise<void> | void;
+}) => {
+    const [amount, setAmount] = useState('');
+    const [description, setDescription] = useState(`${trip.name} befizetes`);
+    const [provider, setProvider] = useState<'stripe' | 'paypal'>('stripe');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const numericAmount = Number(amount);
+
+        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+            alert('Adj meg ervenyes befizetesi osszeget.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            if (provider === 'stripe') {
+                await Promise.resolve(onStartStripePayment(trip.id, numericAmount, description));
+            } else {
+                await Promise.resolve(onStartPaypalPayment(trip.id, numericAmount, description));
+            }
+        } catch (error: any) {
+            alert(error?.message || 'Nem sikerult elinditani a fizetest.');
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <section className="online-payment-panel">
+            <div className="online-payment-copy">
+                <span className="online-payment-eyebrow">Online befizetes</span>
+                <h3>Gyors, automatikus jovairas</h3>
+                <p>
+                    Stripe vagy PayPal fizetes utan a rendszer automatikusan uj penzugyi tetelt hoz letre a sajat nevedre.
+                </p>
+            </div>
+            <form className="online-payment-form" onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label htmlFor="online-payment-amount">Osszeg</label>
+                    <input
+                        id="online-payment-amount"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="pl. 120000"
+                        required
+                    />
+                </div>
+                <div className="form-group">
+                    <label htmlFor="online-payment-description">Leiras</label>
+                    <input
+                        id="online-payment-description"
+                        type="text"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="provider-toggle" role="tablist" aria-label="Fizetesi szolgaltato">
+                    <button type="button" className={provider === 'stripe' ? 'active' : ''} onClick={() => setProvider('stripe')}>Stripe</button>
+                    <button type="button" className={provider === 'paypal' ? 'active' : ''} onClick={() => setProvider('paypal')}>PayPal</button>
+                </div>
+                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+                    {isSubmitting ? 'Atiranyitas...' : `${provider === 'stripe' ? 'Stripe' : 'PayPal'} fizetes inditasa`}
+                </button>
+            </form>
+        </section>
     );
 };
 
@@ -911,17 +1039,23 @@ const TripFinancials = ({
     user,
     records,
     users,
+    paymentTransactions,
     onAddRecord,
     onUpdateRecord,
-    onRemoveRecord
+    onRemoveRecord,
+    onStartStripePayment,
+    onStartPaypalPayment
 }: {
     trip: Trip;
     user: User;
     records: FinancialRecord[];
     users: User[];
+    paymentTransactions: PaymentTransaction[];
     onAddRecord: (record: Omit<FinancialRecord, 'id'>) => Promise<void> | void;
     onUpdateRecord: (id: string, record: Omit<FinancialRecord, 'id'>) => Promise<void> | void;
     onRemoveRecord: (id: string) => Promise<void> | void;
+    onStartStripePayment: (tripId: string, amount: number, description: string) => Promise<void> | void;
+    onStartPaypalPayment: (tripId: string, amount: number, description: string) => Promise<void> | void;
 }) => {
 
     const isStaff = user.role === 'admin' || user.role === 'organizer';
@@ -930,6 +1064,13 @@ const TripFinancials = ({
         const participantIds = new Set([...trip.organizerIds, ...trip.travelerIds]);
         return users.filter(u => participantIds.has(u.id));
     }, [trip, users]);
+
+    const tripPaymentTransactions = useMemo(() => {
+        return paymentTransactions
+            .filter((transaction) => transaction.tripId === trip.id)
+            .filter((transaction) => isStaff || transaction.userId === user.id)
+            .sort((left, right) => new Date(right.createdAt || '').getTime() - new Date(left.createdAt || '').getTime());
+    }, [isStaff, paymentTransactions, trip.id, user.id]);
 
     const balances = useMemo(() => {
         const userBalances = new Map<string, number>();
@@ -1042,7 +1183,32 @@ const TripFinancials = ({
 
     return (
         <div className="financials-page">
-            <h2>Pénzügyek: {trip.name}</h2>
+            <div className="financials-hero">
+                <div>
+                    <span className="section-eyebrow">Finance desk</span>
+                    <h2>Penzugyek: {trip.name}</h2>
+                    <p className="section-intro">Kovetheted a manuális tételeket, az online befizeteseket es a resztvevok egyenlegét egy helyen.</p>
+                </div>
+                <div className="financials-hero-cards">
+                    <div className="summary-card compact">
+                        <h4>Osszes tranzakcio</h4>
+                        <p className="balance">{records.length}</p>
+                    </div>
+                    <div className="summary-card compact">
+                        <h4>Online fizetesek</h4>
+                        <p className="balance">{tripPaymentTransactions.length}</p>
+                    </div>
+                </div>
+            </div>
+
+            {!isStaff && (
+                <OnlinePaymentPanel
+                    trip={trip}
+                    user={user}
+                    onStartStripePayment={onStartStripePayment}
+                    onStartPaypalPayment={onStartPaypalPayment}
+                />
+            )}
 
             {isStaff && (
                 <>
@@ -1089,6 +1255,33 @@ const TripFinancials = ({
                             {isAdding ? 'Mentés...' : 'Hozzáadás'}
                         </button>
                     </form>
+                </>
+            )}
+
+            {tripPaymentTransactions.length > 0 && (
+                <>
+                    <h3>Online fizetesek</h3>
+                    <div className="payment-activity-list">
+                        {tripPaymentTransactions.slice(0, 8).map((transaction) => {
+                            const payer = users.find((candidate) => candidate.id === transaction.userId);
+                            return (
+                                <article key={transaction.id} className="payment-activity-card">
+                                    <div>
+                                        <div className="payment-activity-provider">
+                                            <strong>{transaction.provider === 'stripe' ? 'Stripe' : 'PayPal'}</strong>
+                                            <PaymentStatusBadge status={transaction.status} />
+                                        </div>
+                                        <h4>{transaction.description}</h4>
+                                        <p>{payer?.name || 'Ismeretlen felhasznalo'}</p>
+                                    </div>
+                                    <div className="payment-activity-meta">
+                                        <strong>{transaction.amount.toLocaleString()} {transaction.currency}</strong>
+                                        <span>{transaction.completedAt ? new Date(transaction.completedAt).toLocaleString('hu-HU') : 'Feldolgozas alatt'}</span>
+                                    </div>
+                                </article>
+                            );
+                        })}
+                    </div>
                 </>
             )}
 
@@ -3308,12 +3501,12 @@ const Sidebar = ({
 
 const Dashboard = ({
     user, trips, refreshTrips, onLogout, onCreateTrip,
-    financialRecords, onAddFinancialRecord, onUpdateFinancialRecord, onRemoveFinancialRecord,
+    financialRecords, paymentTransactions, onAddFinancialRecord, onUpdateFinancialRecord, onRemoveFinancialRecord, onStartStripePayment, onStartPaypalPayment,
     documents, onAddDocument, onUpdateDocument, onRemoveDocument,
     personalDataConfigs, personalDataRecords, onUpdatePersonalData, onTogglePersonalDataLock, onUpsertPersonalDataConfig, onRemovePersonalDataConfig,
     itineraryItems, onAddItineraryItem, onUpdateItineraryItem, onRemoveItineraryItem,
     messages, onAddMessage, onUpdateMessage, onRemoveMessage, onMarkMessageRead,
-    theme, onThemeChange, currentTheme
+    theme, onThemeChange, currentTheme, paymentFeedback, onDismissPaymentFeedback
 }: {
     user: User,
     trips: Trip[],
@@ -3321,9 +3514,12 @@ const Dashboard = ({
     onLogout: () => void,
     onCreateTrip: (trip: Trip) => void,
     financialRecords: FinancialRecord[],
+    paymentTransactions: PaymentTransaction[],
     onAddFinancialRecord: (record: Omit<FinancialRecord, 'id'>) => Promise<void> | void,
     onUpdateFinancialRecord: (id: string, record: Omit<FinancialRecord, 'id'>) => Promise<void> | void,
     onRemoveFinancialRecord: (id: string) => Promise<void> | void,
+    onStartStripePayment: (tripId: string, amount: number, description: string) => Promise<void> | void,
+    onStartPaypalPayment: (tripId: string, amount: number, description: string) => Promise<void> | void,
     documents: Document[],
     onAddDocument: (tripId: string, data: { name: string; category: string; visibleTo: 'all' | string[]; file: File }) => Promise<void>,
     onUpdateDocument: (doc: Document, file?: File) => Promise<void>,
@@ -3345,7 +3541,9 @@ const Dashboard = ({
     onMarkMessageRead: (id: string) => void,
     theme: Theme,
     onThemeChange: (theme: Theme) => void,
-    currentTheme: 'light' | 'dark'
+    currentTheme: 'light' | 'dark',
+    paymentFeedback: { type: 'success' | 'error' | 'info'; message: string } | null,
+    onDismissPaymentFeedback: () => void
 }) => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isInviteOpen, setInviteOpen] = useState(false);
@@ -3444,6 +3642,26 @@ const Dashboard = ({
       return itineraryItems.filter(i => i.tripId === selectedTripId);
   }, [selectedTripId, itineraryItems]);
 
+  const overviewMetrics = useMemo(() => {
+      const visibleTripIds = new Set(visibleTrips.map((trip) => trip.id));
+      const unreadMessages = messages.filter((message) => !message.readBy.includes(String(user.id))).length;
+      const myBalance = financialRecords
+          .filter((record) => visibleTripIds.has(record.tripId))
+          .filter((record) => user.role !== 'traveler' || record.userId === user.id)
+          .reduce((sum, record) => sum + record.amount, 0);
+      const onlinePaymentsCount = paymentTransactions
+          .filter((transaction) => visibleTripIds.has(transaction.tripId))
+          .filter((transaction) => user.role !== 'traveler' || transaction.userId === user.id)
+          .length;
+
+      return {
+          tripCount: visibleTrips.length,
+          unreadMessages,
+          myBalance,
+          onlinePaymentsCount,
+      };
+  }, [financialRecords, messages, paymentTransactions, user.id, user.role, visibleTrips]);
+
   const handleSelectTrip = (tripId: string) => {
     setSelectedTripId(tripId);
     setActiveTripView('summary');
@@ -3505,7 +3723,7 @@ const Dashboard = ({
     if (selectedTrip) {
         switch (activeTripView) {
             case 'summary': return <TripSummary trip={selectedTrip} user={user} users={allUsers} onSelectView={handleSelectView} />;
-            case 'financials': return <TripFinancials trip={selectedTrip} user={user} records={tripFinancialRecords} users={allUsers} onAddRecord={onAddFinancialRecord} onUpdateRecord={onUpdateFinancialRecord} onRemoveRecord={onRemoveFinancialRecord} />;
+            case 'financials': return <TripFinancials trip={selectedTrip} user={user} records={tripFinancialRecords} users={allUsers} paymentTransactions={paymentTransactions} onAddRecord={onAddFinancialRecord} onUpdateRecord={onUpdateFinancialRecord} onRemoveRecord={onRemoveFinancialRecord} onStartStripePayment={onStartStripePayment} onStartPaypalPayment={onStartPaypalPayment} />;
             case 'itinerary': return <TripItinerary trip={selectedTrip} user={user} items={tripItineraryItems} onAddItem={onAddItineraryItem} onUpdateItem={onUpdateItineraryItem} onRemoveItem={onRemoveItineraryItem} />;
             case 'documents': return <TripDocuments trip={selectedTrip} user={user} documents={tripDocuments} onAddDocument={onAddDocument} onUpdateDocument={onUpdateDocument} onRemoveDocument={onRemoveDocument} users={allUsers} />;
             case 'messages': return <TripMessages trip={selectedTrip} user={user} users={allUsers} messages={tripMessages} onAddMessage={onAddMessage} onUpdateMessage={onUpdateMessage} onRemoveMessage={onRemoveMessage} onMarkRead={onMarkMessageRead} />;
@@ -3525,6 +3743,39 @@ const Dashboard = ({
 
     return (
         <>
+            {paymentFeedback && (
+                <div className={`floating-feedback ${paymentFeedback.type}`} role="status">
+                    <span>{paymentFeedback.message}</span>
+                    <button type="button" onClick={onDismissPaymentFeedback} aria-label="Uzenet bezarasa">×</button>
+                </div>
+            )}
+            <section className="dashboard-overview-hero">
+                <div className="dashboard-overview-copy">
+                    <span className="section-eyebrow">Operations overview</span>
+                    <h2>Utazasaid egyetlen attekintheto feluleten</h2>
+                    <p>
+                        Gyors ralatast kapsz az aktiv utakra, a nyitott uzenetekre, az egyenlegre es az online fizetesekre.
+                    </p>
+                </div>
+                <div className="dashboard-overview-stats">
+                    <div className="overview-stat-card">
+                        <span>Aktiv utak</span>
+                        <strong>{overviewMetrics.tripCount}</strong>
+                    </div>
+                    <div className="overview-stat-card">
+                        <span>Olvasatlan uzenetek</span>
+                        <strong>{overviewMetrics.unreadMessages}</strong>
+                    </div>
+                    <div className="overview-stat-card">
+                        <span>Online fizetesek</span>
+                        <strong>{overviewMetrics.onlinePaymentsCount}</strong>
+                    </div>
+                    <div className="overview-stat-card">
+                        <span>Egyenleg</span>
+                        <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
+                    </div>
+                </div>
+            </section>
             <div className="dashboard-header">
                 <h2>Utazásaid</h2>
                 <div className="header-actions">

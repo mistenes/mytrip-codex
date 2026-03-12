@@ -39,6 +39,11 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
     
   return (
     <div className="login-container" style={siteSettings?.loginBackground ? { backgroundImage: `url(${siteSettings.loginBackground})` } : undefined}>
+      <div className="login-hero">
+        <span className="login-kicker">Travel operations, refined</span>
+        <h2>Minden ut, dokumentum es befizetes egy letisztult munkafeluleten.</h2>
+        <p>Modern utasszervezes adminoknak, szervezoknek es utazoknak ugyanabban a rendszerben.</p>
+      </div>
       <div className="login-box">
         {(() => {
           const src = theme === 'dark' ? (siteSettings?.logoDark || siteSettings?.logoLight) : (siteSettings?.logoLight || siteSettings?.logoDark);
@@ -87,4 +92,3 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
 
 
 export default LoginPage;
-
