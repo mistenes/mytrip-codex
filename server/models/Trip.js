@@ -1,12 +1,13 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const tripSchema = new mongoose.Schema({
-    name: String,
-    startDate: String,
-    endDate: String,
-    organizerIds: { type: [mongoose.Schema.Types.ObjectId], default: [] },
-    travelerIds: { type: [mongoose.Schema.Types.ObjectId], default: [] }
-}, { timestamps: true });
+export default class Trip extends BaseModel {
+  static tableName = 'trips';
 
-const Trip = mongoose.model('Trip', tripSchema);
-export default Trip;
+  static defaults = {
+    name: '',
+    startDate: '',
+    endDate: '',
+    organizerIds: [],
+    travelerIds: [],
+  };
+}

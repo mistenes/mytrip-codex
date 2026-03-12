@@ -1,14 +1,15 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const documentSchema = new mongoose.Schema({
-    tripId: mongoose.Schema.Types.ObjectId,
-    userId: mongoose.Schema.Types.ObjectId,
-    name: String,
-    category: String,
-    filename: String,
-    uploadDate: String,
-    visibleTo: { type: mongoose.Schema.Types.Mixed, default: 'all' }
-}, { timestamps: true });
+export default class Document extends BaseModel {
+  static tableName = 'documents';
 
-const Document = mongoose.model('Document', documentSchema);
-export default Document;
+  static defaults = {
+    tripId: '',
+    userId: '',
+    name: '',
+    category: '',
+    filename: '',
+    uploadDate: '',
+    visibleTo: 'all',
+  };
+}

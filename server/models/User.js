@@ -1,32 +1,27 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const personalDataSchema = new mongoose.Schema({
-  field: String,
-  value: String,
-  locked: { type: Boolean, default: false }
-}, { _id: false });
+export default class User extends BaseModel {
+  static tableName = 'users';
 
-const userSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  name: String,
-  username: String,
-  dateOfBirth: String,
-  email: String,
-  contactPhone: String,
-  contactEmail: String,
-  contactTitle: String,
-  contactShowEmergency: { type: Boolean, default: false },
-  passwordHash: String,
-  role: String,
-  personalData: [personalDataSchema],
-  passportPhoto: String,
-  mustChangePassword: { type: Boolean, default: false },
-  sessionToken: String,
-  sessionExpiresAt: Date,
-  resetToken: String,
-  resetTokenExpiresAt: Date,
-}, { timestamps: true });
-
-const User = mongoose.model('User', userSchema);
-export default User;
+  static defaults = {
+    firstName: '',
+    lastName: '',
+    name: '',
+    username: '',
+    dateOfBirth: '',
+    email: '',
+    contactPhone: '',
+    contactEmail: '',
+    contactTitle: '',
+    contactShowEmergency: false,
+    passwordHash: '',
+    role: 'traveler',
+    personalData: [],
+    passportPhoto: '',
+    mustChangePassword: false,
+    sessionToken: undefined,
+    sessionExpiresAt: undefined,
+    resetToken: undefined,
+    resetTokenExpiresAt: undefined,
+  };
+}

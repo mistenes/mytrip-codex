@@ -219,7 +219,7 @@ router.put('/users/:id/contact', auth, async (req, res) => {
             contactShowEmergency: !!req.body.contactShowEmergency,
         },
         { new: true }
-    ).lean();
+    );
 
     if (!updated) {
         return res.sendStatus(404);

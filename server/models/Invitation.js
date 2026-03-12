@@ -1,16 +1,17 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const invitationSchema = new mongoose.Schema({
-    email: String,
-    firstName: String,
-    lastName: String,
-    name: String,
-    role: String,
-    tripId: mongoose.Schema.Types.ObjectId,
-    token: String,
-    expiresAt: Date,
-    used: { type: Boolean, default: false }
-}, { timestamps: true });
+export default class Invitation extends BaseModel {
+  static tableName = 'invitations';
 
-const Invitation = mongoose.model('Invitation', invitationSchema);
-export default Invitation;
+  static defaults = {
+    email: '',
+    firstName: '',
+    lastName: '',
+    name: '',
+    role: 'traveler',
+    tripId: '',
+    token: '',
+    expiresAt: undefined,
+    used: false,
+  };
+}

@@ -1,12 +1,13 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const financialRecordSchema = new mongoose.Schema({
-    tripId: mongoose.Schema.Types.ObjectId,
-    userId: mongoose.Schema.Types.ObjectId,
-    description: String,
-    amount: Number,
-    date: String,
-}, { timestamps: true });
+export default class FinancialRecord extends BaseModel {
+  static tableName = 'financial_records';
 
-const FinancialRecord = mongoose.model('FinancialRecord', financialRecordSchema);
-export default FinancialRecord;
+  static defaults = {
+    tripId: '',
+    userId: '',
+    description: '',
+    amount: 0,
+    date: '',
+  };
+}

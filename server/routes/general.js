@@ -9,7 +9,7 @@ import { buildTripAccessFilter, isAdmin, isTripManager } from '../utils/accessCo
 const router = express.Router();
 
 router.get('/health', (_req, res) => {
-    return res.json({ status: 'ok', service: 'myTrip', database: 'mongodb' });
+    return res.json({ status: 'ok', service: 'myTrip', database: 'supabase-postgres' });
 });
 
 router.post('/report-problem', async (req, res) => {

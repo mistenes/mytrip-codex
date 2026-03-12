@@ -8,7 +8,7 @@ import { isAdmin } from '../utils/accessControl.js';
 const router = express.Router();
 
 async function getSiteSettings() {
-    const settings = await SiteSettings.findOne({}).lean();
+    const settings = await SiteSettings.findOne({ _id: 'site-settings' }).lean();
     return settings || { logoLight: '', logoDark: '', loginBackground: '' };
 }
 
@@ -27,8 +27,9 @@ router.put('/settings/logo', auth, async (req, res) => {
     }
 
     const settings = await SiteSettings.findOneAndUpdate(
-        {},
+        { _id: 'site-settings' },
         {
+            _id: 'site-settings',
             logoLight: String(req.body.logoLight || '').trim(),
             logoDark: String(req.body.logoDark || '').trim(),
             loginBackground: String(req.body.loginBackground || '').trim(),

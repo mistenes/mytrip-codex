@@ -1,16 +1,21 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const fieldConfigSchema = new mongoose.Schema({
-    field: String,
-    tripId: { type: String, default: 'default' },
-    label: String,
-    type: { type: String, enum: ['text', 'date', 'file', 'radio', 'multi'], default: 'text' },
-    enabled: { type: Boolean, default: true },
-    locked: { type: Boolean, default: false },
-    order: { type: Number, default: 0 },
-    options: { type: [String], default: [] },
-    section: { type: String, default: 'general' }
-}, { timestamps: true });
+export default class FieldConfig extends BaseModel {
+  static tableName = 'field_configs';
 
-const FieldConfig = mongoose.model('FieldConfig', fieldConfigSchema);
-export default FieldConfig;
+  static columnMap = {
+    order: 'sort_order',
+  };
+
+  static defaults = {
+    field: '',
+    tripId: 'default',
+    label: '',
+    type: 'text',
+    enabled: true,
+    locked: false,
+    order: 0,
+    options: [],
+    section: 'general',
+  };
+}

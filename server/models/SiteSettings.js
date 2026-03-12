@@ -1,10 +1,11 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const siteSettingsSchema = new mongoose.Schema({
-    logoLight: String,
-    logoDark: String,
-    loginBackground: String,
-});
+export default class SiteSettings extends BaseModel {
+  static tableName = 'site_settings';
 
-const SiteSettings = mongoose.model('SiteSettings', siteSettingsSchema);
-export default SiteSettings;
+  static defaults = {
+    logoLight: '',
+    logoDark: '',
+    loginBackground: '',
+  };
+}

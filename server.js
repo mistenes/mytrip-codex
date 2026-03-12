@@ -1,7 +1,6 @@
 import 'express-async-errors';
 
 import express from 'express';
-import mongoose from 'mongoose';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { v2 as cloudinary } from 'cloudinary';
@@ -19,14 +18,13 @@ import invitationRoutes from './server/routes/invitations.js';
 import settingsRoutes from './server/routes/settings.js';
 import generalRoutes from './server/routes/general.js';
 
+import { closeDatabase, ensureSchema } from './server/db/client.js';
 import { ensureAdminUser, ensureDefaultFieldConfigs } from './server/utils/startup.js';
 import { splitEnvList, trimTrailingSlash } from './server/utils/request.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const distPath = path.join(__dirname, 'dist');
-
-mongoose.set('strictQuery', true);
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -169,16 +167,7 @@ export function createApp() {
 export async function start() {
   const app = createApp();
   const port = Number(process.env.PORT || 3001);
-  const isProductionRuntime = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
-  const mongoUri = process.env.MONGODB_URI || (!isProductionRuntime ? 'mongodb://localhost:27017/myTrip' : '');
-
-  if (!mongoUri) {
-    throw new Error('MONGODB_URI is required in production/Render. Set it in the Render service environment before starting the app.');
-  }
-
-  await mongoose.connect(mongoUri, {
-    serverSelectionTimeoutMS: 15000,
-  });
+  await ensureSchema();
 
   await ensureAdminUser();
   await ensureDefaultFieldConfigs();
@@ -196,8 +185,8 @@ export async function start() {
     shuttingDown = true;
     console.log(`${signal} received, shutting down`);
 
-    await mongoose.connection.close().catch((error) => {
-      console.error('MongoDB shutdown failed', error);
+    await closeDatabase().catch((error) => {
+      console.error('Database shutdown failed', error);
     });
 
     server.close((error) => {

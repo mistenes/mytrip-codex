@@ -1,12 +1,13 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const messageSchema = new mongoose.Schema({
-    tripId: mongoose.Schema.Types.ObjectId,
-    authorId: mongoose.Schema.Types.ObjectId,
-    recipientIds: [mongoose.Schema.Types.ObjectId],
-    content: String,
-    readBy: { type: [mongoose.Schema.Types.ObjectId], default: [] }
-}, { timestamps: true });
+export default class Message extends BaseModel {
+  static tableName = 'messages';
 
-const Message = mongoose.model('Message', messageSchema);
-export default Message;
+  static defaults = {
+    tripId: '',
+    authorId: '',
+    recipientIds: [],
+    content: '',
+    readBy: [],
+  };
+}

@@ -3,8 +3,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import mongoose from 'mongoose';
-
 import User from '../server/models/User.js';
 import Trip from '../server/models/Trip.js';
 import FieldConfig from '../server/models/FieldConfig.js';
@@ -12,6 +10,7 @@ import ItineraryItem from '../server/models/ItineraryItem.js';
 import FinancialRecord from '../server/models/FinancialRecord.js';
 import Message from '../server/models/Message.js';
 import Document from '../server/models/Document.js';
+import { clearAppTables, closeDatabase, ensureSchema, listNonEmptyTables } from '../server/db/client.js';
 import { uploadDir } from '../server/middleware/upload.js';
 import { buildLegacyImportData } from './legacyMysqlImport.js';
 
@@ -55,27 +54,24 @@ function parseArgs(argv) {
 }
 
 async function runDatabaseCheck(required) {
-    if (!process.env.MONGODB_URI) {
+    if (!process.env.DATABASE_URL && !process.env.SUPABASE_DB_URL && !process.env.POSTGRES_URL) {
         if (required) {
-            throw new Error('MONGODB_URI is required for --apply');
+            throw new Error('DATABASE_URL is required for --apply');
         }
 
         return {
             status: 'skipped',
             collections: [],
-            reason: 'MONGODB_URI not set',
+            reason: 'DATABASE_URL not set',
         };
     }
 
     try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            serverSelectionTimeoutMS: 15000,
-        });
-
-        const collections = await mongoose.connection.db.listCollections({}, { nameOnly: true }).toArray();
+        await ensureSchema();
+        const collections = await listNonEmptyTables();
         return {
             status: collections.length === 0 ? 'passed' : 'failed',
-            collections: collections.map((collection) => collection.name),
+            collections,
             reason: collections.length === 0 ? '' : 'Target database is not empty',
         };
     } catch (error) {
@@ -86,7 +82,7 @@ async function runDatabaseCheck(required) {
         return {
             status: 'skipped',
             collections: [],
-            reason: `MongoDB check skipped: ${error.message}`,
+            reason: `Database check skipped: ${error.message}`,
         };
     }
 }
@@ -119,9 +115,7 @@ async function applyImport(data, copyOperations) {
             }
         }));
 
-        if (mongoose.connection.readyState === 1) {
-            await mongoose.connection.db.dropDatabase().catch(() => {});
-        }
+        await clearAppTables().catch(() => {});
 
         throw error;
     }
@@ -167,7 +161,5 @@ main()
         process.exit(1);
     })
     .finally(async () => {
-        if (mongoose.connection.readyState !== 0) {
-            await mongoose.disconnect().catch(() => {});
-        }
+        await closeDatabase().catch(() => {});
     });

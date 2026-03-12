@@ -4,7 +4,7 @@ Teljes stackes utazásszervező alkalmazás:
 
 - React 19 + Vite frontend
 - Express backend
-- MongoDB adatbázis
+- Supabase Postgres adatbázis
 - Cloudinary alapú branding és képkiválasztás
 - szerepkörök: admin, organizer, traveler
 
@@ -15,7 +15,7 @@ Az app egyetlen Render Web Service-ként fut:
 - a frontend buildelés után ugyanebből a Node service-ből kerül kiszolgálásra
 - az API a `/api` útvonal alatt érhető el
 - a fájlfeltöltések Render diskre mennek
-- a tartós adat MongoDB-ben van
+- a tartós adat Supabase Postgresben van
 - a logók és háttérképek Cloudinary-n keresztül választhatók
 
 ## Lokális futtatás
@@ -23,12 +23,12 @@ Az app egyetlen Render Web Service-ként fut:
 Előfeltételek:
 
 - Node.js 20+
-- futó MongoDB
+- elérhető Postgres adatbázis
 
 Lépések:
 
 1. Hozz létre egy `.env` fájlt a `.env.example` alapján
-2. Állíts be működő `MONGODB_URI` értéket
+2. Állíts be működő `DATABASE_URL` értéket
 3. Telepítsd a csomagokat:
 
 ```bash
@@ -54,7 +54,7 @@ Alapértelmezett lokális címek:
 
 ## Legacy MySQL import
 
-Egyszeri migrációhoz van külön import parancs MySQL dump -> MongoDB irányra.
+Egyszeri migrációhoz van külön import parancs MySQL dump -> Supabase Postgres irányra.
 
 Dry-run:
 
@@ -71,10 +71,10 @@ npm run import:mysql -- --sql /abs/path/to/dump.sql --files-root /abs/path/to/fo
 Fontos:
 
 - az import alapból dry-run
-- `--apply` nélkül nem ír MongoDB-be
+- `--apply` nélkül nem ír adatbázisba
 - az import csak üres cél adatbázisra fut le
 - a dokumentumfájlokhoz a `user_files` mappa tényleges tartalma is kell
-- az import után a rendszer már kizárólag MongoDB-t használ
+- az import után a rendszer már kizárólag Supabase Postgrest használ
 
 ## Render Blueprint
 
@@ -87,11 +87,11 @@ A blueprint jelenleg ezt definiálja:
 - build közben teljes `npm run check` futtatás
 - `/api/health` health check
 - Render persistent disk az `uploads` mappának
-- secretként kezelt MongoDB, Cloudinary, Brevo és app URL env varok
+- secretként kezelt Supabase Postgres, Cloudinary, Brevo és app URL env varok
 
 Szükséges production változók:
 
-- `MONGODB_URI`
+- `DATABASE_URL`
 - `ADMIN_PASSWORD`
 
 Ajánlott további változók:
@@ -108,11 +108,11 @@ Ajánlott további változók:
 
 Fontos megjegyzések:
 
-- Renderen a MongoDB legyen külső szolgáltatás, tipikusan MongoDB Atlas
+- Renderen a fő adatbázis Supabase Postgres legyen
 - a service a Render által adott `PORT` értéken indul
 - a feltöltött fájlok az `/opt/render/project/src/uploads` útvonalra kerülnek
 - ha nincs `APP_URL`, az email linkek a bejövő host alapján épülnek fel
-- ha a logban `localhost:27017` kapcsolat hibát látsz, akkor nincs beállítva a `MONGODB_URI`
+- ha a backend induláskor adatbázis URL hibát ír, akkor nincs beállítva a `DATABASE_URL`
 - a blueprint csak a futó alkalmazást deployolja, a legacy MySQL import nem része az automatikus deploynak
 
 Ajánlott deploy folyamat:
@@ -120,12 +120,12 @@ Ajánlott deploy folyamat:
 1. töltsd fel a projektet egy git repóba
 2. hozz létre Renderben egy Blueprint deployt
 3. add meg a secret env varokat
-4. állíts be működő MongoDB connection stringet a `MONGODB_URI` alatt
+4. állíts be működő Supabase Postgres connection stringet a `DATABASE_URL` alatt
 5. deploy
 
 ## Legacy import Render mellett
 
-A MySQL -> MongoDB import CLI külön marad. Ez tudatos:
+A MySQL -> Supabase Postgres import CLI külön marad. Ez tudatos:
 
 - az importnak kell a teljes `user_files` mappa
 - a dokumentumok az app `UPLOAD_DIR` útvonalára másolódnak
@@ -134,7 +134,7 @@ A MySQL -> MongoDB import CLI külön marad. Ez tudatos:
 Ajánlott sorrend:
 
 1. Blueprint deploy Renderre
-2. dry-run az import parancssal olyan környezetből, ahol a dump, a `user_files` és a cél MongoDB is elérhető
+2. dry-run az import parancssal olyan környezetből, ahol a dump, a `user_files` és a cél Postgres is elérhető
 3. `--apply` csak akkor, ha a riport teljesen tiszta
 
 ## Fő funkciók

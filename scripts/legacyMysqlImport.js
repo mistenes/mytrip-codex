@@ -1,7 +1,6 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import mongoose from 'mongoose';
 
 import { getDefaultFieldConfigs } from '../server/utils/defaultFieldConfigs.js';
 
@@ -298,6 +297,10 @@ function defaultUploadFilename({ originalFilename }) {
     return `${crypto.randomBytes(16).toString('hex')}${path.extname(originalFilename || '')}`;
 }
 
+function createId() {
+    return crypto.randomUUID();
+}
+
 async function pathExists(targetPath) {
     try {
         await fs.access(targetPath);
@@ -427,7 +430,7 @@ export async function buildLegacyImportData({
 
     for (const legacyUser of tables.users) {
         const userDoc = {
-            _id: new mongoose.Types.ObjectId(),
+            _id: createId(),
             username: String(legacyUser.username || '').trim(),
             passwordHash: normalizeLegacyBcryptHash(legacyUser.password),
             role: legacyUser.role === 'admin' ? 'admin' : 'traveler',
@@ -455,7 +458,7 @@ export async function buildLegacyImportData({
     for (const legacyTrip of tables.trips) {
         const normalizedTripId = normalizeLegacyTripId(legacyTrip.trip_id);
         const tripDoc = {
-            _id: new mongoose.Types.ObjectId(),
+            _id: createId(),
             name: String(legacyTrip.name || '').trim(),
             startDate: normalizeDate(legacyTrip.start_date),
             endDate: normalizeDate(legacyTrip.end_date),
@@ -487,7 +490,7 @@ export async function buildLegacyImportData({
     }
 
     const defaultFieldConfigs = getDefaultFieldConfigs().map((config) => ({
-        _id: new mongoose.Types.ObjectId(),
+        _id: createId(),
         ...config,
         tripId: 'default',
     }));
@@ -516,7 +519,7 @@ export async function buildLegacyImportData({
         if (!config) {
             const defaultConfig = defaultFieldConfigByField.get(mappedField);
             config = {
-                _id: new mongoose.Types.ObjectId(),
+                _id: createId(),
                 field: mappedField,
                 tripId: targetTripId,
                 label: defaultConfig?.label || String(legacyField.field_name || '').trim(),
@@ -613,7 +616,7 @@ export async function buildLegacyImportData({
 
         const createdAt = parseTimestamp(legacyEvent.created_at);
         itineraryItems.push({
-            _id: new mongoose.Types.ObjectId(),
+            _id: createId(),
             tripId: trip._id,
             title: String(legacyEvent.title || '').trim(),
             description: String(legacyEvent.remark || '').trim(),
@@ -647,7 +650,7 @@ export async function buildLegacyImportData({
             : Math.abs(rawAmount);
 
         financialRecords.push({
-            _id: new mongoose.Types.ObjectId(),
+            _id: createId(),
             tripId: trip._id,
             userId: user._id,
             description: String(legacyRecord.description || '').trim(),
@@ -692,7 +695,7 @@ export async function buildLegacyImportData({
 
         const createdAt = parseTimestamp(legacyMessage.created_at);
         messages.push({
-            _id: new mongoose.Types.ObjectId(),
+            _id: createId(),
             tripId: trip._id,
             authorId: defaultAuthorId,
             recipientIds: [recipient._id],
@@ -741,7 +744,7 @@ export async function buildLegacyImportData({
 
         const createdAt = parseTimestamp(legacyDocument.upload_date);
         documents.push({
-            _id: new mongoose.Types.ObjectId(),
+            _id: createId(),
             tripId: trip._id,
             userId: user._id,
             name: String(legacyDocument.filename || '').trim(),

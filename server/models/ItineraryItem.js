@@ -1,15 +1,16 @@
-import mongoose from 'mongoose';
+import BaseModel from '../db/BaseModel.js';
 
-const itineraryItemSchema = new mongoose.Schema({
-    tripId: mongoose.Schema.Types.ObjectId,
-    title: String,
-    description: String,
-    startDateTimeLocal: String,
-    endDateTimeLocal: String,
-    location: String,
-    timeZone: String,
-    programType: { type: String, default: 'required' }
-}, { timestamps: true });
+export default class ItineraryItem extends BaseModel {
+  static tableName = 'itinerary_items';
 
-const ItineraryItem = mongoose.model('ItineraryItem', itineraryItemSchema);
-export default ItineraryItem;
+  static defaults = {
+    tripId: '',
+    title: '',
+    description: '',
+    startDateTimeLocal: '',
+    endDateTimeLocal: '',
+    location: '',
+    timeZone: '',
+    programType: 'required',
+  };
+}
