@@ -201,6 +201,10 @@ export default class BaseModel {
     return ['createdAt', 'updatedAt', 'sessionExpiresAt', 'resetTokenExpiresAt', 'expiresAt'];
   }
 
+  static get jsonFields() {
+    return [];
+  }
+
   static applyDefaults(attributes = {}) {
     const defaults = typeof this.defaults === 'function' ? this.defaults() : this.defaults;
     const merged = {
@@ -240,6 +244,15 @@ export default class BaseModel {
 
     Object.entries(row).forEach(([column, value]) => {
       const property = this.getPropertyName(column);
+      if (this.jsonFields.includes(property) && typeof value === 'string') {
+        try {
+          document[property] = JSON.parse(value);
+        } catch (_) {
+          document[property] = value;
+        }
+        return;
+      }
+
       document[property] = value;
     });
 
@@ -259,7 +272,7 @@ export default class BaseModel {
       }
 
       const column = this.getColumnName(property);
-      row[column] = value;
+      row[column] = this.jsonFields.includes(property) ? JSON.stringify(value) : value;
     });
 
     return row;

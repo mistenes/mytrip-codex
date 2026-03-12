@@ -7,6 +7,8 @@ export default class FieldConfig extends BaseModel {
     order: 'sort_order',
   };
 
+  static jsonFields = ['options'];
+
   static defaults = {
     field: '',
     tripId: 'default',

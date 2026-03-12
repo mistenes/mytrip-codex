@@ -3,6 +3,8 @@ import BaseModel from '../db/BaseModel.js';
 export default class User extends BaseModel {
   static tableName = 'users';
 
+  static jsonFields = ['personalData'];
+
   static defaults = {
     firstName: '',
     lastName: '',
