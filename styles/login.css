@@ -211,3 +211,136 @@ html[data-theme='dark'] .signup-note {
   .login-box { padding: 2rem; }
   .login-box h1 { font-size: 2rem; }
 }
+
+/* --- 2026 UI Refresh Overrides --- */
+.login-container {
+  position: relative;
+  min-height: 100%;
+  padding: 2rem;
+  background-position: center;
+}
+
+.login-container::before {
+  background:
+    linear-gradient(115deg, rgba(9, 20, 31, 0.82) 0%, rgba(9, 20, 31, 0.58) 36%, rgba(9, 20, 31, 0.38) 100%),
+    linear-gradient(180deg, rgba(13, 122, 103, 0.12), rgba(222, 138, 62, 0.16));
+}
+
+.login-hero {
+  display: grid;
+  gap: 1.4rem;
+  max-width: 600px;
+}
+
+.login-hero h2 {
+  max-width: 12ch;
+  text-wrap: balance;
+}
+
+.login-hero-band {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.login-stat-card,
+.login-feature-item {
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(14px);
+}
+
+.login-stat-card {
+  display: grid;
+  gap: 0.2rem;
+  padding: 1rem;
+}
+
+.login-stat-card strong {
+  font-size: 1.6rem;
+  letter-spacing: -0.04em;
+}
+
+.login-stat-card span {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.82rem;
+}
+
+.login-feature-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.login-feature-item {
+  padding: 1rem 1.05rem;
+}
+
+.login-feature-item strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 1rem;
+}
+
+.login-feature-item span {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.login-box {
+  border-radius: 28px;
+  padding: 2.75rem;
+  background: rgba(255, 253, 250, 0.84);
+  box-shadow: 0 30px 70px rgba(8, 20, 31, 0.24);
+}
+
+html[data-theme='dark'] .login-box {
+  background: rgba(15, 29, 39, 0.88);
+}
+
+.login-box h1 {
+  font-family: var(--font-display);
+  color: var(--color-text-primary);
+}
+
+.login-box .form-group input {
+  border-radius: 14px;
+  padding: 0.95rem 1rem;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme='dark'] .login-box .form-group input {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.login-box .btn {
+  min-height: 52px;
+}
+
+.link-button {
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .login-container {
+    padding: 1.25rem;
+  }
+
+  .login-hero-band {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-hero {
+    max-width: none;
+  }
+
+  .login-hero h2 {
+    max-width: none;
+  }
+
+  .login-box {
+    padding: 2rem 1.4rem;
+    border-radius: 24px;
+  }
+}

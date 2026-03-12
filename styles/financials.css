@@ -296,3 +296,157 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* --- 2026 UI Refresh Overrides --- */
+.financials-page h3 {
+    font-size: 1.25rem;
+    letter-spacing: -0.03em;
+}
+
+.financials-hero {
+    align-items: stretch;
+    padding: 1.8rem;
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at top right, rgba(222, 138, 62, 0.12), transparent 24%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(247, 241, 232, 0.92));
+    border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border) 86%);
+    box-shadow: 0 24px 60px rgba(18, 35, 52, 0.1);
+}
+
+html[data-theme='dark'] .financials-hero {
+    background:
+        radial-gradient(circle at top right, rgba(240, 163, 92, 0.14), transparent 24%),
+        linear-gradient(135deg, rgba(20, 38, 50, 0.9), rgba(11, 23, 33, 0.98));
+}
+
+.financials-hero-cards {
+    align-content: start;
+}
+
+.summary-card,
+.add-record-form,
+.financial-table,
+.payment-activity-card {
+    border-radius: 24px;
+    box-shadow: 0 18px 40px rgba(18, 35, 52, 0.08);
+}
+
+.summary-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 253, 250, 1));
+}
+
+html[data-theme='dark'] .summary-card {
+    background: linear-gradient(180deg, rgba(18, 31, 42, 0.96), rgba(10, 21, 30, 0.96));
+}
+
+.summary-card h4 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.summary-card .balance {
+    letter-spacing: -0.04em;
+}
+
+.add-record-form {
+    background: color-mix(in srgb, var(--color-surface-secondary) 88%, white 12%);
+}
+
+.financial-table {
+    overflow: hidden;
+}
+
+.financial-table th {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.online-payment-panel {
+    align-items: start;
+}
+
+.online-payment-copy h3 {
+    margin: 0.45rem 0 0.65rem;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    letter-spacing: -0.04em;
+    font-family: var(--font-display);
+}
+
+.online-payment-highlights {
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 1.2rem;
+}
+
+.online-payment-highlights div {
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.68);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme='dark'] .online-payment-highlights div {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.online-payment-highlights strong {
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.online-payment-highlights span,
+.online-payment-note {
+    color: var(--color-text-secondary);
+}
+
+.online-payment-form {
+    padding: 1.2rem;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.76);
+}
+
+html[data-theme='dark'] .online-payment-form {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+.online-payment-note {
+    font-size: 0.9rem;
+}
+
+.provider-toggle {
+    background: color-mix(in srgb, var(--color-surface-secondary) 88%, white 12%);
+    border-color: color-mix(in srgb, var(--color-primary) 12%, var(--color-border) 88%);
+}
+
+.provider-toggle button.active {
+    box-shadow: 0 8px 18px rgba(18, 35, 52, 0.16);
+}
+
+.payment-activity-card {
+    padding: 1.1rem 1.2rem;
+}
+
+.payment-activity-card h4 {
+    font-size: 1.05rem;
+}
+
+.payment-activity-meta strong {
+    font-size: 1.1rem;
+    letter-spacing: -0.03em;
+}
+
+@media (max-width: 900px) {
+    .financials-hero {
+        padding: 1.35rem;
+    }
+
+    .online-payment-form {
+        padding: 1rem;
+    }
+}

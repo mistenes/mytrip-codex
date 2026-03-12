@@ -9,6 +9,68 @@ import "../styles/dashboard.css";
 import "../styles/user-management.css";
 import "../styles/financials.css";
 
+const ROLE_LABELS: Record<Role, string> = {
+    admin: 'Admin',
+    organizer: 'Szervező',
+    traveler: 'Utas',
+};
+
+const formatDisplayDate = (value: string) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return date.toLocaleDateString('hu-HU', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+    });
+};
+
+const getTripDurationDays = (trip: Trip) => {
+    const start = new Date(trip.startDate);
+    const end = new Date(trip.endDate);
+
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+        return 0;
+    }
+
+    return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+};
+
+const getTripStageMeta = (trip: Trip) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const start = new Date(trip.startDate);
+    const end = new Date(trip.endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+
+    if (end < today) {
+        return {
+            label: 'Lezárt út',
+            className: 'is-complete',
+            summary: 'Az út már lezárult, a dokumentáció és az elszámolás marad hátra.',
+        };
+    }
+
+    if (start > today) {
+        return {
+            label: 'Előkészítés alatt',
+            className: 'is-upcoming',
+            summary: 'Most a dokumentumok, befizetések és utasadatok összerendezése a fókusz.',
+        };
+    }
+
+    return {
+        label: 'Aktív szervezés',
+        className: 'is-live',
+        summary: 'Az út élő állapotban van, minden fontos információ itt frissül.',
+    };
+};
+
 const ThemeSwitcher = ({ theme, onThemeChange }: { theme: Theme, onThemeChange: (theme: Theme) => void }) => (
     <div className="theme-switcher">
         <button className={theme === 'light' ? 'active' : ''} onClick={() => onThemeChange('light')} aria-label="Világos téma">
@@ -35,10 +97,17 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
          )}
-         <h1 className="logo">myTrip</h1>
+         <div className="brand-lockup">
+            <span className="brand-kicker">Travel operations</span>
+            <h1 className="logo">myTrip</h1>
+         </div>
     </div>
     <div className="user-info">
-      <span>Üdv, <strong>{user.name}</strong> ({user.role})</span>
+      <div className="user-badge">
+        <span className="user-badge-label">Bejelentkezve</span>
+        <strong>{user.name}</strong>
+        <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
+      </div>
     </div>
   </header>
 );
@@ -753,31 +822,43 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
 };
 
 const TripCard = ({ trip, onSelectTrip }: { trip: Trip; onSelectTrip: () => void; }) => {
+    const stage = getTripStageMeta(trip);
+    const durationDays = getTripDurationDays(trip);
+
     return (
-        <div className="trip-card">
-            <div>
+        <article className="trip-card">
+            <div className="trip-card-shell">
+                <div className="trip-card-topline">
+                    <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
+                    <span className="trip-card-range">{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</span>
+                </div>
                 <h3>{trip.name}</h3>
-                <div className="trip-details">
-                    <div className="detail-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                        <span>{trip.startDate} - {trip.endDate}</span>
+                <p className="trip-card-summary">{stage.summary}</p>
+                <div className="trip-card-metrics">
+                    <div className="trip-card-metric">
+                        <span>Időtartam</span>
+                        <strong>{durationDays} nap</strong>
                     </div>
-                    <div className="detail-item">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                        <span><strong>Szervező:</strong> {trip.organizerNames?.join(', ') || 'Ismeretlen'}</span>
+                    <div className="trip-card-metric">
+                        <span>Szervezők</span>
+                        <strong>{trip.organizerNames?.length || 0}</strong>
                     </div>
-                    <div className="detail-item">
-                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                        <span><strong>Utazók:</strong> {trip.travelerIds.length}</span>
+                    <div className="trip-card-metric">
+                        <span>Résztvevők</span>
+                        <strong>{trip.travelerIds.length}</strong>
                     </div>
+                </div>
+                <div className="trip-card-foot">
+                    <span>Lead szervezők</span>
+                    <strong>{trip.organizerNames?.join(', ') || 'Nincs megadva'}</strong>
                 </div>
             </div>
             <div className="trip-card-actions">
                 <button onClick={onSelectTrip} className="btn btn-primary">
-                   Részletek
+                   Megnyitás
                 </button>
             </div>
-        </div>
+        </article>
     );
 };
 
@@ -856,27 +937,46 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
         return Array.from(merged.values());
     }, [trip.emergencyContacts, trip.organizerIds, users]);
 
-    const tiles: { key: TripView; label: string; className: string }[] = [
-        { key: 'itinerary', label: 'Útiterv', className: 'tile-itinerary' },
-        { key: 'documents', label: 'Dokumentumok', className: 'tile-documents' },
-        { key: 'messages', label: 'Üzenetek', className: 'tile-messages' },
-        { key: 'financials', label: 'Pénzügyek', className: 'tile-financials' },
-        { key: 'personalData', label: 'Személyes adatok', className: 'tile-personal' },
+    const stage = getTripStageMeta(trip);
+    const durationDays = getTripDurationDays(trip);
+    const summaryFocus = user.role === 'traveler'
+        ? 'Nézd át a dokumentumaidat, a saját befizetéseidet és az új üzeneteket.'
+        : 'Kövesd a befizetéseket, az utasadatokat és a nyitott dokumentumhiányokat.';
+
+    const tiles: { key: TripView; label: string; hint: string; className: string }[] = [
+        { key: 'itinerary', label: 'Útiterv', hint: 'programok és mozgások', className: 'tile-itinerary' },
+        { key: 'documents', label: 'Dokumentumok', hint: 'jegyek, pdf-ek, fájlok', className: 'tile-documents' },
+        { key: 'messages', label: 'Üzenetek', hint: 'kommunikáció és frissítések', className: 'tile-messages' },
+        { key: 'financials', label: 'Pénzügyek', hint: 'egyenleg és befizetések', className: 'tile-financials' },
+        { key: 'personalData', label: 'Személyes adatok', hint: 'útlevél és profiladatok', className: 'tile-personal' },
     ];
     if (user.role === 'admin' || (user.role === 'organizer' && trip.organizerIds.includes(String(user.id)))) {
-        tiles.push({ key: 'users', label: 'Utasok', className: 'tile-users' });
-        tiles.push({ key: 'settings', label: 'Beállítások', className: 'tile-settings' });
+        tiles.push({ key: 'users', label: 'Utasok', hint: 'résztvevők és szerepkörök', className: 'tile-users' });
+        tiles.push({ key: 'settings', label: 'Beállítások', hint: 'trip konfiguráció', className: 'tile-settings' });
     }
 
     return (
         <div className="trip-summary">
             <div className="trip-summary-hero">
                 <div className="trip-summary-copy">
-                    <span className="trip-summary-eyebrow">Trip command center</span>
+                    <div className="trip-summary-headline-row">
+                        <span className="trip-summary-eyebrow">Trip cockpit</span>
+                        <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
+                    </div>
                     <h2 className="trip-title">{trip.name}</h2>
                     <p className="trip-summary-subtitle">
-                        Egy helyen latod a dokumentumokat, uzeneteket, penzugyeket es a teendoket.
+                        Egyetlen munkafelületen látod az út állapotát, a fontos fájlokat, az üzeneteket és a pénzügyi mozgásokat.
                     </p>
+                    <div className="trip-summary-route">
+                        <div>
+                            <span>Időszak</span>
+                            <strong>{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</strong>
+                        </div>
+                        <div>
+                            <span>Következő fókusz</span>
+                            <strong>{stage.summary}</strong>
+                        </div>
+                    </div>
                 </div>
                 <div className="trip-summary-metrics">
                     <div className="trip-metric-card">
@@ -884,8 +984,8 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
                         <strong>{countdown}</strong>
                     </div>
                     <div className="trip-metric-card">
-                        <span className="trip-metric-label">Szervezok</span>
-                        <strong>{trip.organizerNames?.length || 0}</strong>
+                        <span className="trip-metric-label">Idotartam</span>
+                        <strong>{durationDays} nap</strong>
                     </div>
                     <div className="trip-metric-card">
                         <span className="trip-metric-label">Utasok</span>
@@ -901,26 +1001,30 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
                         onClick={() => onSelectView(t.key)}
                     >
                         <span>{t.label}</span>
-                        <small>Megnyitas</small>
+                        <small>{t.hint}</small>
                     </button>
                 ))}
             </div>
             <div className="trip-summary-side-grid">
                 <div className="trip-summary-panel">
-                    <h3>Utazasi attekintes</h3>
+                    <h3>Utazási áttekintés</h3>
                     <div className="trip-summary-facts">
                         <div>
-                            <span>Kezdes</span>
-                            <strong>{trip.startDate}</strong>
+                            <span>Kezdés</span>
+                            <strong>{formatDisplayDate(trip.startDate)}</strong>
                         </div>
                         <div>
-                            <span>Befejezes</span>
-                            <strong>{trip.endDate}</strong>
+                            <span>Befejezés</span>
+                            <strong>{formatDisplayDate(trip.endDate)}</strong>
                         </div>
                         <div>
-                            <span>Szervezok</span>
+                            <span>Szervezők</span>
                             <strong>{trip.organizerNames?.join(', ') || 'Nincs megadva'}</strong>
                         </div>
+                    </div>
+                    <div className="trip-summary-callout">
+                        <span>{user.role === 'traveler' ? 'Ajánlott következő lépés' : 'Működési fókusz'}</span>
+                        <strong>{summaryFocus}</strong>
                     </div>
                 </div>
                 <div className="emergency-contacts trip-summary-panel">
@@ -997,6 +1101,16 @@ const OnlinePaymentPanel = ({
                 <p>
                     Stripe vagy PayPal fizetes utan a rendszer automatikusan uj penzugyi tetelt hoz letre a sajat nevedre.
                 </p>
+                <div className="online-payment-highlights">
+                    <div>
+                        <strong>Automatikus könyvelés</strong>
+                        <span>A jóváírás közvetlenül bekerül a trip pénzügyei közé.</span>
+                    </div>
+                    <div>
+                        <strong>Biztonságos checkout</strong>
+                        <span>A fizetés a Stripe vagy a PayPal saját felületén fejeződik be.</span>
+                    </div>
+                </div>
             </div>
             <form className="online-payment-form" onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -1029,6 +1143,7 @@ const OnlinePaymentPanel = ({
                 <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                     {isSubmitting ? 'Atiranyitas...' : `${provider === 'stripe' ? 'Stripe' : 'PayPal'} fizetes inditasa`}
                 </button>
+                <p className="online-payment-note">A sikeres fizetés után a befizetés automatikusan jóváíródik ennél az útnál.</p>
             </form>
         </section>
     );
@@ -3413,7 +3528,7 @@ const Sidebar = ({
                            Utazásaid
                         </a>
                         {mainView === 'trips' && (
-                          <ul className="trip-list">
+                          <ul className="trip-nav-list">
                             {trips.map(trip => {
                               const tripNavItems: { key: TripView; label: string }[] = [
                                 { key: 'summary', label: 'Összegzés' },
@@ -3662,6 +3777,10 @@ const Dashboard = ({
       };
   }, [financialRecords, messages, paymentTransactions, user.id, user.role, visibleTrips]);
 
+  const featuredTrip = useMemo(() => {
+    return [...visibleTrips].sort((left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime())[0] || null;
+  }, [visibleTrips]);
+
   const handleSelectTrip = (tripId: string) => {
     setSelectedTripId(tripId);
     setActiveTripView('summary');
@@ -3751,43 +3870,58 @@ const Dashboard = ({
             )}
             <section className="dashboard-overview-hero">
                 <div className="dashboard-overview-copy">
-                    <span className="section-eyebrow">Operations overview</span>
-                    <h2>Utazasaid egyetlen attekintheto feluleten</h2>
+                    <span className="section-eyebrow">Travel operations board</span>
+                    <h2>Utak, utasok és befizetések végre egy nyugodt, profi felületen</h2>
                     <p>
-                        Gyors ralatast kapsz az aktiv utakra, a nyitott uzenetekre, az egyenlegre es az online fizetesekre.
+                        A napi szervezéshez kellő legfontosabb jeleket kapod meg először: mennyi út él, hol van nyitott kommunikáció, mi történt a befizetésekkel.
                     </p>
+                    <div className="dashboard-overview-actions">
+                        {user.role === 'admin' && (
+                            <button onClick={() => setModalOpen(true)} className="btn btn-primary">
+                                Új utazás
+                            </button>
+                        )}
+                        {(user.role === 'admin' || user.role === 'organizer') && (
+                            <button onClick={() => setInviteOpen(true)} className="btn btn-secondary">
+                                Meghívó küldése
+                            </button>
+                        )}
+                    </div>
                 </div>
-                <div className="dashboard-overview-stats">
-                    <div className="overview-stat-card">
-                        <span>Aktiv utak</span>
-                        <strong>{overviewMetrics.tripCount}</strong>
+                <div className="dashboard-overview-rail">
+                    <div className="dashboard-overview-stats">
+                        <div className="overview-stat-card">
+                            <span>Aktív utak</span>
+                            <strong>{overviewMetrics.tripCount}</strong>
+                        </div>
+                        <div className="overview-stat-card">
+                            <span>Olvasatlan üzenetek</span>
+                            <strong>{overviewMetrics.unreadMessages}</strong>
+                        </div>
+                        <div className="overview-stat-card">
+                            <span>Online fizetések</span>
+                            <strong>{overviewMetrics.onlinePaymentsCount}</strong>
+                        </div>
+                        <div className="overview-stat-card">
+                            <span>Egyenleg</span>
+                            <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
+                        </div>
                     </div>
-                    <div className="overview-stat-card">
-                        <span>Olvasatlan uzenetek</span>
-                        <strong>{overviewMetrics.unreadMessages}</strong>
-                    </div>
-                    <div className="overview-stat-card">
-                        <span>Online fizetesek</span>
-                        <strong>{overviewMetrics.onlinePaymentsCount}</strong>
-                    </div>
-                    <div className="overview-stat-card">
-                        <span>Egyenleg</span>
-                        <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
+                    <div className="dashboard-overview-note">
+                        <span className="dashboard-overview-note-label">Kiemelt út</span>
+                        <strong>{featuredTrip ? featuredTrip.name : 'Még nincs kiválasztható út'}</strong>
+                        <p>
+                            {featuredTrip
+                                ? `${formatDisplayDate(featuredTrip.startDate)} - ${formatDisplayDate(featuredTrip.endDate)} · ${getTripStageMeta(featuredTrip).summary}`
+                                : 'Amint lesz aktív vagy közelgő út, itt jelenik meg a legfontosabb fókusz.'}
+                        </p>
                     </div>
                 </div>
             </section>
             <div className="dashboard-header">
-                <h2>Utazásaid</h2>
-                <div className="header-actions">
-                {user.role === 'admin' && (
-                <button onClick={() => setModalOpen(true)} className="btn btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    <span>Új utazás létrehozása</span>
-                </button>
-                )}
-                {(user.role === 'admin' || user.role === 'organizer') && (
-                <button onClick={() => setInviteOpen(true)} className="btn btn-secondary">Meghívó küldése</button>
-                )}
+                <div>
+                    <h2>Aktív utak</h2>
+                    <p className="dashboard-header-intro">Válassz egy utat, és onnan nyisd meg az útitervet, dokumentumokat, pénzügyeket vagy a traveler adatokat.</p>
                 </div>
             </div>
             <div className="trip-list">
