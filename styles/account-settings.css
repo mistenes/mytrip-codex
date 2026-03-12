@@ -1,24 +1,245 @@
-.account-settings {
-  padding: 1rem;
+.settings-shell {
+  display: grid;
+  gap: 1.5rem;
 }
 
-.change-password-form {
-  max-width: 400px;
+.settings-hero,
+.settings-panel {
+  border-radius: 26px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border) 88%);
+  box-shadow: 0 24px 54px rgba(18, 35, 52, 0.08);
+}
+
+.settings-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 1.25rem;
+  padding: 1.55rem;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(247, 241, 232, 0.96)),
+    var(--color-surface);
+}
+
+html[data-theme='dark'] .settings-hero {
+  background:
+    linear-gradient(135deg, rgba(20, 38, 50, 0.9), rgba(10, 21, 30, 0.98)),
+    var(--color-surface);
+}
+
+.settings-kicker,
+.settings-panel-kicker {
+  display: inline-flex;
+  align-items: center;
+  margin-bottom: 0.45rem;
+  color: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-hero h2,
+.settings-panel h3 {
+  margin: 0;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+
+.settings-hero h2 {
+  font-size: clamp(1.8rem, 2.9vw, 2.75rem);
+}
+
+.settings-hero p,
+.settings-panel-head p {
+  margin: 0.55rem 0 0;
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}
+
+.settings-hero-card {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  padding: 1rem 1.1rem;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+html[data-theme='dark'] .settings-hero-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.settings-hero-card span {
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.settings-panel {
+  padding: 1.4rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 253, 250, 1));
+}
+
+html[data-theme='dark'] .settings-panel {
+  background: linear-gradient(180deg, rgba(18, 31, 42, 0.96), rgba(10, 21, 30, 0.96));
+}
+
+.settings-panel-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+
+.account-settings .change-password-form {
+  max-width: 520px;
+  display: grid;
+  gap: 1rem;
 }
 
 .change-password-form .form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
+  display: grid;
+  gap: 0.45rem;
 }
 
-.change-password-form .success-message {
+.change-password-form label,
+.site-settings label {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.change-password-form input,
+.site-settings input,
+.site-settings select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text-primary);
+}
+
+html[data-theme='dark'] .change-password-form input,
+html[data-theme='dark'] .site-settings input,
+html[data-theme='dark'] .site-settings select {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.change-password-form .btn,
+.settings-panel .btn {
+  min-height: 50px;
+}
+
+.change-password-form .success-message,
+.settings-panel .success-message {
   color: var(--color-positive);
   background-color: rgba(40, 167, 69, 0.1);
   border: 1px solid rgba(40, 167, 69, 0.2);
-  border-radius: 8px;
-  padding: 0.75rem;
-  font-size: 0.9rem;
-  text-align: center;
-  margin-top: -0.5rem;
+  border-radius: 14px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.92rem;
+}
+
+.change-password-form .error-message,
+.settings-panel .error-message {
+  margin: 0;
+  color: var(--color-negative);
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.2);
+  border-radius: 14px;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.92rem;
+}
+
+.brand-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.brand-card {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem;
+  border-radius: 22px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-surface-secondary) 86%, white 14%);
+}
+
+html[data-theme='dark'] .brand-card {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.brand-card-wide {
+  grid-column: 1 / -1;
+}
+
+.brand-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  border-radius: 18px;
+  border: 1px dashed color-mix(in srgb, var(--color-primary) 20%, var(--color-border) 80%);
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+html[data-theme='dark'] .brand-placeholder {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.site-settings .logo-preview {
+  width: 100%;
+  max-width: none;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 900px) {
+  .settings-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .brand-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .settings-shell {
+    gap: 1rem;
+  }
+
+  .settings-hero,
+  .settings-panel {
+    border-radius: 22px;
+    padding: 1.15rem;
+  }
+
+  .settings-panel-head {
+    flex-direction: column;
+  }
+
+  .change-password-form,
+  .settings-panel .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-hero,
+  .settings-panel {
+    padding: 1rem;
+  }
 }

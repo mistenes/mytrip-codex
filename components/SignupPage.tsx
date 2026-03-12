@@ -58,8 +58,14 @@ const SignupPage = () => {
 
   return (
     <div className="login-container">
-      <div className="login-box">
-        <h1>Sign Up</h1>
+      <div className="auth-side-panel">
+        <span className="auth-kicker">Invite acceptance</span>
+        <h2>Set up your traveler account with clean passport-ready details.</h2>
+        <p>Use the English spelling from your passport so documents, manifests, and bookings stay consistent from day one.</p>
+      </div>
+      <div className="login-box auth-box">
+        <span className="auth-kicker">Create access</span>
+        <h1>Sign up</h1>
         <p className="signup-note">
           Please use the English spelling from your passport (no accents) and avoid using dots in your username.
         </p>
@@ -99,4 +105,3 @@ const SignupPage = () => {
 
 
 export default SignupPage;
-

@@ -13,7 +13,7 @@ const ChangePasswordPage = ({ user, onSuccess }: { user: User; onSuccess: () => 
     e.preventDefault();
     setError('');
     if (newPassword !== verifyPassword) {
-      setError('A jelszavak nem egyeznek.');
+      setError('Passwords do not match.');
       return;
     }
     try {
@@ -23,35 +23,41 @@ const ChangePasswordPage = ({ user, onSuccess }: { user: User; onSuccess: () => 
         body: JSON.stringify({ oldPassword: currentPassword, newPassword })
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ message: 'Hiba történt' }));
-        setError(data.message || 'Hiba történt');
+        const data = await res.json().catch(() => ({ message: 'Something went wrong.' }));
+        setError(data.message || 'Something went wrong.');
       } else {
         onSuccess();
       }
     } catch {
-      setError('Hiba történt');
+      setError('Something went wrong.');
     }
   };
 
   return (
     <div className="login-container">
-      <div className="login-box">
-        <h1>Jelszócsere szükséges</h1>
+      <div className="auth-side-panel">
+        <span className="auth-kicker">Security step</span>
+        <h2>Update your password before entering the workspace.</h2>
+        <p>This keeps the shared travel operations environment secure for every organizer and traveler.</p>
+      </div>
+      <div className="login-box auth-box">
+        <span className="auth-kicker">Required action</span>
+        <h1>Password change required</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="currentPassword">Jelenlegi jelszó</label>
+            <label htmlFor="currentPassword">Current password</label>
             <input id="currentPassword" type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label htmlFor="newPassword">Új jelszó</label>
+            <label htmlFor="newPassword">New password</label>
             <input id="newPassword" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label htmlFor="verifyPassword">Új jelszó ismét</label>
+            <label htmlFor="verifyPassword">Confirm new password</label>
             <input id="verifyPassword" type="password" value={verifyPassword} onChange={e => setVerifyPassword(e.target.value)} required />
           </div>
           {error && <p className="error-message">{error}</p>}
-          <button type="submit" className="btn btn-primary">Mentés</button>
+          <button type="submit" className="btn btn-primary">Save password</button>
         </form>
       </div>
     </div>

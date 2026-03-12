@@ -11,10 +11,16 @@ const ResetPasswordConfirmPage = () => {
 
   return (
     <div className="login-container">
-      <div className="login-box">
-        <h1>Jelszó frissítve</h1>
-        <p>Átirányítás a bejelentkezéshez...</p>
-        <button className="btn btn-primary" onClick={() => (window.location.href = "/")}>Bejelentkezés</button>
+      <div className="auth-side-panel">
+        <span className="auth-kicker">Password updated</span>
+        <h2>Your access has been secured again.</h2>
+        <p>We are redirecting you to sign in so you can continue where you left off.</p>
+      </div>
+      <div className="login-box auth-box">
+        <span className="auth-kicker">Success</span>
+        <h1>Password updated</h1>
+        <p>Redirecting to sign in...</p>
+        <button className="btn btn-primary" onClick={() => (window.location.href = "/")}>Sign in</button>
       </div>
     </div>
   );

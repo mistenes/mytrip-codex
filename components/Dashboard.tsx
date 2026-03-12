@@ -11,8 +11,15 @@ import "../styles/financials.css";
 
 const ROLE_LABELS: Record<Role, string> = {
     admin: 'Admin',
-    organizer: 'Szervező',
-    traveler: 'Utas',
+    organizer: 'Organizer',
+    traveler: 'Traveler',
+};
+
+type MainView = 'trips' | 'users' | 'files' | 'account' | 'site';
+
+type NavItem = {
+    key: MainView;
+    label: string;
 };
 
 const formatDisplayDate = (value: string) => {
@@ -21,7 +28,7 @@ const formatDisplayDate = (value: string) => {
         return value;
     }
 
-    return date.toLocaleDateString('hu-HU', {
+    return date.toLocaleDateString('en-GB', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',
@@ -50,36 +57,130 @@ const getTripStageMeta = (trip: Trip) => {
 
     if (end < today) {
         return {
-            label: 'Lezárt út',
+            label: 'Completed',
             className: 'is-complete',
-            summary: 'Az út már lezárult, a dokumentáció és az elszámolás marad hátra.',
+            summary: 'The trip has wrapped. Final documentation and reconciliation are the remaining priorities.',
         };
     }
 
     if (start > today) {
         return {
-            label: 'Előkészítés alatt',
+            label: 'Preparing',
             className: 'is-upcoming',
-            summary: 'Most a dokumentumok, befizetések és utasadatok összerendezése a fókusz.',
+            summary: 'Focus on collecting documents, payments, and traveler data before departure.',
         };
     }
 
     return {
-        label: 'Aktív szervezés',
+        label: 'Live',
         className: 'is-live',
-        summary: 'Az út élő állapotban van, minden fontos információ itt frissül.',
+        summary: 'The trip is active. Keep communications, files, and on-trip operations aligned here.',
     };
 };
 
+const useMediaQuery = (query: string) => {
+    const getMatches = () => {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+        return window.matchMedia(query).matches;
+    };
+
+    const [matches, setMatches] = useState(getMatches);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') {
+            return undefined;
+        }
+
+        const mediaQuery = window.matchMedia(query);
+        const listener = () => setMatches(mediaQuery.matches);
+        listener();
+        mediaQuery.addEventListener('change', listener);
+        return () => mediaQuery.removeEventListener('change', listener);
+    }, [query]);
+
+    return matches;
+};
+
+const getTripNavItems = (trip: Trip, userRole: Role, userId: string) => {
+    const tripNavItems: { key: TripView; label: string }[] = [
+        { key: 'summary', label: 'Overview' },
+        { key: 'itinerary', label: 'Itinerary' },
+        { key: 'financials', label: 'Finance' },
+        { key: 'personalData', label: 'Personal data' },
+        { key: 'documents', label: 'Documents' },
+        { key: 'messages', label: 'Messages' },
+    ];
+
+    if (userRole === 'admin' || (userRole === 'organizer' && trip.organizerIds.includes(userId))) {
+        tripNavItems.push({ key: 'contact', label: 'Emergency contact' });
+        tripNavItems.push({ key: 'users', label: 'Participants' });
+        tripNavItems.push({ key: 'settings', label: 'Settings' });
+    }
+
+    return tripNavItems;
+};
+
+const getPrimaryMobileNavItems = (role: Role): Array<{ key: string; label: string }> => {
+    if (role === 'traveler') {
+        return [
+            { key: 'home', label: 'Home' },
+            { key: 'trips', label: 'Trips' },
+            { key: 'messages', label: 'Messages' },
+            { key: 'account', label: 'Account' },
+            { key: 'more', label: 'More' },
+        ];
+    }
+
+    return [
+        { key: 'home', label: 'Home' },
+        { key: 'trips', label: 'Trips' },
+        { key: 'files', label: 'Files' },
+        { key: 'account', label: 'Account' },
+        { key: 'more', label: 'More' },
+    ];
+};
+
+const SectionIntro = ({
+    eyebrow,
+    title,
+    description,
+    actions,
+    meta,
+    className = '',
+}: {
+    eyebrow?: string;
+    title: string;
+    description?: string;
+    actions?: React.ReactNode;
+    meta?: React.ReactNode;
+    className?: string;
+}) => (
+    <section className={`section-intro-card ${className}`.trim()}>
+        <div className="section-intro-copy">
+            {eyebrow && <span className="section-eyebrow">{eyebrow}</span>}
+            <h2>{title}</h2>
+            {description && <p>{description}</p>}
+        </div>
+        {(actions || meta) && (
+            <div className="section-intro-side">
+                {meta && <div className="section-intro-meta">{meta}</div>}
+                {actions && <div className="section-intro-actions">{actions}</div>}
+            </div>
+        )}
+    </section>
+);
+
 const ThemeSwitcher = ({ theme, onThemeChange }: { theme: Theme, onThemeChange: (theme: Theme) => void }) => (
     <div className="theme-switcher">
-        <button className={theme === 'light' ? 'active' : ''} onClick={() => onThemeChange('light')} aria-label="Világos téma">
+        <button className={theme === 'light' ? 'active' : ''} onClick={() => onThemeChange('light')} aria-label="Light theme">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
         </button>
-        <button className={theme === 'dark' ? 'active' : ''} onClick={() => onThemeChange('dark')} aria-label="Sötét téma">
+        <button className={theme === 'dark' ? 'active' : ''} onClick={() => onThemeChange('dark')} aria-label="Dark theme">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         </button>
-        <button className={theme === 'auto' ? 'active' : ''} onClick={() => onThemeChange('auto')} aria-label="Rendszerbeállítás">
+        <button className={theme === 'auto' ? 'active' : ''} onClick={() => onThemeChange('auto')} aria-label="System theme">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
         </button>
     </div>
@@ -93,7 +194,7 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
   <header className="app-header">
     <div className="header-left">
          {showHamburger && (
-            <button className="hamburger-menu" onClick={onToggleSidebar} aria-label="Menü megnyitása">
+            <button className="hamburger-menu" onClick={onToggleSidebar} aria-label="Open navigation">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
          )}
@@ -104,7 +205,7 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
     </div>
     <div className="user-info">
       <div className="user-badge">
-        <span className="user-badge-label">Bejelentkezve</span>
+        <span className="user-badge-label">Signed in</span>
         <strong>{user.name}</strong>
         <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
       </div>
@@ -140,7 +241,7 @@ const CreateTripModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !startDate || !endDate || !organizerId) {
-      alert('Kérjük, töltsön ki minden mezőt.');
+      alert('Please complete every required field.');
       return;
     }
     const tripRes = await fetch(`${API_BASE}/api/trips`, {
@@ -167,32 +268,32 @@ const CreateTripModal = ({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <h2>Új utazás létrehozása</h2>
+        <h2>Create trip</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="tripName">Utazás neve</label>
+            <label htmlFor="tripName">Trip name</label>
             <input id="tripName" type="text" value={name} onChange={e => setName(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label htmlFor="startDate">Kezdés dátuma</label>
+            <label htmlFor="startDate">Start date</label>
             <input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label htmlFor="endDate">Befejezés dátuma</label>
+            <label htmlFor="endDate">End date</label>
             <input id="endDate" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label htmlFor="organizer">Szervező</label>
+            <label htmlFor="organizer">Lead organizer</label>
             <select id="organizer" value={organizerId} onChange={e => setOrganizerId(e.target.value)} required>
-              <option value="">Válasszon szervezőt</option>
+              <option value="">Choose an organizer</option>
               {organizers.map(o => (
                 <option key={o._id} value={o._id}>{o.name}</option>
               ))}
             </select>
           </div>
           <div className="modal-actions">
-            <button type="button" onClick={onClose} className="btn btn-secondary">Mégse</button>
-            <button type="submit" className="btn btn-primary">Létrehozás</button>
+            <button type="button" onClick={onClose} className="btn btn-secondary">Cancel</button>
+            <button type="submit" className="btn btn-primary">Create trip</button>
           </div>
         </form>
       </div>
@@ -261,22 +362,26 @@ const TripUserManagement = ({ trip, users, currentUser, onChange }: { trip: Trip
   };
 
   const revokeInvite = async (id: string) => {
-    if (!window.confirm('Biztosan visszavonja a meghívót?')) return;
+    if (!window.confirm('Revoke this invite?')) return;
     await fetch(`${API_BASE}/api/invitations/${id}`, { method: 'DELETE' });
     loadInvites();
   };
 
   return (
     <div className="trip-user-management">
-      <h2>Utasok: {trip.name}</h2>
+      <SectionIntro
+        eyebrow="Trip roster"
+        title={`Participants: ${trip.name}`}
+        description="Manage organizers, travelers, and pending invitations for this trip."
+      />
       <div className="trip-users-section">
-        <h3>Szervezők</h3>
+        <h3>Organizers</h3>
         <ul>
           {organizers.map(o => (
             <li key={o.id}>
               {o.name}
               {canManageOrganizers && o.id !== currentUser.id && organizers.length > 1 && (
-                <button className="btn btn-danger btn-small" onClick={() => removeOrganizer(o.id)}>Eltávolítás</button>
+                <button className="btn btn-danger btn-small" onClick={() => removeOrganizer(o.id)}>Remove</button>
               )}
             </li>
           ))}
@@ -284,21 +389,21 @@ const TripUserManagement = ({ trip, users, currentUser, onChange }: { trip: Trip
         {canManageOrganizers && (
           <div className="assign-row">
             <select value={newOrganizer} onChange={e => setNewOrganizer(e.target.value)}>
-              <option value="">Szervező hozzáadása</option>
+              <option value="">Add organizer</option>
               {availableOrganizers.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
             </select>
-            <button className="btn btn-secondary btn-small" onClick={addOrganizer}>Hozzáadás</button>
+            <button className="btn btn-secondary btn-small" onClick={addOrganizer}>Assign</button>
           </div>
         )}
       </div>
       <div className="trip-users-section">
-        <h3>Utazók</h3>
+        <h3>Travelers</h3>
         <ul>
           {travelers.map(t => (
             <li key={t.id}>
               {t.name}
               {canManageTravelers && (
-                <button className="btn btn-danger btn-small" onClick={() => removeTraveler(t.id)}>Eltávolítás</button>
+                <button className="btn btn-danger btn-small" onClick={() => removeTraveler(t.id)}>Remove</button>
               )}
             </li>
           ))}
@@ -307,38 +412,60 @@ const TripUserManagement = ({ trip, users, currentUser, onChange }: { trip: Trip
           <>
             <div className="assign-row">
               <select value={newTraveler} onChange={e => setNewTraveler(e.target.value)}>
-                <option value="">Utazó hozzáadása</option>
+                <option value="">Add traveler</option>
                 {availableTravelers.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
-              <button className="btn btn-secondary btn-small" onClick={addTraveler}>Hozzáadás</button>
+              <button className="btn btn-secondary btn-small" onClick={addTraveler}>Assign</button>
             </div>
             <div className="assign-row">
-              <button className="btn btn-secondary btn-small" onClick={() => setInviteOpen(true)}>Meghívó küldése</button>
+              <button className="btn btn-secondary btn-small" onClick={() => setInviteOpen(true)}>Send invite</button>
             </div>
             {invites.length > 0 && (
-              <table className="user-table">
-                <thead>
-                  <tr><th>Név</th><th>E-mail</th><th>Lejárat</th><th>Állapot</th><th></th></tr>
-                </thead>
-                <tbody>
-                  {invites.map(inv => (
-                    <tr key={inv._id}>
-                      <td>{inv.firstName} {inv.lastName}</td>
-                      <td>{inv.email}</td>
-                      <td>{new Date(inv.expiresAt).toLocaleDateString()}</td>
-                      <td>{inv.used ? 'Regisztrált' : 'Várakozik'}</td>
-                      <td className="invite-actions">
-                        {!inv.used && (
-                          <>
-                            <button className="btn btn-secondary btn-small" onClick={() => resendInvite(inv._id)}>Újraküldés</button>
-                            <button className="btn btn-danger btn-small" onClick={() => revokeInvite(inv._id)}>Visszavonás</button>
-                          </>
-                        )}
-                      </td>
-                    </tr>
+              <div className="responsive-table-group">
+                <table className="user-table desktop-table">
+                  <thead>
+                    <tr><th>Name</th><th>Email</th><th>Expires</th><th>Status</th><th></th></tr>
+                  </thead>
+                  <tbody>
+                    {invites.map(inv => (
+                      <tr key={inv._id}>
+                        <td>{inv.firstName} {inv.lastName}</td>
+                        <td>{inv.email}</td>
+                        <td>{new Date(inv.expiresAt).toLocaleDateString('en-GB')}</td>
+                        <td>{inv.used ? 'Registered' : 'Pending'}</td>
+                        <td className="invite-actions">
+                          {!inv.used && (
+                            <>
+                              <button className="btn btn-secondary btn-small" onClick={() => resendInvite(inv._id)}>Resend</button>
+                              <button className="btn btn-danger btn-small" onClick={() => revokeInvite(inv._id)}>Revoke</button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="mobile-record-list">
+                  {invites.map((inv: any) => (
+                    <article key={inv._id} className="mobile-record-card">
+                      <div className="mobile-record-head">
+                        <strong>{inv.firstName} {inv.lastName}</strong>
+                        <span>{inv.used ? 'Registered' : 'Pending'}</span>
+                      </div>
+                      <div className="mobile-record-meta">
+                        <span>{inv.email}</span>
+                        <span>Expires {new Date(inv.expiresAt).toLocaleDateString('en-GB')}</span>
+                      </div>
+                      {!inv.used && (
+                        <div className="mobile-record-actions">
+                          <button className="btn btn-secondary btn-small" onClick={() => resendInvite(inv._id)}>Resend</button>
+                          <button className="btn btn-danger btn-small" onClick={() => revokeInvite(inv._id)}>Revoke</button>
+                        </div>
+                      )}
+                    </article>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
             )}
             <InviteUserModal
               isOpen={isInviteOpen}
@@ -368,7 +495,7 @@ const TripSettings = ({ trip, user, onDeleted, onUpdated }: { trip: Trip; user: 
   }, [trip.name, trip.startDate, trip.endDate]);
 
   if (!canManage) {
-    return <p>Nincs jogosultsága a beállításokhoz.</p>;
+    return <p>You do not have access to this settings area.</p>;
   }
 
   const handleSave = async () => {
@@ -381,30 +508,34 @@ const TripSettings = ({ trip, user, onDeleted, onUpdated }: { trip: Trip; user: 
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Biztosan törli az utazást?')) return;
-    if (!window.confirm('A művelet nem vonható vissza. Folytatja?')) return;
+    if (!window.confirm('Delete this trip?')) return;
+    if (!window.confirm('This action cannot be undone. Continue?')) return;
     await fetch(`${API_BASE}/api/trips/${trip.id}`, { method: 'DELETE' });
     onDeleted();
   };
 
   return (
     <div className="trip-settings">
-      <h2>Beállítások: {name}</h2>
+      <SectionIntro
+        eyebrow="Trip settings"
+        title={name}
+        description="Update the core trip details and manage destructive actions from one place."
+      />
       <div className="form-group">
-        <label htmlFor="tripName">Utazás neve</label>
+        <label htmlFor="tripName">Trip name</label>
         <input id="tripName" type="text" value={name} onChange={e => setName(e.target.value)} />
       </div>
       <div className="form-group">
-        <label htmlFor="startDate">Kezdés dátuma</label>
+        <label htmlFor="startDate">Start date</label>
         <input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
       </div>
       <div className="form-group">
-        <label htmlFor="endDate">Befejezés dátuma</label>
+        <label htmlFor="endDate">End date</label>
         <input id="endDate" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
       </div>
       <div className="settings-actions">
-        <button className="btn btn-primary" onClick={handleSave}>Mentés</button>
-        <button className="btn btn-danger" onClick={handleDelete}>Utazás törlése</button>
+        <button className="btn btn-primary" onClick={handleSave}>Save changes</button>
+        <button className="btn btn-danger" onClick={handleDelete}>Delete trip</button>
       </div>
     </div>
   );
@@ -438,12 +569,12 @@ const TripContactInfo = ({ user, onSaved }: { user: User; onSaved: () => void })
   const handleSave = async () => {
     if (!user.token) {
       setStatus('error');
-      setStatusMessage('Nincs jogosultság a mentéshez.');
+      setStatusMessage('You do not have permission to update this contact card.');
       return;
     }
     clearStatusTimer();
     setStatus('saving');
-    setStatusMessage('Mentés folyamatban…');
+    setStatusMessage('Saving changes...');
     try {
       const res = await fetch(`${API_BASE}/api/users/${user.id}/contact`, {
         method: 'PUT',
@@ -457,7 +588,7 @@ const TripContactInfo = ({ user, onSaved }: { user: User; onSaved: () => void })
         throw new Error('save_failed');
       }
       setStatus('success');
-      setStatusMessage('Kapcsolattartó adatai mentve.');
+      setStatusMessage('Emergency contact profile updated.');
       onSaved();
       statusTimerRef.current = window.setTimeout(() => {
         setStatus('idle');
@@ -466,25 +597,29 @@ const TripContactInfo = ({ user, onSaved }: { user: User; onSaved: () => void })
       }, 4000);
     } catch (err) {
       setStatus('error');
-      setStatusMessage('Nem sikerült menteni. Kérjük, próbálja meg újra.');
+      setStatusMessage('Saving failed. Please try again.');
     }
   };
 
   return (
     <div className="contact-info-form">
-      <h2>Kapcsolattartó adatai</h2>
+      <SectionIntro
+        eyebrow="Emergency profile"
+        title="Emergency contact details"
+        description="Control how your organizer profile appears inside the emergency contact panel for this trip."
+      />
       <div className="form-group">
-        <label htmlFor="contactTitle">Titulus / megnevezés</label>
+        <label htmlFor="contactTitle">Role / title</label>
         <input
           id="contactTitle"
           type="text"
           value={contactTitle}
           onChange={e => setContactTitle(e.target.value)}
-          placeholder="Pl. Főszervező"
+          placeholder="Example: Lead organizer"
         />
       </div>
       <div className="form-group">
-        <label htmlFor="contactPhone">Telefonszám</label>
+        <label htmlFor="contactPhone">Phone number</label>
         <input id="contactPhone" type="text" value={contactPhone} onChange={e => setContactPhone(e.target.value)} />
       </div>
       <div className="form-group">
@@ -498,13 +633,13 @@ const TripContactInfo = ({ user, onSaved }: { user: User; onSaved: () => void })
             checked={contactShowEmergency}
             onChange={e => setContactShowEmergency(e.target.checked)}
           />
-          <span>Megjelenjen a vészhelyzeti kapcsolattartók között</span>
+          <span>Show this profile in the emergency contacts block</span>
         </label>
-        <p className="form-hint">Az Összegzés oldalon látható vészhelyzeti blokkban jelenik meg.</p>
+        <p className="form-hint">This appears in the trip overview emergency panel for participants.</p>
       </div>
       <div className="settings-actions">
         <button className="btn btn-primary" onClick={handleSave} disabled={status === 'saving'}>
-          {status === 'saving' ? 'Mentés folyamatban…' : 'Mentés'}
+          {status === 'saving' ? 'Saving...' : 'Save profile'}
         </button>
       </div>
       {status !== 'idle' && (
@@ -567,14 +702,14 @@ const InviteUserModal = ({
       body: JSON.stringify({ email, firstName, lastName, role: isOrganizer ? 'traveler' : role, tripId: tripId || undefined })
     });
     if (res.status === 409) {
-      alert('Ehhez az e-mailhez már van meghívó. Küldje újra a Felhasználók oldalon.');
+      alert('There is already an invite for this email address. Resend it from the People area.');
       return;
     }
     if (!res.ok) {
-      alert('Hiba történt a meghívó küldésekor.');
+      alert('Unable to send the invite.');
       return;
     }
-    alert('Meghívó elküldve');
+    alert('Invite sent.');
     onSent();
     loadInvites();
     onClose();
@@ -588,63 +723,80 @@ const InviteUserModal = ({
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <h2>Meghívó küldése</h2>
-        <p className="modal-note">Kérjük, a nevet csak angol (ékezet nélküli) betűkkel add meg.</p>
+        <h2>Send invite</h2>
+        <p className="modal-note">Use passport-style English spelling for names and keep the invite details clean and complete.</p>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="inviteFirstName">Keresztnév</label>
+            <label htmlFor="inviteFirstName">First name</label>
             <input id="inviteFirstName" type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label htmlFor="inviteLastName">Vezetéknév</label>
+            <label htmlFor="inviteLastName">Last name</label>
             <input id="inviteLastName" type="text" value={lastName} onChange={e => setLastName(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label htmlFor="inviteEmail">E-mail</label>
+            <label htmlFor="inviteEmail">Email</label>
             <input id="inviteEmail" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
           </div>
           {!isOrganizer && (
             <div className="form-group">
-              <label htmlFor="inviteRole">Szerep</label>
+              <label htmlFor="inviteRole">Role</label>
               <select id="inviteRole" value={role} onChange={e => setRole(e.target.value as Role)}>
-                <option value="organizer">Szervező</option>
-                <option value="traveler">Utazó</option>
+                <option value="organizer">Organizer</option>
+                <option value="traveler">Traveler</option>
               </select>
             </div>
           )}
           {!fixedTripId && (
             <div className="form-group">
-              <label htmlFor="inviteTrip">Utazás{isOrganizer ? '' : ' (opcionális)'}</label>
+              <label htmlFor="inviteTrip">Trip{isOrganizer ? '' : ' (optional)'}</label>
               <select id="inviteTrip" value={tripId} onChange={e => setTripId(e.target.value)} required={isOrganizer}>
-                {!isOrganizer && <option value="">Nincs</option>}
+                {!isOrganizer && <option value="">No trip yet</option>}
                 {availableTrips.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             </div>
           )}
           <div className="modal-actions">
-            <button type="button" onClick={onClose} className="btn btn-secondary">Mégse</button>
-            <button type="submit" className="btn btn-primary">Meghívás</button>
+            <button type="button" onClick={onClose} className="btn btn-secondary">Cancel</button>
+            <button type="submit" className="btn btn-primary">Send invite</button>
           </div>
         </form>
         {invites.length > 0 && (
           <div className="pending-invites">
-            <h3>Függő meghívók</h3>
-            <table className="user-table">
-              <thead>
-                <tr><th>Név</th><th>E-mail</th><th>Szerep</th><th>Utazás</th><th>Lejárat</th></tr>
-              </thead>
-              <tbody>
+            <h3>Pending invites</h3>
+            <div className="responsive-table-group">
+              <table className="user-table desktop-table">
+                <thead>
+                  <tr><th>Name</th><th>Email</th><th>Role</th><th>Trip</th><th>Expires</th></tr>
+                </thead>
+                <tbody>
+                  {invites.map((inv: any) => (
+                    <tr key={inv._id}>
+                      <td>{inv.firstName} {inv.lastName}</td>
+                      <td>{inv.email}</td>
+                      <td>{ROLE_LABELS[inv.role as Role] || inv.role}</td>
+                      <td>{availableTrips.find(t => t.id === inv.tripId)?.name || '-'}</td>
+                      <td>{new Date(inv.expiresAt).toLocaleDateString('en-GB')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="mobile-record-list">
                 {invites.map((inv: any) => (
-                  <tr key={inv._id}>
-                    <td>{inv.firstName} {inv.lastName}</td>
-                    <td>{inv.email}</td>
-                    <td>{inv.role}</td>
-                    <td>{availableTrips.find(t => t.id === inv.tripId)?.name || '-'}</td>
-                    <td>{new Date(inv.expiresAt).toLocaleDateString()}</td>
-                  </tr>
+                  <article key={inv._id} className="mobile-record-card">
+                    <div className="mobile-record-head">
+                      <strong>{inv.firstName} {inv.lastName}</strong>
+                      <span>{ROLE_LABELS[inv.role as Role] || inv.role}</span>
+                    </div>
+                    <div className="mobile-record-meta">
+                      <span>{inv.email}</span>
+                      <span>{availableTrips.find(t => t.id === inv.tripId)?.name || 'No trip'}</span>
+                      <span>Expires {new Date(inv.expiresAt).toLocaleDateString('en-GB')}</span>
+                    </div>
+                  </article>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -671,7 +823,7 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
   };
 
   const handleDeleteInvite = async (id: string) => {
-    if (!window.confirm('Biztosan törli a meghívót?')) return;
+    if (!window.confirm('Delete this invite?')) return;
     await fetch(`${API_BASE}/api/invitations/${id}`, { method: 'DELETE' });
     loadInvites();
   };
@@ -703,7 +855,7 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
 
   const handlePromoteToOrganizer = async () => {
     if (!selectedUser) return;
-    if (!window.confirm('Biztosan szervezővé teszi ezt a felhasználót?')) return;
+    if (!window.confirm('Promote this user to organizer?')) return;
     await fetch(`${API_BASE}/api/users/${selectedUser._id}/role`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -715,7 +867,7 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
 
   const handleDeleteUser = async () => {
     if (!selectedUser) return;
-    if (!window.confirm('Biztosan törli a felhasználót?')) return;
+    if (!window.confirm('Delete this user?')) return;
     await fetch(`${API_BASE}/api/users/${selectedUser._id}`, { method: 'DELETE' });
     setSelectedUser(null);
     onUsersChanged();
@@ -724,11 +876,14 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
   return (
     <div className="user-management">
       <div className="dashboard-header">
-        <h2>Felhasználók</h2>
-        <button onClick={onInvite} className="btn btn-secondary">Meghívó küldése</button>
+        <div>
+          <h2>People</h2>
+          <p className="dashboard-header-intro">Manage organizers, travelers, trip assignments, and invite status from one workspace.</p>
+        </div>
+        <button onClick={onInvite} className="btn btn-secondary">Send invite</button>
       </div>
 
-      <h3>Szervezők ({organizers.length})</h3>
+      <h3>Organizers ({organizers.length})</h3>
       {organizers.length > 0 ? (
         <div className="user-tiles">
           {organizers.map((u: any) => (
@@ -738,13 +893,13 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
               onClick={() => setSelectedUser(u)}
             >
               <div className="user-name">{u.name}</div>
-              <div className="user-role">Szervező</div>
+              <div className="user-role">Organizer</div>
             </div>
           ))}
         </div>
-      ) : <p>Nincsenek szervezők.</p>}
+      ) : <p>No organizers yet.</p>}
 
-      <h3>Egyéb felhasználók ({others.length})</h3>
+      <h3>Other users ({others.length})</h3>
       {others.length > 0 ? (
         <div className="user-tiles">
           {others.map((u: any) => (
@@ -754,67 +909,88 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
               onClick={() => setSelectedUser(u)}
             >
               <div className="user-name">{u.name}</div>
-              <div className="user-role">{u.role}</div>
+              <div className="user-role">{ROLE_LABELS[u.role as Role] || u.role}</div>
             </div>
           ))}
         </div>
-      ) : <p className="no-users">Nincsenek felhasználók.</p>}
+      ) : <p className="no-users">No users found.</p>}
 
       {selectedUser && (
         <div className="user-detail">
           <h3>{selectedUser.name}</h3>
           {currentUserRole === 'admin' && selectedUser.role === 'traveler' && (
             <button className="btn btn-primary" onClick={handlePromoteToOrganizer}>
-              Szervezővé léptetés
+              Promote to organizer
             </button>
           )}
           {userTrips.length > 0 ? (
             <ul>
               {userTrips.map(t => (
-                <li key={t.id}>{t.name} <button className="btn btn-danger btn-small" onClick={() => handleRemoveFromTrip(t.id)}>Eltávolítás</button></li>
+                <li key={t.id}>{t.name} <button className="btn btn-danger btn-small" onClick={() => handleRemoveFromTrip(t.id)}>Remove</button></li>
               ))}
             </ul>
-          ) : <p>Nincs hozzárendelve utazáshoz.</p>}
+          ) : <p>Not assigned to any trip yet.</p>}
           {selectedUser.role === 'organizer' && (
             <div className="assign-trip">
               <select value={assignTripId} onChange={e => setAssignTripId(e.target.value)}>
-                <option value="">Utazás hozzárendelése</option>
+                <option value="">Assign to trip</option>
                 {trips.filter(t => !t.organizerIds.includes(selectedUser._id)).map(t => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </select>
-              <button className="btn btn-secondary btn-small" onClick={handleAssignOrganizer}>Hozzárendelés</button>
+              <button className="btn btn-secondary btn-small" onClick={handleAssignOrganizer}>Assign</button>
             </div>
           )}
-          <button className="btn btn-danger" onClick={handleDeleteUser}>Felhasználó törlése</button>
+          <button className="btn btn-danger" onClick={handleDeleteUser}>Delete user</button>
         </div>
       )}
 
       {invites.length > 0 && (
         <div className="pending-invites">
-          <h3>Függő meghívók</h3>
-          <table className="user-table">
-            <thead>
-              <tr><th>Név</th><th>E-mail</th><th>Szerep</th><th>Utazás</th><th>Lejárat</th><th>Műveletek</th></tr>
-            </thead>
-            <tbody>
+          <h3>Pending invites</h3>
+          <div className="responsive-table-group">
+            <table className="user-table desktop-table">
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Trip</th><th>Expires</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                {invites.map((inv: any) => (
+                  <tr key={inv._id}>
+                    <td>{inv.firstName} {inv.lastName}</td>
+                    <td>{inv.email}</td>
+                    <td>{ROLE_LABELS[inv.role as Role] || inv.role}</td>
+                    <td>{trips.find(t => t.id === inv.tripId)?.name || '-'}</td>
+                    <td>{new Date(inv.expiresAt).toLocaleDateString('en-GB')}</td>
+                    <td>
+                      <div className="invite-actions">
+                        <button className="btn btn-secondary btn-small" onClick={() => handleResend(inv._id)}>Resend</button>
+                        <button className="btn btn-danger btn-small" onClick={() => handleDeleteInvite(inv._id)}>Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="mobile-record-list">
               {invites.map((inv: any) => (
-                <tr key={inv._id}>
-                  <td>{inv.firstName} {inv.lastName}</td>
-                  <td>{inv.email}</td>
-                  <td>{inv.role}</td>
-                  <td>{trips.find(t => t.id === inv.tripId)?.name || '-'}</td>
-                  <td>{new Date(inv.expiresAt).toLocaleDateString()}</td>
-                  <td>
-                    <div className="invite-actions">
-                      <button className="btn btn-secondary btn-small" onClick={() => handleResend(inv._id)}>Újraküldés</button>
-                      <button className="btn btn-danger btn-small" onClick={() => handleDeleteInvite(inv._id)}>Törlés</button>
-                    </div>
-                  </td>
-                </tr>
+                <article key={inv._id} className="mobile-record-card">
+                  <div className="mobile-record-head">
+                    <strong>{inv.firstName} {inv.lastName}</strong>
+                    <span>{ROLE_LABELS[inv.role as Role] || inv.role}</span>
+                  </div>
+                  <div className="mobile-record-meta">
+                    <span>{inv.email}</span>
+                    <span>{trips.find(t => t.id === inv.tripId)?.name || 'No trip'}</span>
+                    <span>Expires {new Date(inv.expiresAt).toLocaleDateString('en-GB')}</span>
+                  </div>
+                  <div className="mobile-record-actions">
+                    <button className="btn btn-secondary btn-small" onClick={() => handleResend(inv._id)}>Resend</button>
+                    <button className="btn btn-danger btn-small" onClick={() => handleDeleteInvite(inv._id)}>Delete</button>
+                  </div>
+                </article>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -836,26 +1012,26 @@ const TripCard = ({ trip, onSelectTrip }: { trip: Trip; onSelectTrip: () => void
                 <p className="trip-card-summary">{stage.summary}</p>
                 <div className="trip-card-metrics">
                     <div className="trip-card-metric">
-                        <span>Időtartam</span>
-                        <strong>{durationDays} nap</strong>
+                        <span>Duration</span>
+                        <strong>{durationDays} days</strong>
                     </div>
                     <div className="trip-card-metric">
-                        <span>Szervezők</span>
+                        <span>Organizers</span>
                         <strong>{trip.organizerNames?.length || 0}</strong>
                     </div>
                     <div className="trip-card-metric">
-                        <span>Résztvevők</span>
+                        <span>Participants</span>
                         <strong>{trip.travelerIds.length}</strong>
                     </div>
                 </div>
                 <div className="trip-card-foot">
-                    <span>Lead szervezők</span>
-                    <strong>{trip.organizerNames?.join(', ') || 'Nincs megadva'}</strong>
+                    <span>Lead organizers</span>
+                    <strong>{trip.organizerNames?.join(', ') || 'Not assigned yet'}</strong>
                 </div>
             </div>
             <div className="trip-card-actions">
                 <button onClick={onSelectTrip} className="btn btn-primary">
-                   Megnyitás
+                   Open trip
                 </button>
             </div>
         </article>
@@ -865,19 +1041,19 @@ const TripCard = ({ trip, onSelectTrip }: { trip: Trip; onSelectTrip: () => void
 // --- TRIP CONTENT COMPONENTS ---
 
 const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: User; users: User[]; onSelectView: (view: TripView) => void; }) => {
-    const [countdown, setCountdown] = useState("0 nap");
+    const [countdown, setCountdown] = useState("0 days");
     useEffect(() => {
         const updateCountdown = () => {
             const start = new Date(trip.startDate);
             const now = new Date();
             const diff = start.getTime() - now.getTime();
             if (diff <= 0) {
-                setCountdown("Már úton vagy!");
+                setCountdown("Trip in progress");
             } else {
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
                 const minutes = Math.floor((diff / (1000 * 60)) % 60);
-                setCountdown(`${days} nap ${hours} óra ${minutes} perc`);
+                setCountdown(`${days}d ${hours}h ${minutes}m`);
             }
         };
         updateCountdown();
@@ -940,19 +1116,19 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
     const stage = getTripStageMeta(trip);
     const durationDays = getTripDurationDays(trip);
     const summaryFocus = user.role === 'traveler'
-        ? 'Nézd át a dokumentumaidat, a saját befizetéseidet és az új üzeneteket.'
-        : 'Kövesd a befizetéseket, az utasadatokat és a nyitott dokumentumhiányokat.';
+        ? 'Review your documents, check your balance, and catch up on the latest trip updates.'
+        : 'Track payments, traveler data, and missing documents before they turn into operational gaps.';
 
     const tiles: { key: TripView; label: string; hint: string; className: string }[] = [
-        { key: 'itinerary', label: 'Útiterv', hint: 'programok és mozgások', className: 'tile-itinerary' },
-        { key: 'documents', label: 'Dokumentumok', hint: 'jegyek, pdf-ek, fájlok', className: 'tile-documents' },
-        { key: 'messages', label: 'Üzenetek', hint: 'kommunikáció és frissítések', className: 'tile-messages' },
-        { key: 'financials', label: 'Pénzügyek', hint: 'egyenleg és befizetések', className: 'tile-financials' },
-        { key: 'personalData', label: 'Személyes adatok', hint: 'útlevél és profiladatok', className: 'tile-personal' },
+        { key: 'itinerary', label: 'Itinerary', hint: 'schedule, timing, movement', className: 'tile-itinerary' },
+        { key: 'documents', label: 'Documents', hint: 'tickets, PDFs, uploaded files', className: 'tile-documents' },
+        { key: 'messages', label: 'Messages', hint: 'comms, updates, reminders', className: 'tile-messages' },
+        { key: 'financials', label: 'Finance', hint: 'balance, credits, online payments', className: 'tile-financials' },
+        { key: 'personalData', label: 'Personal data', hint: 'passport and profile details', className: 'tile-personal' },
     ];
     if (user.role === 'admin' || (user.role === 'organizer' && trip.organizerIds.includes(String(user.id)))) {
-        tiles.push({ key: 'users', label: 'Utasok', hint: 'résztvevők és szerepkörök', className: 'tile-users' });
-        tiles.push({ key: 'settings', label: 'Beállítások', hint: 'trip konfiguráció', className: 'tile-settings' });
+        tiles.push({ key: 'users', label: 'Participants', hint: 'roles, assignments, invites', className: 'tile-users' });
+        tiles.push({ key: 'settings', label: 'Settings', hint: 'trip configuration', className: 'tile-settings' });
     }
 
     return (
@@ -965,30 +1141,30 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
                     </div>
                     <h2 className="trip-title">{trip.name}</h2>
                     <p className="trip-summary-subtitle">
-                        Egyetlen munkafelületen látod az út állapotát, a fontos fájlokat, az üzeneteket és a pénzügyi mozgásokat.
+                        Everything this trip needs lives here: schedule, files, communications, traveler data, and payment activity.
                     </p>
                     <div className="trip-summary-route">
                         <div>
-                            <span>Időszak</span>
+                            <span>Trip window</span>
                             <strong>{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</strong>
                         </div>
                         <div>
-                            <span>Következő fókusz</span>
+                            <span>Operational focus</span>
                             <strong>{stage.summary}</strong>
                         </div>
                     </div>
                 </div>
                 <div className="trip-summary-metrics">
                     <div className="trip-metric-card">
-                        <span className="trip-metric-label">Indulasig</span>
+                        <span className="trip-metric-label">Countdown</span>
                         <strong>{countdown}</strong>
                     </div>
                     <div className="trip-metric-card">
-                        <span className="trip-metric-label">Idotartam</span>
-                        <strong>{durationDays} nap</strong>
+                        <span className="trip-metric-label">Duration</span>
+                        <strong>{durationDays} days</strong>
                     </div>
                     <div className="trip-metric-card">
-                        <span className="trip-metric-label">Utasok</span>
+                        <span className="trip-metric-label">Travelers</span>
                         <strong>{trip.travelerIds.length}</strong>
                     </div>
                 </div>
@@ -1007,31 +1183,31 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
             </div>
             <div className="trip-summary-side-grid">
                 <div className="trip-summary-panel">
-                    <h3>Utazási áttekintés</h3>
+                    <h3>Operational overview</h3>
                     <div className="trip-summary-facts">
                         <div>
-                            <span>Kezdés</span>
+                            <span>Start</span>
                             <strong>{formatDisplayDate(trip.startDate)}</strong>
                         </div>
                         <div>
-                            <span>Befejezés</span>
+                            <span>End</span>
                             <strong>{formatDisplayDate(trip.endDate)}</strong>
                         </div>
                         <div>
-                            <span>Szervezők</span>
-                            <strong>{trip.organizerNames?.join(', ') || 'Nincs megadva'}</strong>
+                            <span>Organizers</span>
+                            <strong>{trip.organizerNames?.join(', ') || 'Not assigned yet'}</strong>
                         </div>
                     </div>
                     <div className="trip-summary-callout">
-                        <span>{user.role === 'traveler' ? 'Ajánlott következő lépés' : 'Működési fókusz'}</span>
+                        <span>{user.role === 'traveler' ? 'Recommended next step' : 'Operational focus'}</span>
                         <strong>{summaryFocus}</strong>
                     </div>
                 </div>
                 <div className="emergency-contacts trip-summary-panel">
-                <h3>Vészhelyzeti kapcsolattartó{emergencyContacts.length === 1 ? '' : 'k'}</h3>
+                <h3>Emergency contact{emergencyContacts.length === 1 ? '' : 's'}</h3>
                 {emergencyContacts.length > 0 ? (
                     emergencyContacts.map((o, index) => {
-                        const displayName = [o.firstName, o.lastName].filter(Boolean).join(' ') || o.name || 'Ismeretlen kapcsolattartó';
+                        const displayName = [o.firstName, o.lastName].filter(Boolean).join(' ') || o.name || 'Unknown contact';
                         const key = o.id || o.contactEmail || o.contactPhone || `contact-${index}`;
                         return (
                             <div key={key} className="contact-card">
@@ -1043,7 +1219,7 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
                         );
                     })
                 ) : (
-                    <p className="contact-empty">Jelenleg nincs megadott vészhelyzeti kapcsolattartó.</p>
+                    <p className="contact-empty">No emergency contact has been published for this trip yet.</p>
                 )}
                 </div>
             </div>
@@ -1052,7 +1228,7 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
 };
 
 const PaymentStatusBadge = ({ status }: { status: PaymentTransaction['status'] }) => (
-    <span className={`payment-status-badge status-${status}`}>{status === 'completed' ? 'Jovairva' : status === 'failed' ? 'Sikertelen' : 'Folyamatban'}</span>
+    <span className={`payment-status-badge status-${status}`}>{status === 'completed' ? 'Credited' : status === 'failed' ? 'Failed' : 'Pending'}</span>
 );
 
 const OnlinePaymentPanel = ({
@@ -1076,7 +1252,7 @@ const OnlinePaymentPanel = ({
         const numericAmount = Number(amount);
 
         if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-            alert('Adj meg ervenyes befizetesi osszeget.');
+            alert('Enter a valid payment amount.');
             return;
         }
 
@@ -1088,7 +1264,7 @@ const OnlinePaymentPanel = ({
                 await Promise.resolve(onStartPaypalPayment(trip.id, numericAmount, description));
             }
         } catch (error: any) {
-            alert(error?.message || 'Nem sikerult elinditani a fizetest.');
+            alert(error?.message || 'Unable to start the payment flow.');
             setIsSubmitting(false);
         }
     };
@@ -1096,25 +1272,25 @@ const OnlinePaymentPanel = ({
     return (
         <section className="online-payment-panel">
             <div className="online-payment-copy">
-                <span className="online-payment-eyebrow">Online befizetes</span>
-                <h3>Gyors, automatikus jovairas</h3>
+                <span className="online-payment-eyebrow">Online payments</span>
+                <h3>Fast payment with automatic crediting</h3>
                 <p>
-                    Stripe vagy PayPal fizetes utan a rendszer automatikusan uj penzugyi tetelt hoz letre a sajat nevedre.
+                    After a Stripe or PayPal payment, the system automatically creates the matching finance entry for your traveler profile.
                 </p>
                 <div className="online-payment-highlights">
                     <div>
-                        <strong>Automatikus könyvelés</strong>
-                        <span>A jóváírás közvetlenül bekerül a trip pénzügyei közé.</span>
+                        <strong>Automatic finance entry</strong>
+                        <span>The credited payment lands directly in this trip’s finance history.</span>
                     </div>
                     <div>
-                        <strong>Biztonságos checkout</strong>
-                        <span>A fizetés a Stripe vagy a PayPal saját felületén fejeződik be.</span>
+                        <strong>Secure checkout</strong>
+                        <span>The payment is completed in Stripe or PayPal’s own hosted flow.</span>
                     </div>
                 </div>
             </div>
             <form className="online-payment-form" onSubmit={handleSubmit}>
                 <div className="form-group">
-                    <label htmlFor="online-payment-amount">Osszeg</label>
+                    <label htmlFor="online-payment-amount">Amount</label>
                     <input
                         id="online-payment-amount"
                         type="number"
@@ -1122,12 +1298,12 @@ const OnlinePaymentPanel = ({
                         step="1"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="pl. 120000"
+                        placeholder="e.g. 120000"
                         required
                     />
                 </div>
                 <div className="form-group">
-                    <label htmlFor="online-payment-description">Leiras</label>
+                    <label htmlFor="online-payment-description">Description</label>
                     <input
                         id="online-payment-description"
                         type="text"
@@ -1136,14 +1312,14 @@ const OnlinePaymentPanel = ({
                         required
                     />
                 </div>
-                <div className="provider-toggle" role="tablist" aria-label="Fizetesi szolgaltato">
+                <div className="provider-toggle" role="tablist" aria-label="Payment provider">
                     <button type="button" className={provider === 'stripe' ? 'active' : ''} onClick={() => setProvider('stripe')}>Stripe</button>
                     <button type="button" className={provider === 'paypal' ? 'active' : ''} onClick={() => setProvider('paypal')}>PayPal</button>
                 </div>
                 <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                    {isSubmitting ? 'Atiranyitas...' : `${provider === 'stripe' ? 'Stripe' : 'PayPal'} fizetes inditasa`}
+                    {isSubmitting ? 'Redirecting...' : `Continue with ${provider === 'stripe' ? 'Stripe' : 'PayPal'}`}
                 </button>
-                <p className="online-payment-note">A sikeres fizetés után a befizetés automatikusan jóváíródik ennél az útnál.</p>
+                <p className="online-payment-note">Once payment succeeds, the credit is recorded automatically for this trip.</p>
             </form>
         </section>
     );
@@ -1223,7 +1399,7 @@ const TripFinancials = ({
         e.preventDefault();
         const numericAmount = parseFloat(amount);
         if (!description || isNaN(numericAmount) || !selectedUserId) {
-            alert("Kérjük, töltsön ki minden mezőt helyesen.");
+            alert("Please complete all fields with valid values.");
             return;
         }
 
@@ -1239,7 +1415,7 @@ const TripFinancials = ({
             setDescription('');
             setAmount('');
         } catch (error: any) {
-            alert(error?.message || 'Nem sikerült hozzáadni a tételt.');
+            alert(error?.message || 'Unable to add the finance record.');
         } finally {
             setIsAdding(false);
         }
@@ -1258,7 +1434,7 @@ const TripFinancials = ({
         if (!editingId) return;
         const numericAmount = parseFloat(editAmount);
         if (!editDescription || isNaN(numericAmount) || !editUserId || !editDate) {
-            alert('Kérjük, töltsön ki minden mezőt helyesen.');
+            alert('Please complete all fields with valid values.');
             return;
         }
         setIsSavingEdit(true);
@@ -1272,7 +1448,7 @@ const TripFinancials = ({
             }));
             setEditingId(null);
         } catch (error: any) {
-            alert(error?.message || 'Nem sikerült frissíteni a tételt.');
+            alert(error?.message || 'Unable to update this finance record.');
         } finally {
             setIsSavingEdit(false);
         }
@@ -1283,7 +1459,7 @@ const TripFinancials = ({
     };
 
     const handleDeleteRecord = async (recordId: string) => {
-        if (!window.confirm('Biztosan törli ezt a tételt?')) {
+        if (!window.confirm('Delete this finance record?')) {
             return;
         }
         try {
@@ -1292,25 +1468,31 @@ const TripFinancials = ({
                 setEditingId(null);
             }
         } catch (error: any) {
-            alert(error?.message || 'Nem sikerült törölni a tételt.');
+            alert(error?.message || 'Unable to delete this finance record.');
         }
     };
+
+    const visibleRecords = useMemo(() => {
+        return records
+            .filter((record) => user.role !== 'traveler' || record.userId === user.id)
+            .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
+    }, [records, user.id, user.role]);
 
     return (
         <div className="financials-page">
             <div className="financials-hero">
                 <div>
                     <span className="section-eyebrow">Finance desk</span>
-                    <h2>Penzugyek: {trip.name}</h2>
-                    <p className="section-intro">Kovetheted a manuális tételeket, az online befizeteseket es a resztvevok egyenlegét egy helyen.</p>
+                    <h2>Finance: {trip.name}</h2>
+                    <p className="section-intro">Track manual finance records, online credits, and participant balances from one clean workspace.</p>
                 </div>
                 <div className="financials-hero-cards">
                     <div className="summary-card compact">
-                        <h4>Osszes tranzakcio</h4>
+                        <h4>Total transactions</h4>
                         <p className="balance">{records.length}</p>
                     </div>
                     <div className="summary-card compact">
-                        <h4>Online fizetesek</h4>
+                        <h4>Online payments</h4>
                         <p className="balance">{tripPaymentTransactions.length}</p>
                     </div>
                 </div>
@@ -1327,7 +1509,7 @@ const TripFinancials = ({
 
             {isStaff && (
                 <>
-                    <h3>Egyenlegek</h3>
+                    <h3>Balances</h3>
                     <div className="financial-summary">
                         {tripParticipants.map(p => {
                             const balance = balances.get(p.id) || 0;
@@ -1341,33 +1523,33 @@ const TripFinancials = ({
                         })}
                     </div>
 
-                    <h3>Új tétel hozzáadása</h3>
+                    <h3>Add manual record</h3>
                     <form className="add-record-form" onSubmit={handleAddRecord}>
                         <div className="form-row">
                              <div className="form-group">
-                                <label htmlFor="participant">Résztvevő</label>
+                                <label htmlFor="participant">Participant</label>
                                 <select id="participant" value={selectedUserId} onChange={e => setSelectedUserId(e.target.value)}>
                                     {tripParticipants.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label htmlFor="description">Leírás</label>
+                                <label htmlFor="description">Description</label>
                                 <input id="description" type="text" value={description} onChange={e => setDescription(e.target.value)} required />
                             </div>
                             <div className="form-group">
-                                <label htmlFor="amount">Összeg (HUF)</label>
+                                <label htmlFor="amount">Amount (HUF)</label>
                                 <input id="amount" type="number" value={amount} onChange={e => setAmount(e.target.value)} required />
                             </div>
                             <div className="form-group">
-                                <label>Típus</label>
+                                <label>Type</label>
                                 <div className="radio-group">
-                                    <label><input type="radio" value="expense" checked={type === 'expense'} onChange={() => setType('expense')} /> Kiadás</label>
-                                    <label><input type="radio" value="payment" checked={type === 'payment'} onChange={() => setType('payment')} /> Befizetés</label>
+                                    <label><input type="radio" value="expense" checked={type === 'expense'} onChange={() => setType('expense')} /> Expense</label>
+                                    <label><input type="radio" value="payment" checked={type === 'payment'} onChange={() => setType('payment')} /> Credit</label>
                                 </div>
                             </div>
                         </div>
                         <button type="submit" className="btn btn-primary" disabled={isAdding}>
-                            {isAdding ? 'Mentés...' : 'Hozzáadás'}
+                            {isAdding ? 'Saving...' : 'Add record'}
                         </button>
                     </form>
                 </>
@@ -1375,7 +1557,7 @@ const TripFinancials = ({
 
             {tripPaymentTransactions.length > 0 && (
                 <>
-                    <h3>Online fizetesek</h3>
+                    <h3>Online payments</h3>
                     <div className="payment-activity-list">
                         {tripPaymentTransactions.slice(0, 8).map((transaction) => {
                             const payer = users.find((candidate) => candidate.id === transaction.userId);
@@ -1387,11 +1569,11 @@ const TripFinancials = ({
                                             <PaymentStatusBadge status={transaction.status} />
                                         </div>
                                         <h4>{transaction.description}</h4>
-                                        <p>{payer?.name || 'Ismeretlen felhasznalo'}</p>
+                                        <p>{payer?.name || 'Unknown user'}</p>
                                     </div>
                                     <div className="payment-activity-meta">
                                         <strong>{transaction.amount.toLocaleString()} {transaction.currency}</strong>
-                                        <span>{transaction.completedAt ? new Date(transaction.completedAt).toLocaleString('hu-HU') : 'Feldolgozas alatt'}</span>
+                                        <span>{transaction.completedAt ? new Date(transaction.completedAt).toLocaleString('en-GB') : 'Processing'}</span>
                                     </div>
                                 </article>
                             );
@@ -1400,23 +1582,21 @@ const TripFinancials = ({
                 </>
             )}
 
-            <h3>Tranzakciók</h3>
-            <div className="table-container">
+            <h3>Transactions</h3>
+            <div className="responsive-table-group">
+              <div className="table-container desktop-table">
                 <table className="financial-table">
                     <thead>
                         <tr>
-                            {isStaff && <th>Résztvevő</th>}
-                            <th>Dátum</th>
-                            <th>Leírás</th>
-                            <th>Összeg (HUF)</th>
-                            {isStaff && <th>Műveletek</th>}
+                            {isStaff && <th>Participant</th>}
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Amount (HUF)</th>
+                            {isStaff && <th>Actions</th>}
                         </tr>
                     </thead>
                     <tbody>
-                        {records
-                            .filter(r => user.role !== 'traveler' || r.userId === user.id)
-                            .sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                            .map(r => {
+                        {visibleRecords.map(r => {
                                 const participant = users.find(u => u.id === r.userId);
                                 const isEditing = editingId === r.id;
                                 return (
@@ -1426,14 +1606,14 @@ const TripFinancials = ({
                                                 {isEditing ? (
                                                     <select value={editUserId} onChange={e => setEditUserId(e.target.value)}>
                                                         {editUserId && !tripParticipants.find(p => p.id === editUserId) && (
-                                                            <option value={editUserId}>Ismeretlen résztvevő</option>
+                                                            <option value={editUserId}>Unknown participant</option>
                                                         )}
                                                         {tripParticipants.map(p => (
                                                             <option key={p.id} value={p.id}>{p.name}</option>
                                                         ))}
                                                     </select>
                                                 ) : (
-                                                    participant?.name || 'Ismeretlen'
+                                                    participant?.name || 'Unknown'
                                                 )}
                                             </td>
                                         )}
@@ -1464,7 +1644,7 @@ const TripFinancials = ({
                                                                 checked={editType === 'expense'}
                                                                 onChange={() => setEditType('expense')}
                                                             />
-                                                            Kiadás
+                                                            Expense
                                                         </label>
                                                         <label>
                                                             <input
@@ -1474,7 +1654,7 @@ const TripFinancials = ({
                                                                 checked={editType === 'payment'}
                                                                 onChange={() => setEditType('payment')}
                                                             />
-                                                            Befizetés
+                                                            Credit
                                                         </label>
                                                     </div>
                                                 </div>
@@ -1489,22 +1669,22 @@ const TripFinancials = ({
                                                         <>
                                                             <button type="button" className="icon-button confirm" onClick={handleSaveEdit} disabled={isSavingEdit}>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"></path><polyline points="7 3 7 8 15 8 15 3"></polyline><line x1="10" y1="14" x2="14" y2="14"></line></svg>
-                                                                Mentés
+                                                                Save
                                                             </button>
                                                             <button type="button" className="icon-button cancel" onClick={handleCancelEdit} disabled={isSavingEdit}>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                                                Mégse
+                                                                Cancel
                                                             </button>
                                                         </>
                                                     ) : (
                                                         <>
                                                             <button type="button" className="icon-button" onClick={() => startEditRecord(r)}>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                                                                Szerkesztés
+                                                                Edit
                                                             </button>
                                                             <button type="button" className="icon-button danger" onClick={() => handleDeleteRecord(r.id)}>
                                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>
-                                                                Törlés
+                                                                Delete
                                                             </button>
                                                         </>
                                                     )}
@@ -1516,12 +1696,93 @@ const TripFinancials = ({
                             })}
                     </tbody>
                 </table>
+              </div>
+              <div className="mobile-record-list finance-mobile-list">
+                {visibleRecords.map((record) => {
+                    const participant = users.find((candidate) => candidate.id === record.userId);
+                    const isEditing = editingId === record.id;
+                    return (
+                        <article key={record.id} className="mobile-record-card finance-record-card">
+                            <div className="mobile-record-head">
+                                <strong>{record.description}</strong>
+                                <span className={record.amount >= 0 ? 'text-positive' : 'text-negative'}>
+                                    {record.amount.toLocaleString()} HUF
+                                </span>
+                            </div>
+                            <div className="mobile-record-meta">
+                                {isStaff && <span>{participant?.name || 'Unknown participant'}</span>}
+                                <span>{record.date}</span>
+                                <span>{record.amount >= 0 ? 'Credit' : 'Expense'}</span>
+                            </div>
+                            {isEditing ? (
+                                <div className="mobile-inline-editor">
+                                    {isStaff && (
+                                        <div className="form-group">
+                                            <label>Participant</label>
+                                            <select value={editUserId} onChange={e => setEditUserId(e.target.value)}>
+                                                {tripParticipants.map(p => (
+                                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                    <div className="form-group">
+                                        <label>Date</label>
+                                        <input type="date" value={editDate} onChange={e => setEditDate(e.target.value)} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Description</label>
+                                        <input type="text" value={editDescription} onChange={e => setEditDescription(e.target.value)} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Amount</label>
+                                        <input type="number" value={editAmount} onChange={e => setEditAmount(e.target.value)} />
+                                    </div>
+                                    <div className="radio-group compact mobile-type-toggle">
+                                        <label>
+                                            <input
+                                                type="radio"
+                                                name={`mobile-edit-type-${record.id}`}
+                                                value="expense"
+                                                checked={editType === 'expense'}
+                                                onChange={() => setEditType('expense')}
+                                            />
+                                            Expense
+                                        </label>
+                                        <label>
+                                            <input
+                                                type="radio"
+                                                name={`mobile-edit-type-${record.id}`}
+                                                value="payment"
+                                                checked={editType === 'payment'}
+                                                onChange={() => setEditType('payment')}
+                                            />
+                                            Credit
+                                        </label>
+                                    </div>
+                                    <div className="mobile-record-actions">
+                                        <button type="button" className="btn btn-primary btn-small" onClick={handleSaveEdit} disabled={isSavingEdit}>Save</button>
+                                        <button type="button" className="btn btn-secondary btn-small" onClick={handleCancelEdit} disabled={isSavingEdit}>Cancel</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                isStaff && (
+                                    <div className="mobile-record-actions">
+                                        <button type="button" className="btn btn-secondary btn-small" onClick={() => startEditRecord(record)}>Edit</button>
+                                        <button type="button" className="btn btn-danger btn-small" onClick={() => handleDeleteRecord(record.id)}>Delete</button>
+                                    </div>
+                                )
+                            )}
+                        </article>
+                    );
+                })}
+              </div>
             </div>
 
             {user.role === 'traveler' && (
                  <div className="financial-summary traveler-summary">
                     <div className="summary-card">
-                        <h4>Az Ön egyenlege</h4>
+                        <h4>Your balance</h4>
                         <p className={`balance ${(balances.get(user.id) || 0) >= 0 ? 'positive' : 'negative'}`}>
                             {(balances.get(user.id) || 0).toLocaleString()} HUF
                         </p>
@@ -1586,7 +1847,7 @@ const ItineraryItemModal = ({ isOpen, onClose, item, onAdd, onUpdate, canEdit, t
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !date || !startTime || !timeZone) {
-            alert('Kérjük, töltse ki a csillaggal jelölt mezőket.');
+            alert('Please complete the required fields.');
             return;
         }
         const payload = {
@@ -1619,50 +1880,50 @@ const ItineraryItemModal = ({ isOpen, onClose, item, onAdd, onUpdate, canEdit, t
             <div className="modal-content itinerary-modal-content" onClick={e => e.stopPropagation()}>
                 {(isAdding || isEditing) ? (
                     <form onSubmit={handleSubmit}>
-                        <h2>{isAdding ? 'Új programpont hozzáadása' : 'Programpont szerkesztése'}</h2>
+                        <h2>{isAdding ? 'Add itinerary item' : 'Edit itinerary item'}</h2>
                         <div className="form-group">
-                            <label htmlFor="itemTitle">Cím *</label>
+                            <label htmlFor="itemTitle">Title *</label>
                             <input id="itemTitle" type="text" value={title} onChange={e => setTitle(e.target.value)} required />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="itemDate">Dátum *</label>
+                            <label htmlFor="itemDate">Date *</label>
                             <input id="itemDate" type="date" value={date} onChange={e => setDate(e.target.value)} required min={tripStartDate} max={tripEndDate} />
                         </div>
                         <div className="time-inputs">
                              <div className="form-group">
-                                <label htmlFor="itemStartTime">Kezdés *</label>
+                                <label htmlFor="itemStartTime">Start time *</label>
                                 <input id="itemStartTime" type="time" value={startTime} onChange={e => setStartTime(e.target.value)} required />
                             </div>
                              <div className="form-group">
-                                <label htmlFor="itemEndTime">Befejezés (opcionális)</label>
+                                <label htmlFor="itemEndTime">End time (optional)</label>
                                 <input id="itemEndTime" type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
                             </div>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="itemTimeZone">Időzóna *</label>
-                            <input id="itemTimeZone" type="text" value={timeZone} onChange={e => setTimeZone(e.target.value)} required placeholder="pl. Europe/Paris" />
-                            <small>Kérjük, IANA formátumot használjon.</small>
+                            <label htmlFor="itemTimeZone">Time zone *</label>
+                            <input id="itemTimeZone" type="text" value={timeZone} onChange={e => setTimeZone(e.target.value)} required placeholder="e.g. Europe/Paris" />
+                            <small>Use IANA time zone format.</small>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="itemProgramType">Program típusa</label>
+                            <label htmlFor="itemProgramType">Participation type</label>
                             <select id="itemProgramType" value={programType} onChange={(e) => setProgramType(e.target.value as 'required' | 'free' | 'optional')}>
-                                <option value="required">Kötelező (piros, 50% átlátszóság)</option>
-                                <option value="free">Szabad program (zöld, 50% átlátszóság)</option>
-                                <option value="optional">Fakultatív program (sárga, 50% átlátszóság)</option>
+                                <option value="required">Required</option>
+                                <option value="free">Free time</option>
+                                <option value="optional">Optional</option>
                             </select>
-                            <small>Az időbélyegek színkódjai jelzik a részvétel típusát.</small>
+                            <small>Color coding keeps the schedule easier to scan.</small>
                         </div>
                         <div className="form-group">
-                            <label htmlFor="itemLocation">Helyszín</label>
+                            <label htmlFor="itemLocation">Location</label>
                             <input id="itemLocation" type="text" value={location} onChange={e => setLocation(e.target.value)} />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="itemDescription">Leírás</label>
+                            <label htmlFor="itemDescription">Description</label>
                             <textarea id="itemDescription" value={description} onChange={e => setDescription(e.target.value)} />
                         </div>
                         <div className="modal-actions">
-                            <button type="button" onClick={() => { isAdding ? onClose() : (resetForm(), setIsEditing(false)); }} className="btn btn-secondary">Mégse</button>
-                            <button type="submit" className="btn btn-primary">{isAdding ? 'Hozzáadás' : 'Mentés'}</button>
+                            <button type="button" onClick={() => { isAdding ? onClose() : (resetForm(), setIsEditing(false)); }} className="btn btn-secondary">Cancel</button>
+                            <button type="submit" className="btn btn-primary">{isAdding ? 'Add item' : 'Save changes'}</button>
                         </div>
                     </form>
                 ) : currentItem ? (
@@ -1671,19 +1932,19 @@ const ItineraryItemModal = ({ isOpen, onClose, item, onAdd, onUpdate, canEdit, t
                             <h2>{currentItem.title}</h2>
                             <p>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                <span>{new Date(currentItem.startDateTimeLocal).toLocaleDateString('hu-HU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                                <span>{new Date(currentItem.startDateTimeLocal).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
                             </p>
                             <p>
                                 <strong>{formatTime(currentItem.startDateTimeLocal)}{currentItem.endDateTimeLocal ? ` - ${formatTime(currentItem.endDateTimeLocal)}` : ''}</strong> ({currentItem.timeZone})
                             </p>
-                             {currentItem.location && <p><strong>Helyszín:</strong> {currentItem.location}</p>}
+                             {currentItem.location && <p><strong>Location:</strong> {currentItem.location}</p>}
                         </div>
                         <div className="modal-body">
-                           <p>{currentItem.description || 'Nincs leírás megadva.'}</p>
+                           <p>{currentItem.description || 'No description added yet.'}</p>
                         </div>
                         <div className="modal-actions">
-                            {canEditExisting && <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(true)}>Szerkesztés</button>}
-                            <button type="button" onClick={onClose} className="btn btn-primary">Bezárás</button>
+                            {canEditExisting && <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(true)}>Edit</button>}
+                            <button type="button" onClick={onClose} className="btn btn-primary">Close</button>
                         </div>
                     </div>
                 ) : null}
@@ -1700,7 +1961,8 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
     onUpdateItem: (id: string, item: Omit<ItineraryItem, 'id' | 'tripId'>) => Promise<void> | void,
     onRemoveItem: (id: string) => void
 }) => {
-    const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
+    const isMobile = useMediaQuery('(max-width: 767px)');
+    const [viewMode, setViewMode] = useState<'calendar' | 'list'>(isMobile ? 'list' : 'calendar');
     const [isAddModalOpen, setAddModalOpen] = useState(false);
     const [selectedItem, setSelectedItem] = useState<ItineraryItem | null>(null);
     const [startEditMode, setStartEditMode] = useState(false);
@@ -1710,6 +1972,12 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
     };
 
     const isOrganizer = user.role === 'admin' || user.role === 'organizer';
+
+    useEffect(() => {
+        if (isMobile) {
+            setViewMode('list');
+        }
+    }, [isMobile]);
 
     const tripDays = useMemo(() => {
         const days = [];
@@ -1745,11 +2013,11 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
     const programTypeLabel = (type?: ItineraryItem['programType']) => {
         switch (type) {
             case 'free':
-                return 'Szabad program';
+                return 'Free time';
             case 'optional':
-                return 'Fakultatív program';
+                return 'Optional';
             default:
-                return 'Kötelező';
+                return 'Required';
         }
     };
 
@@ -1757,30 +2025,31 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
 
     return (
         <div>
+            <SectionIntro
+                eyebrow="Trip flow"
+                title={`Itinerary: ${trip.name}`}
+                description="Keep the schedule easy to follow on desktop and effortless to scan on mobile."
+                actions={isOrganizer ? (
+                    <button onClick={() => setAddModalOpen(true)} className="btn btn-primary">Add item</button>
+                ) : undefined}
+            />
             <div className="itinerary-header">
-                 <h2>Útiterv: {trip.name}</h2>
                  <div className="itinerary-controls">
                     <div className="itinerary-view-switcher">
-                        <button className={viewMode === 'calendar' ? 'active' : ''} onClick={() => setViewMode('calendar')}>Naptár</button>
-                        <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')}>Lista</button>
+                        <button className={viewMode === 'calendar' ? 'active' : ''} onClick={() => setViewMode('calendar')}>Calendar</button>
+                        <button className={viewMode === 'list' ? 'active' : ''} onClick={() => setViewMode('list')}>List</button>
                     </div>
-                    <div className="itinerary-legend" aria-label="Program típus színkódok">
-                        <span className="legend-pill program-type-required">Kötelező</span>
-                        <span className="legend-pill program-type-free">Szabad program</span>
-                        <span className="legend-pill program-type-optional">Fakultatív program</span>
+                    <div className="itinerary-legend" aria-label="Program type legend">
+                        <span className="legend-pill program-type-required">Required</span>
+                        <span className="legend-pill program-type-free">Free time</span>
+                        <span className="legend-pill program-type-optional">Optional</span>
                     </div>
                  </div>
-                 {isOrganizer && (
-                    <button onClick={() => setAddModalOpen(true)} className="btn btn-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                        Új programpont
-                    </button>
-                )}
             </div>
 
             {items.length === 0 && (
                 <div className="no-itinerary-items">
-                    <p>Még nincsenek programpontok hozzáadva ehhez az utazáshoz.</p>
+                    <p>No itinerary items have been added to this trip yet.</p>
                 </div>
             )}
 
@@ -1792,8 +2061,8 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
                         return (
                             <div key={dayString} className="itinerary-day-column">
                                 <h3>
-                                    {day.toLocaleDateString('hu-HU', { month: 'short', day: 'numeric' })}
-                                    <span className="day-of-week">{day.toLocaleDateString('hu-HU', { weekday: 'long' })}</span>
+                                    {day.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })}
+                                    <span className="day-of-week">{day.toLocaleDateString('en-GB', { weekday: 'long' })}</span>
                                 </h3>
                                 {dayItems.map(item => (
                                     <div key={item.id} className="itinerary-item-card" onClick={() => { setSelectedItem(item); setStartEditMode(false); }}>
@@ -1801,7 +2070,7 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
                                             <button
                                                 className="delete-item-btn"
                                                 onClick={(e) => { e.stopPropagation(); onRemoveItem(item.id); }}
-                                                aria-label="Törlés"
+                                                aria-label="Delete item"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                                             </button>
@@ -1810,7 +2079,7 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
                                             <button
                                                 className="edit-item-btn"
                                                 onClick={(e) => { e.stopPropagation(); setSelectedItem(item); setStartEditMode(true); }}
-                                                aria-label="Szerkesztés"
+                                                aria-label="Edit item"
                                             >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
                                             </button>
@@ -1835,7 +2104,7 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
                         .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
                         .map(([date, dateItems]) => (
                         <div key={date} className="itinerary-list-day-group">
-                            <h3>{new Date(date + 'T00:00:00').toLocaleDateString('hu-HU', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
+                            <h3>{new Date(date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</h3>
                             {dateItems.map(item => (
                                 <div key={item.id} className="itinerary-list-item">
                                     <div className="item-time-col">
@@ -1853,14 +2122,14 @@ const TripItinerary = ({ trip, user, items, onAddItem, onUpdateItem, onRemoveIte
                                         <p>{item.location}</p>
                                     </div>
                                     <div className="item-actions">
-                                        <button className="btn btn-secondary" onClick={() => { setSelectedItem(item); setStartEditMode(false); }}>Részletek</button>
+                                        <button className="btn btn-secondary" onClick={() => { setSelectedItem(item); setStartEditMode(false); }}>Details</button>
                                         {isOrganizer && (
                                             <>
-                                                <button className="btn btn-secondary" onClick={() => { setSelectedItem(item); setStartEditMode(true); }}>Szerkesztés</button>
+                                                <button className="btn btn-secondary" onClick={() => { setSelectedItem(item); setStartEditMode(true); }}>Edit</button>
                                                 <button
                                                     className="delete-item-btn"
                                                     onClick={(e) => { e.stopPropagation(); onRemoveItem(item.id); }}
-                                                    aria-label="Törlés"
+                                                    aria-label="Delete item"
                                                 >
                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                                 </button>
@@ -1930,14 +2199,14 @@ const UploadDocumentModal = ({ isOpen, onClose, onUpload, tripParticipants, cate
     };
 
     const handleAddCategoryClick = () => {
-        const newCat = prompt('Új kategória neve');
+        const newCat = prompt('New category name');
         if (newCat) onAddCategory(newCat);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !category || !file) {
-            alert('Kérjük, adjon nevet, kategóriát és válasszon fájlt.');
+            alert('Please add a name, category, and file before uploading.');
             return;
         }
 
@@ -1958,14 +2227,14 @@ const UploadDocumentModal = ({ isOpen, onClose, onUpload, tripParticipants, cate
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <h2>Új dokumentum feltöltése</h2>
+                <h2>Upload document</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="docName">Dokumentum neve</label>
+                        <label htmlFor="docName">Document name</label>
                         <input id="docName" type="text" value={name} onChange={e => setName(e.target.value)} required />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="docCategory">Kategória</label>
+                        <label htmlFor="docCategory">Category</label>
                         <div className="category-select">
                             <select id="docCategory" value={category} onChange={e => setCategory(e.target.value)} required>
                                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -1974,20 +2243,20 @@ const UploadDocumentModal = ({ isOpen, onClose, onUpload, tripParticipants, cate
                         </div>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="docVisibleTo">Láthatóság</label>
+                        <label htmlFor="docVisibleTo">Visibility</label>
                         <select id="docVisibleTo" multiple value={selectedUserIds} onChange={handleUserSelect} className="multi-select">
-                            <option value="all">Mindenki</option>
+                            <option value="all">Everyone</option>
                             {tripParticipants.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
                         </select>
-                        <small>Több felhasználó kijelöléséhez tartsa lenyomva a Ctrl/Cmd billentyűt.</small>
+                        <small>Use Ctrl/Cmd to select multiple participants.</small>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="docFile">Fájl kiválasztása</label>
+                        <label htmlFor="docFile">Choose file</label>
                         <input id="docFile" type="file" onChange={e => setFile(e.target.files?.[0] || null)} />
                     </div>
                     <div className="modal-actions">
-                        <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isUploading}>Mégse</button>
-                        <button type="submit" className="btn btn-primary" disabled={isUploading}>{isUploading ? 'Feltöltés…' : 'Feltöltés'}</button>
+                        <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isUploading}>Cancel</button>
+                        <button type="submit" className="btn btn-primary" disabled={isUploading}>{isUploading ? 'Uploading…' : 'Upload document'}</button>
                         {isUploading && <span className="upload-loader" />}
                     </div>
                 </form>
@@ -2032,7 +2301,7 @@ const EditDocumentModal = ({ doc, isOpen, onClose, onSave, tripParticipants, cat
     };
 
     const handleAddCategoryClick = () => {
-        const newCat = prompt('Új kategória neve');
+        const newCat = prompt('New category name');
         if (newCat) onAddCategory(newCat);
     };
 
@@ -2053,14 +2322,14 @@ const EditDocumentModal = ({ doc, isOpen, onClose, onSave, tripParticipants, cat
     return (
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <h2>Dokumentum szerkesztése</h2>
+                <h2>Edit document</h2>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
-                        <label htmlFor="editDocName">Dokumentum neve</label>
+                        <label htmlFor="editDocName">Document name</label>
                         <input id="editDocName" type="text" value={name} onChange={e => setName(e.target.value)} required />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="editDocCategory">Kategória</label>
+                        <label htmlFor="editDocCategory">Category</label>
                         <div className="category-select">
                             <select id="editDocCategory" value={category} onChange={e => setCategory(e.target.value)} required>
                                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
@@ -2069,20 +2338,20 @@ const EditDocumentModal = ({ doc, isOpen, onClose, onSave, tripParticipants, cat
                         </div>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="editDocVisibleTo">Láthatóság</label>
+                        <label htmlFor="editDocVisibleTo">Visibility</label>
                         <select id="editDocVisibleTo" multiple value={selectedUserIds} onChange={handleUserSelect} className="multi-select">
-                            <option value="all">Mindenki</option>
+                            <option value="all">Everyone</option>
                             {tripParticipants.map(p => <option key={p.id} value={String(p.id)}>{p.name}</option>)}
                         </select>
-                        <small>Több felhasználó kijelöléséhez tartsa lenyomva a Ctrl/Cmd billentyűt.</small>
+                        <small>Use Ctrl/Cmd to select multiple participants.</small>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="editDocFile">Fájl cseréje</label>
+                        <label htmlFor="editDocFile">Replace file</label>
                         <input id="editDocFile" type="file" onChange={handleFileChange} />
                     </div>
                     <div className="modal-actions">
-                        <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isUploading}>Mégse</button>
-                        <button type="submit" className="btn btn-primary" disabled={isUploading}>{isUploading ? 'Mentés…' : 'Mentés'}</button>
+                        <button type="button" onClick={onClose} className="btn btn-secondary" disabled={isUploading}>Cancel</button>
+                        <button type="submit" className="btn btn-primary" disabled={isUploading}>{isUploading ? 'Saving…' : 'Save changes'}</button>
                         {isUploading && <span className="upload-loader" />}
                     </div>
                 </form>
@@ -2127,7 +2396,7 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
     };
 
     const handleDelete = async (id: string) => {
-        if (window.confirm('Biztosan törli a dokumentumot?')) {
+        if (window.confirm('Delete this document?')) {
             await onRemoveDocument(id);
         }
     };
@@ -2169,26 +2438,33 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
 
         return (
              <div>
-                <h2>Dokumentumok: {trip.name}</h2>
+                <SectionIntro
+                    eyebrow="Traveler files"
+                    title={`Documents: ${trip.name}`}
+                    description="Your trip files are grouped by category so they stay readable on mobile and easy to download."
+                />
                 {Object.keys(docsByCategory).length > 0 ? (
                     Object.entries(docsByCategory).map(([category, docs]) => (
-                        <div key={category} className="document-category-group">
-                            <h3>{category}</h3>
+                        <details key={category} className="document-category-group" open>
+                            <summary>{category} <span>{docs.length}</span></summary>
                             <ul className="document-list">
                                 {docs.map(doc => (
                                     <li key={doc.id} className="document-item">
-                                        <span>{doc.name}</span>
+                                        <div className="document-item-copy">
+                                            <strong>{doc.name}</strong>
+                                            <small>Uploaded {doc.uploadDate}</small>
+                                        </div>
                                         <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} download className="btn btn-secondary">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                            Letöltés
+                                            Download
                                         </a>
                                     </li>
                                 ))}
                             </ul>
-                        </div>
+                        </details>
                     ))
                 ) : (
-                    <p>Nincsenek megosztott dokumentumok.</p>
+                    <p>No shared documents are available for this trip yet.</p>
                 )}
             </div>
         )
@@ -2197,22 +2473,22 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
     // Admin & Organizer View
     return (
         <div>
-            <div className="dashboard-header">
-                <h2>Dokumentumok: {trip.name}</h2>
-                <button onClick={() => setUploadModalOpen(true)} className="btn btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    Új dokumentum feltöltése
-                </button>
-            </div>
-             <div className="table-container">
+            <SectionIntro
+                eyebrow="Trip files"
+                title={`Documents: ${trip.name}`}
+                description="Keep uploaded files readable on desktop and manageable on mobile with clear visibility and action states."
+                actions={<button onClick={() => setUploadModalOpen(true)} className="btn btn-primary">Upload document</button>}
+            />
+             <div className="responsive-table-group">
+              <div className="table-container desktop-table">
                 <table className="documents-table">
                     <thead>
                         <tr>
-                            <th onClick={() => requestSort('name')}>Név</th>
-                            <th onClick={() => requestSort('category')}>Kategória</th>
-                            <th onClick={() => requestSort('uploadDate')}>Feltöltés dátuma</th>
-                            <th>Láthatóság</th>
-                            <th>Műveletek</th>
+                            <th onClick={() => requestSort('name')}>Name</th>
+                            <th onClick={() => requestSort('category')}>Category</th>
+                            <th onClick={() => requestSort('uploadDate')}>Uploaded</th>
+                            <th>Visibility</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -2221,7 +2497,7 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
                             if (Array.isArray(doc.visibleTo)) {
                                 visibleToText = users.filter(u => doc.visibleTo.includes(u.id)).map(u => u.name).join(', ');
                             } else {
-                                visibleToText = 'Mindenki';
+                                visibleToText = 'Everyone';
                             }
                             return (
                                 <tr key={doc.id}>
@@ -2230,15 +2506,40 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
                                     <td>{doc.uploadDate}</td>
                                     <td>{visibleToText}</td>
                                     <td className="actions">
-                                        <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Megnyitás</a>
-                                        <button onClick={() => setEditingDoc(doc)} className="btn btn-secondary btn-small">Szerkesztés</button>
-                                        <button onClick={() => handleDelete(doc.id)} className="btn btn-danger btn-small">Törlés</button>
+                                        <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Open</a>
+                                        <button onClick={() => setEditingDoc(doc)} className="btn btn-secondary btn-small">Edit</button>
+                                        <button onClick={() => handleDelete(doc.id)} className="btn btn-danger btn-small">Delete</button>
                                     </td>
                                 </tr>
                             )
                         })}
                     </tbody>
                 </table>
+              </div>
+              <div className="mobile-record-list">
+                {sortedDocuments.map((doc) => {
+                    const visibleToText = Array.isArray(doc.visibleTo)
+                        ? users.filter(u => doc.visibleTo.includes(u.id)).map(u => u.name).join(', ')
+                        : 'Everyone';
+                    return (
+                        <article key={doc.id} className="mobile-record-card">
+                            <div className="mobile-record-head">
+                                <strong>{doc.name}</strong>
+                                <span>{doc.category}</span>
+                            </div>
+                            <div className="mobile-record-meta">
+                                <span>Uploaded {doc.uploadDate}</span>
+                                <span>{visibleToText}</span>
+                            </div>
+                            <div className="mobile-record-actions">
+                                <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Open</a>
+                                <button onClick={() => setEditingDoc(doc)} className="btn btn-secondary btn-small">Edit</button>
+                                <button onClick={() => handleDelete(doc.id)} className="btn btn-danger btn-small">Delete</button>
+                            </div>
+                        </article>
+                    );
+                })}
+              </div>
             </div>
 
             <UploadDocumentModal
@@ -2444,7 +2745,7 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
     const handleSend = () => {
         const html = editorRef.current?.innerHTML || '';
         if (!recipientIds.length) {
-            alert('Válasszon ki legalább egy címzettet.');
+            alert('Choose at least one recipient before sending.');
             return;
         }
         if (html.trim()) {
@@ -2504,6 +2805,11 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
 
     return (
         <div className="trip-messages">
+            <SectionIntro
+                eyebrow="Trip updates"
+                title={`Messages: ${trip.name}`}
+                description="Keep communications focused, easy to scan, and clean on both desktop and mobile."
+            />
             {canPost && (
                 <div className="message-editor-container">
                     <div className="recipient-selector">
@@ -2520,7 +2826,7 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                                     setHasTouchedRecipients(true);
                                 }}
                             />
-                            <span>Mindenki</span>
+                            <span>Everyone</span>
                         </label>
                         {participants.map(p => (
                             <label key={p.id} className="recipient-option">
@@ -2544,7 +2850,7 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                             className="format-btn bold"
                             onMouseDown={event => event.preventDefault()}
                             onClick={() => applyCommand('bold')}
-                            aria-label="Félkövér"
+                            aria-label="Bold"
                         >
                             B
                         </button>
@@ -2553,7 +2859,7 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                             className="format-btn italic"
                             onMouseDown={event => event.preventDefault()}
                             onClick={() => applyCommand('italic')}
-                            aria-label="Dőlt"
+                            aria-label="Italic"
                         >
                             I
                         </button>
@@ -2562,7 +2868,7 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                             className="format-btn underline"
                             onMouseDown={event => event.preventDefault()}
                             onClick={() => applyCommand('underline')}
-                            aria-label="Aláhúzott"
+                            aria-label="Underline"
                         >
                             U
                         </button>
@@ -2570,7 +2876,7 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                             className="font-select"
                             value={fontFamily}
                             onChange={handleFontChange}
-                            aria-label="Betűtípus"
+                            aria-label="Font family"
                         >
                             <option value="Poppins">Poppins</option>
                             <option value="Arial">Arial</option>
@@ -2584,23 +2890,23 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                             className="color-input"
                             value={textColor}
                             onChange={handleTextColorChange}
-                            aria-label="Betűszín"
-                            title="Betűszín"
+                            aria-label="Text color"
+                            title="Text color"
                         />
                         <input
                             type="color"
                             className="color-input"
                             value={highlightColor}
                             onChange={handleHighlightChange}
-                            aria-label="Háttérszín"
-                            title="Háttérszín"
+                            aria-label="Highlight color"
+                            title="Highlight color"
                         />
                         <button
                             type="button"
                             className="format-btn clear"
                             onMouseDown={event => event.preventDefault()}
                             onClick={handleClearFormatting}
-                            aria-label="Formázás törlése"
+                            aria-label="Clear formatting"
                         >
                             Tx
                         </button>
@@ -2618,8 +2924,8 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                         onBlur={saveSelection}
                     />
                     <div className="message-actions">
-                        <button className="btn btn-primary" onClick={handleSend} disabled={recipientIds.length === 0}>{editing ? 'Mentés' : 'Küldés'}</button>
-                        {editing && <button className="btn" onClick={cancelEdit}>Mégse</button>}
+                        <button className="btn btn-primary" onClick={handleSend} disabled={recipientIds.length === 0}>{editing ? 'Save message' : 'Send update'}</button>
+                        {editing && <button className="btn" onClick={cancelEdit}>Cancel</button>}
                     </div>
                 </div>
             )}
@@ -2629,14 +2935,14 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                     const names = recips.map(r => r.name).join(', ');
                     return (
                         <div key={m.id} className={`message-item${unreadIds.includes(m.id) ? ' unread' : ''}`}>
-                            <div className="meta">{new Date(m.createdAt).toLocaleString()} – {names}</div>
+                            <div className="meta">{new Date(m.createdAt).toLocaleString('en-GB')} · {names}</div>
                             <div className="content" dangerouslySetInnerHTML={{ __html: m.content }} />
                             {canPost && (
                                 <div className="actions">
-                                    <button className="action-btn" onClick={() => startEdit(m)} aria-label="Szerkesztés">
+                                    <button className="action-btn" onClick={() => startEdit(m)} aria-label="Edit message">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                     </button>
-                                    <button className="action-btn delete" onClick={() => onRemoveMessage(trip.id, m.id)} aria-label="Törlés">
+                                    <button className="action-btn delete" onClick={() => onRemoveMessage(trip.id, m.id)} aria-label="Delete message">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                                     </button>
                                 </div>
@@ -2762,7 +3068,7 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                     setFormData(prev => ({ ...prev, [fieldId]: data.path }));
                     await onUpdateRecord({ userId: user.id, fieldId, value: data.path, tripId: trip.id });
                 } catch (_) {
-                    showStatus({ type: 'error', message: 'Nem sikerült feltölteni a fájlt. Kérjük, próbálja meg újra.' });
+                    showStatus({ type: 'error', message: 'File upload failed. Please try again.' });
                 }
                 setUploadingField(null);
             }
@@ -2782,11 +3088,11 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                 }
                 setFormData(prev => ({ ...prev, [fieldId]: '' }));
                 await onUpdateRecord({ userId: user.id, fieldId, value: '', tripId: trip.id });
-                showStatus({ type: 'success', message: 'Fájl eltávolítva. Töltsön fel új dokumentumot.' });
+                showStatus({ type: 'success', message: 'File removed. Upload a replacement whenever you are ready.' });
             } catch (error) {
                 console.error(error);
                 setFormData(prev => ({ ...prev, [fieldId]: previousValue }));
-                showStatus({ type: 'error', message: 'Nem sikerült eltávolítani a fájlt. Kérjük, próbálja meg újra.' });
+                showStatus({ type: 'error', message: 'File removal failed. Please try again.' });
             } finally {
                 setDeletingField(null);
             }
@@ -2795,7 +3101,7 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
         const handleBlur = (fieldId: string) => {
             onUpdateRecord({ userId: user.id, fieldId, value: formData[fieldId], tripId: trip.id })
                 .catch(() => {
-                    showStatus({ type: 'error', message: 'Nem sikerült elmenteni az adatokat. Kérjük, próbálja meg újra.' });
+                    showStatus({ type: 'error', message: 'We could not save that field. Please try again.' });
                 });
         };
 
@@ -2820,10 +3126,10 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                         return onUpdateRecord({ userId: user.id, fieldId: cfg.id, value, tripId: trip.id });
                     });
                 await Promise.all(promises);
-                showStatus({ type: 'success', message: 'Személyes adatok sikeresen mentve.' });
+                showStatus({ type: 'success', message: 'Personal data saved successfully.' });
             } catch (error) {
                 console.error(error);
-                showStatus({ type: 'error', message: 'Nem sikerült elmenteni az adatokat. Kérjük, próbálja meg újra.' });
+                showStatus({ type: 'error', message: 'Saving failed. Please try again.' });
             } finally {
                 setIsSaving(false);
             }
@@ -2850,14 +3156,14 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                     {(uploadingField === config.id || deletingField === config.id) && <span className="upload-loader" />}
                     {formData[config.id] && (
                         <div className="file-info">
-                            Feltöltve: <a href={`${API_BASE}/api/users/${user.id}/personal-data/${config.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer">{getFileName(formData[config.id])}</a>
+                            Uploaded: <a href={`${API_BASE}/api/users/${user.id}/personal-data/${config.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer">{getFileName(formData[config.id])}</a>
                             <button
                                 type="button"
                                 className="btn remove-file-btn"
                                 onClick={() => handleFileDelete(config.id)}
                                 disabled={isLocked || deletingField === config.id || uploadingField === config.id}
                             >
-                                Fájl eltávolítása
+                                Remove file
                             </button>
                         </div>
                     )}
@@ -2904,15 +3210,23 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                     onChange={e => handleChange(config.id, e.target.value)}
                     onBlur={() => handleBlur(config.id)}
                     readOnly={isLocked}
-                    placeholder={isLocked ? 'Zárolva' : ''}
+                    placeholder={isLocked ? 'Locked' : ''}
                 />
             )
         );
 
         return (
             <div className="personal-data-page">
-                <h2>Személyes adatok a(z) {trip.name} utazáshoz</h2>
-                <p>Kérjük, töltse ki az alábbi mezőket a foglalások véglegesítéséhez.</p>
+                <SectionIntro
+                    eyebrow="Traveler profile"
+                    title={`Personal data: ${trip.name}`}
+                    description="Complete your traveler details and travel documents here. The team will use this information to finalize bookings."
+                    actions={(
+                        <button type="button" className="btn btn-primary" onClick={handleSave} disabled={isSaving}>
+                            {isSaving ? 'Saving...' : 'Save changes'}
+                        </button>
+                    )}
+                />
                 <form className="personal-data-form">
                     {generalConfigs.length > 0 && (
                         <div className="personal-data-grid">
@@ -2930,8 +3244,13 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                     )}
                     {passportConfigs.length > 0 && (
                         <div className="passport-box">
-                            <h3>Útlevél</h3>
-                            <button type="button" className="btn scan-passport-btn" onClick={() => setShowPassportReader(true)}>Útlevél beolvasása</button>
+                            <div className="passport-box-head">
+                                <div>
+                                    <span className="passport-box-kicker">Passport</span>
+                                    <h3>Passport details</h3>
+                                </div>
+                                <button type="button" className="btn scan-passport-btn" onClick={() => setShowPassportReader(true)}>Scan passport</button>
+                            </div>
                             <div className="personal-data-grid">
                                 {passportConfigs.map(config => {
                                     const record = records.find(r => r.userId === user.id && r.fieldId === config.id);
@@ -2956,7 +3275,7 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                             </span>
                         )}
                         <button type="button" className="btn btn-primary" onClick={handleSave} disabled={isSaving}>
-                            {isSaving ? 'Mentés…' : 'Mentés'}
+                            {isSaving ? 'Saving...' : 'Save changes'}
                         </button>
                         {isSaving && <span className="upload-loader" />}
                     </div>
@@ -3165,8 +3484,12 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
     if (tripParticipants.length === 0) {
         return (
             <div className="personal-data-page">
-                <h2>Résztvevők személyes adatai: {trip.name}</h2>
-                <p>Nincsenek résztvevők ehhez az utazáshoz.</p>
+                <SectionIntro
+                    eyebrow="Participant records"
+                    title={`Participant data: ${trip.name}`}
+                    description="This workspace becomes available once travelers are assigned to the trip."
+                />
+                <p>No participants have been assigned to this trip yet.</p>
             </div>
         );
     }
@@ -3209,7 +3532,7 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                         <button
                             className="lock-btn"
                             onClick={() => onToggleLock(participant.id, config.id)}
-                            aria-label={record?.isLocked ? 'Mező feloldása' : 'Mező zárolása'}
+                            aria-label={record?.isLocked ? 'Unlock field' : 'Lock field'}
                         >
                             {record?.isLocked ? (
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path></svg>
@@ -3218,18 +3541,18 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                             )}
                         </button>
                         {config.type !== 'file' && record?.value && !record?.isLocked && (
-                            <button className="edit-btn" onClick={() => startFieldEdit(config.id, record.value)} aria-label="Szerkesztés">
+                            <button className="edit-btn" onClick={() => startFieldEdit(config.id, record.value)} aria-label="Edit field">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg>
                             </button>
                         )}
                     </div>
                 </div>
                 {config.type === 'file' ? (
-                    <div>
+                    <div className="field-file-card">
                         {record?.value && (
-                            <div>
+                            <div className="file-info">
                                 <a href={`${API_BASE}/api/users/${participant.id}/personal-data/${config.id}/file?token=${user.token || ''}`} className="file-link">{record.value}</a>
-                                <button className="remove-file" onClick={() => handleRemoveFile(participant.id, config.id)}>Remove</button>
+                                <button className="btn remove-file-btn" onClick={() => handleRemoveFile(participant.id, config.id)}>Remove file</button>
                             </div>
                         )}
                         {!record?.isLocked && (
@@ -3239,7 +3562,7 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                 ) : isEditing && !record?.isLocked ? (
                     <div className="field-edit">
                         <input type={config.type} value={draft} onChange={e => handleDraftChange(config.id, e.target.value)} />
-                        <button className="save-btn" onClick={() => saveFieldEdit(participant.id, config.id)} aria-label="Mentés">
+                        <button className="save-btn" onClick={() => saveFieldEdit(participant.id, config.id)} aria-label="Save field">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                         </button>
                     </div>
@@ -3257,17 +3580,22 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
 
     return (
         <div className="personal-data-page">
-            <h2>Résztvevők személyes adatai: {trip.name}</h2>
+            <SectionIntro
+                eyebrow="Operations data"
+                title={`Participant data: ${trip.name}`}
+                description="Review traveler details, control locked fields, and manage the form schema without leaving the trip workspace."
+                meta={`${tripParticipants.length} participant${tripParticipants.length === 1 ? '' : 's'}`}
+            />
             <div className={`field-manager ${fieldManagerOpen ? 'expanded' : 'collapsed'}`}>
                 <div className="field-manager-header">
-                    <h3>Mezők kezelése</h3>
+                    <h3>Field manager</h3>
                     <button
                         type="button"
                         className="field-manager-toggle"
                         onClick={() => setFieldManagerOpen(open => !open)}
                         aria-expanded={fieldManagerOpen}
                     >
-                        <span>{fieldManagerOpen ? 'Elrejtés' : 'Megnyitás'}</span>
+                        <span>{fieldManagerOpen ? 'Hide' : 'Open'}</span>
                         <svg
                             className="field-manager-toggle-icon"
                             xmlns="http://www.w3.org/2000/svg"
@@ -3285,7 +3613,7 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                     </button>
                 </div>
                 {!fieldManagerOpen && (
-                    <p className="field-manager-hint">A mezők módosításához nyissa meg a kezelőpanelt.</p>
+                    <p className="field-manager-hint">Open the field manager to enable, reorder, or edit traveler fields for this trip.</p>
                 )}
                 {fieldManagerOpen && (
                     <div className="field-manager-body">
@@ -3304,18 +3632,18 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                                         <>
                                             <input value={editLabel} onChange={e => setEditLabel(e.target.value)} />
                                             <select value={editType} onChange={e => setEditType(e.target.value as any)}>
-                                                <option value="text">Szöveg</option>
-                                                <option value="date">Dátum</option>
-                                                <option value="file">Fájl</option>
-                                                <option value="radio">Egyszeres választás</option>
-                                                <option value="multi">Több választás</option>
+                                                <option value="text">Text</option>
+                                                <option value="date">Date</option>
+                                                <option value="file">File</option>
+                                                <option value="radio">Single choice</option>
+                                                <option value="multi">Multi choice</option>
                                             </select>
                                             {(editType === 'radio' || editType === 'multi') && (
-                                                <input placeholder="Opciók, vesszővel" value={editOptions} onChange={e => setEditOptions(e.target.value)} />
+                                                <input placeholder="Options, comma separated" value={editOptions} onChange={e => setEditOptions(e.target.value)} />
                                             )}
                                             <div className="config-actions">
-                                                <button className="btn btn-small" onClick={() => saveEdit(c)}>Mentés</button>
-                                                <button className="btn btn-small" onClick={cancelEdit}>Mégse</button>
+                                                <button className="btn btn-small" onClick={() => saveEdit(c)}>Save</button>
+                                                <button className="btn btn-small" onClick={cancelEdit}>Cancel</button>
                                             </div>
                                         </>
                                     ) : (
@@ -3323,8 +3651,8 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                                             <span className="config-label">{c.label} <small>({c.type})</small></span>
                                             {!c.locked && (
                                                 <div className="config-actions">
-                                                    <button className="btn btn-small" onClick={() => startEdit(c)}>Szerkesztés</button>
-                                                    <button className="btn btn-danger btn-small" onClick={() => handleDeleteField(c)}>Törlés</button>
+                                                    <button className="btn btn-small" onClick={() => startEdit(c)}>Edit</button>
+                                                    <button className="btn btn-danger btn-small" onClick={() => handleDeleteField(c)}>Remove</button>
                                                 </div>
                                             )}
                                         </>
@@ -3340,24 +3668,24 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                             </div>
                         )}
                         <div className="add-field">
-                            <input placeholder="Címke" value={newFieldLabel} onChange={e => setNewFieldLabel(e.target.value)} />
+                            <input placeholder="Field label" value={newFieldLabel} onChange={e => setNewFieldLabel(e.target.value)} />
                             <select value={newFieldType} onChange={e => setNewFieldType(e.target.value as any)}>
-                                <option value="text">Szöveg</option>
-                                <option value="date">Dátum</option>
-                                <option value="file">Fájl</option>
-                                <option value="radio">Egyszeres választás</option>
-                                <option value="multi">Több választás</option>
+                                <option value="text">Text</option>
+                                <option value="date">Date</option>
+                                <option value="file">File</option>
+                                <option value="radio">Single choice</option>
+                                <option value="multi">Multi choice</option>
                             </select>
                             {(newFieldType === 'radio' || newFieldType === 'multi') && (
-                                <input placeholder="Opciók, vesszővel elválasztva" value={newFieldOptions} onChange={e => setNewFieldOptions(e.target.value)} />
+                                <input placeholder="Options, comma separated" value={newFieldOptions} onChange={e => setNewFieldOptions(e.target.value)} />
                             )}
-                            <button className="btn" onClick={handleAddField}>Hozzáadás</button>
+                            <button className="btn" onClick={handleAddField}>Add field</button>
                         </div>
                     </div>
                 )}
             </div>
             <div className="traveler-select">
-                <label htmlFor="travelerSelect">Résztvevő</label>
+                <label htmlFor="travelerSelect">Participant</label>
                 <select
                     id="travelerSelect"
                     value={selectedParticipantId}
@@ -3374,8 +3702,13 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                     {generalFieldConfigs.map(renderField)}
                     {passportFieldConfigs.length > 0 && (
                         <div className="passport-box">
-                            <h4>Útlevél</h4>
-                            <button type="button" className="btn scan-passport-btn" onClick={() => setShowPassportReader(true)}>Útlevél beolvasása</button>
+                            <div className="passport-box-head">
+                                <div>
+                                    <span className="passport-box-kicker">Passport</span>
+                                    <h4>Passport workspace</h4>
+                                </div>
+                                <button type="button" className="btn scan-passport-btn" onClick={() => setShowPassportReader(true)}>Scan passport</button>
+                            </div>
                             {passportFieldConfigs.map(renderField)}
                         </div>
                     )}
@@ -3387,13 +3720,13 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                         return (
                             <div className="remark-section">
                                 <div className="data-field-header">
-                                    <label>Megjegyzés</label>
+                                    <label>Internal note</label>
                                     {remarkEditing ? (
-                                        <button className="save-btn" onClick={() => saveRemark(participant.id)} aria-label="Mentés">
+                                        <button className="save-btn" onClick={() => saveRemark(participant.id)} aria-label="Save note">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                                         </button>
                                     ) : (
-                                        <button className="edit-btn" onClick={() => startRemarkEdit(remarkRecord?.value || '')} aria-label="Szerkesztés">
+                                        <button className="edit-btn" onClick={() => startRemarkEdit(remarkRecord?.value || '')} aria-label="Edit note">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path></svg>
                                         </button>
                                     )}
@@ -3404,14 +3737,14 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                                     <p className={`data-value${remarkRecord?.value ? '' : ' empty'}`}>{remarkRecord?.value || ''}</p>
                                 )}
                                 <div className="print-row">
-                                    <span className="print-label">Megjegyzés:</span> <span className="print-value">{remarkRecord?.value}</span>
+                                    <span className="print-label">Internal note:</span> <span className="print-value">{remarkRecord?.value}</span>
                                 </div>
                             </div>
                         );
                     })()}
                     <div className="personal-data-actions">
-                        <button className="btn btn-secondary" onClick={handlePrint}>Nyomtatás</button>
-                        <button className="btn btn-secondary" onClick={handlePrint}>PDF mentése</button>
+                        <button className="btn btn-secondary" onClick={handlePrint}>Print</button>
+                        <button className="btn btn-secondary" onClick={handlePrint}>Save PDF</button>
                     </div>
                 </div>
             )}
@@ -3429,25 +3762,30 @@ const AllFilesView = ({ documents, users, trips, user }: { documents: Document[]
     const tripName = (id: string) => trips.find(t => t.id === id)?.name || '';
     return (
         <div className="documents-page">
-            <h2>Fájlok</h2>
+            <SectionIntro
+                eyebrow="File library"
+                title="All files"
+                description="Browse uploaded files across trips with a mobile-safe card layout and a dense desktop table."
+                meta={`${filteredDocs.length} file${filteredDocs.length === 1 ? '' : 's'}`}
+            />
             <div className="form-group">
-                <label htmlFor="fileUser">Felhasználó</label>
+                <label htmlFor="fileUser">Participant filter</label>
                 <select id="fileUser" value={selectedUser} onChange={e => setSelectedUser(e.target.value)}>
-                    <option value="">Összes</option>
+                    <option value="">All participants</option>
                     {users.map(u => (
                         <option key={u.id} value={u.id}>{u.name}</option>
                     ))}
                 </select>
             </div>
-            <div className="table-container">
+            <div className="table-container desktop-table">
                 <table className="documents-table">
                     <thead>
                         <tr>
-                            <th>Név</th>
-                            <th>Felhasználó</th>
-                            <th>Utazás</th>
-                            <th>Kategória</th>
-                            <th>Dátum</th>
+                            <th>Name</th>
+                            <th>Participant</th>
+                            <th>Trip</th>
+                            <th>Category</th>
+                            <th>Uploaded</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -3459,12 +3797,34 @@ const AllFilesView = ({ documents, users, trips, user }: { documents: Document[]
                                 <td>{tripName(doc.tripId)}</td>
                                 <td>{doc.category}</td>
                                 <td>{doc.uploadDate}</td>
-                                <td><a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer">Letöltés</a></td>
+                                <td><a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer">Open</a></td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+            <div className="mobile-record-list">
+                {filteredDocs.map(doc => (
+                    <article key={doc.id} className="mobile-record-card">
+                        <div className="mobile-record-head">
+                            <div>
+                                <strong>{doc.name}</strong>
+                                <span>{doc.category}</span>
+                            </div>
+                            <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small">Open</a>
+                        </div>
+                        <div className="mobile-record-meta">
+                            <span>Participant</span>
+                            <strong>{userName(doc.uploadedBy) || 'Unknown user'}</strong>
+                            <span>Trip</span>
+                            <strong>{tripName(doc.tripId) || 'Unknown trip'}</strong>
+                            <span>Uploaded</span>
+                            <strong>{doc.uploadDate}</strong>
+                        </div>
+                    </article>
+                ))}
+            </div>
+            {filteredDocs.length === 0 && <p className="no-trips">No files match the current filter.</p>}
         </div>
     );
 };
@@ -3501,7 +3861,7 @@ const Sidebar = ({
     onShowFiles: () => void,
     onShowAccount: () => void,
     onShowSiteSettings: () => void,
-    mainView: 'trips' | 'users' | 'files' | 'account' | 'site',
+    mainView: MainView,
     userRole: Role,
     userId: string,
     isOpen: boolean,
@@ -3512,6 +3872,16 @@ const Sidebar = ({
     onThemeChange: (theme: Theme) => void,
     logos: SiteSettings | null
 }) => {
+    const mainNavItems: NavItem[] = [{ key: 'trips', label: 'Trips' }];
+
+    if (userRole === 'admin' || userRole === 'organizer') {
+        mainNavItems.push({ key: 'files', label: 'Files' });
+    }
+
+    if (userRole === 'admin') {
+        mainNavItems.push({ key: 'users', label: 'People' });
+        mainNavItems.push({ key: 'site', label: 'Brand settings' });
+    }
 
     return (
         <aside className={`sidebar ${isOpen ? 'is-open' : ''}`}>
@@ -3522,77 +3892,64 @@ const Sidebar = ({
                 })()}
             </div>
             <nav>
+                <div className="sidebar-section-label">Workspace</div>
                 <ul className="main-nav-list">
-                    <li className="nav-item">
-                        <a href="#" onClick={(e) => { e.preventDefault(); onShowTrips(); }} className={mainView === 'trips' ? 'active' : ''}>
-                           Utazásaid
-                        </a>
-                        {mainView === 'trips' && (
-                          <ul className="trip-nav-list">
-                            {trips.map(trip => {
-                              const tripNavItems: { key: TripView; label: string }[] = [
-                                { key: 'summary', label: 'Összegzés' },
-                                { key: 'itinerary', label: 'Útiterv' },
-                                { key: 'financials', label: 'Pénzügyek' },
-                                { key: 'personalData', label: 'Személyes adatok' },
-                                { key: 'documents', label: 'Dokumentumok' },
-                                { key: 'messages', label: 'Üzenetek' },
-                              ];
-                              if (userRole === 'admin' || (userRole === 'organizer' && trip.organizerIds.includes(userId))) {
-                                tripNavItems.push({ key: 'contact', label: 'Kapcsolat' });
-                                tripNavItems.push({ key: 'users', label: 'Utasok' });
-                                tripNavItems.push({ key: 'settings', label: 'Beállítások' });
-                              }
-                              return (
-                                <li key={trip.id} className={`trip-item ${trip.id === selectedTripId ? 'active' : ''}`}>
-                                  <a href="#" onClick={(e) => { e.preventDefault(); onSelectTrip(trip.id); }}>
-                                    {trip.name}
-                                  </a>
-                                  {trip.id === selectedTripId && (
-                                    <ul className="trip-submenu">
-                                      {tripNavItems.map(item => (
-                                        <li key={item.key}>
-                                          <a
-                                            href="#"
-                                            onClick={(e) => { e.preventDefault(); onSelectView(item.key); }}
-                                            className={activeView === item.key ? 'active' : ''}
-                                          >
-                                            {item.label}
-                                            {item.key === 'messages' && unreadCounts[trip.id] > 0 && (
-                                              <span className="unread-badge">{unreadCounts[trip.id]}</span>
-                                            )}
-                                          </a>
-                                        </li>
-                                      ))}
+                    {mainNavItems.map((item) => {
+                        const handlers: Record<MainView, () => void> = {
+                            trips: onShowTrips,
+                            users: onShowUsers,
+                            files: onShowFiles,
+                            account: onShowAccount,
+                            site: onShowSiteSettings,
+                        };
+
+                        return (
+                            <li key={item.key} className="nav-item">
+                                <a
+                                    href="#"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        handlers[item.key]();
+                                    }}
+                                    className={mainView === item.key ? 'active' : ''}
+                                >
+                                    {item.label}
+                                </a>
+                                {item.key === 'trips' && mainView === 'trips' && (
+                                    <ul className="trip-nav-list">
+                                        {trips.map((trip) => {
+                                            const tripNavItems = getTripNavItems(trip, userRole, userId);
+                                            return (
+                                                <li key={trip.id} className={`trip-item ${trip.id === selectedTripId ? 'active' : ''}`}>
+                                                    <a href="#" onClick={(e) => { e.preventDefault(); onSelectTrip(trip.id); }}>
+                                                        {trip.name}
+                                                    </a>
+                                                    {trip.id === selectedTripId && (
+                                                        <ul className="trip-submenu">
+                                                            {tripNavItems.map((submenuItem) => (
+                                                                <li key={submenuItem.key}>
+                                                                    <a
+                                                                        href="#"
+                                                                        onClick={(e) => { e.preventDefault(); onSelectView(submenuItem.key); }}
+                                                                        className={activeView === submenuItem.key ? 'active' : ''}
+                                                                    >
+                                                                        {submenuItem.label}
+                                                                        {submenuItem.key === 'messages' && unreadCounts[trip.id] > 0 && (
+                                                                            <span className="unread-badge">{unreadCounts[trip.id]}</span>
+                                                                        )}
+                                                                    </a>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
+                                                </li>
+                                            );
+                                        })}
                                     </ul>
-                                  )}
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
-                    </li>
-                    {(userRole === 'admin' || userRole === 'organizer') && (
-                      <li className="nav-item">
-                        <a href="#" onClick={(e) => { e.preventDefault(); onShowFiles(); }} className={mainView === 'files' ? 'active' : ''}>
-                          Fájlok
-                        </a>
-                      </li>
-                    )}
-                    {userRole === 'admin' && (
-                      <>
-                      <li className="nav-item">
-                        <a href="#" onClick={(e) => { e.preventDefault(); onShowUsers(); }} className={mainView === 'users' ? 'active' : ''}>
-                          Felhasználók
-                        </a>
-                      </li>
-                      <li className="nav-item">
-                        <a href="#" onClick={(e) => { e.preventDefault(); onShowSiteSettings(); }} className={mainView === 'site' ? 'active' : ''}>
-                          Oldal beállítások
-                        </a>
-                      </li>
-                      </>
-                    )}
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>
             </nav>
             <div className="sidebar-footer">
@@ -3600,16 +3957,122 @@ const Sidebar = ({
                     href="#"
                     onClick={(e) => {
                         e.preventDefault();
-                        onShowAccount();
+                    onShowAccount();
                     }}
                     className={mainView === 'account' ? 'active' : ''}
                 >
-                    Beállítások
+                    Account
                 </a>
                 <ThemeSwitcher theme={theme} onThemeChange={onThemeChange} />
-                <button onClick={onLogout} className="btn btn-logout">Kijelentkezés</button>
+                <button onClick={onLogout} className="btn btn-logout">Sign out</button>
             </div>
         </aside>
+    );
+};
+
+const TripSubnav = ({
+    trip,
+    user,
+    activeView,
+    unreadCount,
+    onSelectView,
+}: {
+    trip: Trip;
+    user: User;
+    activeView: TripView;
+    unreadCount: number;
+    onSelectView: (view: TripView) => void;
+}) => {
+    const items = getTripNavItems(trip, user.role, String(user.id));
+
+    return (
+        <div className="trip-mobile-subnav">
+            <div className="trip-mobile-subnav-head">
+                <span className="trip-mobile-subnav-label">Current trip</span>
+                <strong>{trip.name}</strong>
+            </div>
+            <div className="trip-mobile-subnav-scroll" role="tablist" aria-label="Trip sections">
+                {items.map((item) => (
+                    <button
+                        key={item.key}
+                        type="button"
+                        className={activeView === item.key ? 'active' : ''}
+                        onClick={() => onSelectView(item.key)}
+                    >
+                        {item.label}
+                        {item.key === 'messages' && unreadCount > 0 && (
+                            <span className="trip-mobile-subnav-badge">{unreadCount}</span>
+                        )}
+                    </button>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+const MobileBottomNav = ({
+    role,
+    mainView,
+    selectedTrip,
+    activeTripView,
+    onShowHome,
+    onOpenTrip,
+    onOpenMessages,
+    onShowFiles,
+    onShowAccount,
+    onOpenMore,
+}: {
+    role: Role;
+    mainView: MainView;
+    selectedTrip: Trip | null;
+    activeTripView: TripView;
+    onShowHome: () => void;
+    onOpenTrip: () => void;
+    onOpenMessages: () => void;
+    onShowFiles: () => void;
+    onShowAccount: () => void;
+    onOpenMore: () => void;
+}) => {
+    const items = getPrimaryMobileNavItems(role);
+
+    const isActive = (key: string) => {
+        if (key === 'home') {
+            return mainView === 'trips' && !selectedTrip;
+        }
+        if (key === 'trips') {
+            return mainView === 'trips' && Boolean(selectedTrip) && activeTripView !== 'messages';
+        }
+        if (key === 'messages') {
+            return mainView === 'trips' && activeTripView === 'messages';
+        }
+        if (key === 'files') {
+            return mainView === 'files';
+        }
+        if (key === 'account') {
+            return mainView === 'account';
+        }
+        return false;
+    };
+
+    return (
+        <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation">
+            {items.map((item) => {
+                const onClick = () => {
+                    if (item.key === 'home') onShowHome();
+                    if (item.key === 'trips') onOpenTrip();
+                    if (item.key === 'messages') onOpenMessages();
+                    if (item.key === 'files') onShowFiles();
+                    if (item.key === 'account') onShowAccount();
+                    if (item.key === 'more') onOpenMore();
+                };
+
+                return (
+                    <button key={item.key} type="button" className={isActive(item.key) ? 'active' : ''} onClick={onClick}>
+                        <span>{item.label}</span>
+                    </button>
+                );
+            })}
+        </nav>
     );
 };
 
@@ -3664,12 +4127,14 @@ const Dashboard = ({
   const [isInviteOpen, setInviteOpen] = useState(false);
   const [inviteRefresh, setInviteRefresh] = useState(0);
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
-  const [mainView, setMainView] = useState<'trips' | 'users' | 'files' | 'account' | 'site'>('trips');
+  const [mainView, setMainView] = useState<MainView>('trips');
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
   const [activeTripView, setActiveTripView] = useState<TripView>('summary');
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userRefresh, setUserRefresh] = useState(0);
+  const isMobile = useMediaQuery('(max-width: 767px)');
+  const isTabletOrBelow = useMediaQuery('(max-width: 1199px)');
   const unreadCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     messages.forEach(m => {
@@ -3693,6 +4158,12 @@ const Dashboard = ({
       .then(setSiteSettings)
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!isTabletOrBelow) {
+      setMobileSidebarOpen(false);
+    }
+  }, [isTabletOrBelow]);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/users`)
@@ -3782,26 +4253,28 @@ const Dashboard = ({
   }, [visibleTrips]);
 
   const handleSelectTrip = (tripId: string) => {
+    setMainView('trips');
     setSelectedTripId(tripId);
     setActiveTripView('summary');
-    setMobileSidebarOpen(false); // Close mobile menu on selection
+    setMobileSidebarOpen(false);
   };
 
   const handleSelectView = (view: TripView) => {
+    setMainView('trips');
     setActiveTripView(view);
-    setMobileSidebarOpen(false); // Close mobile menu on selection
+    setMobileSidebarOpen(false);
   };
 
   const handleShowTrips = () => {
     setMainView('trips');
     setSelectedTripId(null);
-    setMobileSidebarOpen(false); // Close mobile menu on selection
+    setMobileSidebarOpen(false);
   }
 
   const handleShowUsers = () => {
     setMainView('users');
     setSelectedTripId(null);
-    setMobileSidebarOpen(false); // Close mobile menu on selection
+    setMobileSidebarOpen(false);
   }
 
   const handleShowAccount = () => {
@@ -3821,6 +4294,30 @@ const Dashboard = ({
     setSelectedTripId(null);
     setMobileSidebarOpen(false);
   }
+
+  const handleOpenMobileTrip = () => {
+    const targetTrip = selectedTrip || featuredTrip || visibleTrips[0] || null;
+    if (!targetTrip) {
+      handleShowTrips();
+      return;
+    }
+    setMainView('trips');
+    setSelectedTripId(targetTrip.id);
+    setActiveTripView('summary');
+    setMobileSidebarOpen(false);
+  };
+
+  const handleOpenMobileMessages = () => {
+    const targetTrip = selectedTrip || featuredTrip || visibleTrips.find((trip) => unreadCounts[trip.id] > 0) || visibleTrips[0] || null;
+    if (!targetTrip) {
+      handleShowTrips();
+      return;
+    }
+    setMainView('trips');
+    setSelectedTripId(targetTrip.id);
+    setActiveTripView('messages');
+    setMobileSidebarOpen(false);
+  };
 
   const renderContent = () => {
     if (mainView === 'users') {
@@ -3849,14 +4346,14 @@ const Dashboard = ({
             case 'personalData': return <TripPersonalData trip={selectedTrip} user={user} configs={tripPersonalDataConfigs} records={tripPersonalDataRecords} onUpdateRecord={onUpdatePersonalData} onToggleLock={onTogglePersonalDataLock} onUpsertConfig={onUpsertPersonalDataConfig} onRemoveConfig={onRemovePersonalDataConfig} users={allUsers} />;
             case 'users':
               if (user.role !== 'admin' && !selectedTrip.organizerIds.includes(String(user.id))) {
-                return <p>Nincs jogosultsága a felhasználók kezeléséhez.</p>;
+                return <p>You do not have access to manage participants for this trip.</p>;
               }
               return <TripUserManagement trip={selectedTrip} users={allUsers} currentUser={user} onChange={() => { refreshTrips(); setUserRefresh(v => v + 1); }} />;
             case 'contact':
               return <TripContactInfo user={user} onSaved={() => setUserRefresh(v => v + 1)} />;
             case 'settings':
               return <TripSettings trip={selectedTrip} user={user} onUpdated={refreshTrips} onDeleted={() => { setSelectedTripId(null); refreshTrips(); }} />;
-            default: return <h2>Válasszon nézetet</h2>;
+            default: return <h2>Select a view</h2>;
         }
     }
 
@@ -3865,25 +4362,25 @@ const Dashboard = ({
             {paymentFeedback && (
                 <div className={`floating-feedback ${paymentFeedback.type}`} role="status">
                     <span>{paymentFeedback.message}</span>
-                    <button type="button" onClick={onDismissPaymentFeedback} aria-label="Uzenet bezarasa">×</button>
+                    <button type="button" onClick={onDismissPaymentFeedback} aria-label="Dismiss notification">×</button>
                 </div>
             )}
             <section className="dashboard-overview-hero">
                 <div className="dashboard-overview-copy">
                     <span className="section-eyebrow">Travel operations board</span>
-                    <h2>Utak, utasok és befizetések végre egy nyugodt, profi felületen</h2>
+                    <h2>Trips, travelers, and payments in one calm, premium workspace</h2>
                     <p>
-                        A napi szervezéshez kellő legfontosabb jeleket kapod meg először: mennyi út él, hol van nyitott kommunikáció, mi történt a befizetésekkel.
+                        Start with the signals that matter most each day: active trips, unread updates, incoming payments, and the next operational focus.
                     </p>
                     <div className="dashboard-overview-actions">
                         {user.role === 'admin' && (
                             <button onClick={() => setModalOpen(true)} className="btn btn-primary">
-                                Új utazás
+                                Create trip
                             </button>
                         )}
                         {(user.role === 'admin' || user.role === 'organizer') && (
                             <button onClick={() => setInviteOpen(true)} className="btn btn-secondary">
-                                Meghívó küldése
+                                Send invite
                             </button>
                         )}
                     </div>
@@ -3891,37 +4388,37 @@ const Dashboard = ({
                 <div className="dashboard-overview-rail">
                     <div className="dashboard-overview-stats">
                         <div className="overview-stat-card">
-                            <span>Aktív utak</span>
+                            <span>Active trips</span>
                             <strong>{overviewMetrics.tripCount}</strong>
                         </div>
                         <div className="overview-stat-card">
-                            <span>Olvasatlan üzenetek</span>
+                            <span>Unread messages</span>
                             <strong>{overviewMetrics.unreadMessages}</strong>
                         </div>
                         <div className="overview-stat-card">
-                            <span>Online fizetések</span>
+                            <span>Online payments</span>
                             <strong>{overviewMetrics.onlinePaymentsCount}</strong>
                         </div>
                         <div className="overview-stat-card">
-                            <span>Egyenleg</span>
+                            <span>Balance</span>
                             <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
                         </div>
                     </div>
                     <div className="dashboard-overview-note">
-                        <span className="dashboard-overview-note-label">Kiemelt út</span>
-                        <strong>{featuredTrip ? featuredTrip.name : 'Még nincs kiválasztható út'}</strong>
+                        <span className="dashboard-overview-note-label">Featured trip</span>
+                        <strong>{featuredTrip ? featuredTrip.name : 'No trip highlighted yet'}</strong>
                         <p>
                             {featuredTrip
                                 ? `${formatDisplayDate(featuredTrip.startDate)} - ${formatDisplayDate(featuredTrip.endDate)} · ${getTripStageMeta(featuredTrip).summary}`
-                                : 'Amint lesz aktív vagy közelgő út, itt jelenik meg a legfontosabb fókusz.'}
+                                : 'Your next active or upcoming trip will surface here automatically.'}
                         </p>
                     </div>
                 </div>
             </section>
             <div className="dashboard-header">
                 <div>
-                    <h2>Aktív utak</h2>
-                    <p className="dashboard-header-intro">Válassz egy utat, és onnan nyisd meg az útitervet, dokumentumokat, pénzügyeket vagy a traveler adatokat.</p>
+                    <h2>Active trips</h2>
+                    <p className="dashboard-header-intro">Open a trip to move between itinerary, documents, finance, traveler data, and communications without losing context.</p>
                 </div>
             </div>
             <div className="trip-list">
@@ -3935,7 +4432,7 @@ const Dashboard = ({
                     </React.Fragment>
                 ))
                 ) : (
-                <p className="no-trips">Nincsenek megjeleníthető utazások.</p>
+                <p className="no-trips">No trips are available for this account yet.</p>
                 )}
             </div>
         </>
@@ -3971,11 +4468,34 @@ const Dashboard = ({
           <Header
             user={user}
             onToggleSidebar={() => setMobileSidebarOpen(true)}
-            showHamburger={true}
+            showHamburger={isTabletOrBelow}
           />
+          {isMobile && selectedTrip && (
+            <TripSubnav
+              trip={selectedTrip}
+              user={user}
+              activeView={activeTripView}
+              unreadCount={unreadCounts[selectedTrip.id] || 0}
+              onSelectView={handleSelectView}
+            />
+          )}
           <main className="dashboard-content">
             {renderContent()}
           </main>
+          {isMobile && (
+            <MobileBottomNav
+              role={user.role}
+              mainView={mainView}
+              selectedTrip={selectedTrip}
+              activeTripView={activeTripView}
+              onShowHome={handleShowTrips}
+              onOpenTrip={handleOpenMobileTrip}
+              onOpenMessages={handleOpenMobileMessages}
+              onShowFiles={handleShowFiles}
+              onShowAccount={handleShowAccount}
+              onOpenMore={() => setMobileSidebarOpen(true)}
+            />
+          )}
           {user.role === 'admin' && (
             <CreateTripModal
                 isOpen={isModalOpen}

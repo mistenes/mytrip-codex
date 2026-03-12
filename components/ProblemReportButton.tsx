@@ -22,10 +22,10 @@ const ProblemReportButton = () => {
       setName('');
       setEmail('');
       setMessage('');
-      alert('Köszönjük a visszajelzést!');
+      alert('Thanks, your feedback has been sent.');
     } catch (err) {
       console.error('Report send failed', err);
-      alert('Hiba történt a küldés során.');
+      alert('Sending failed. Please try again.');
     } finally {
       setSending(false);
     }
@@ -36,18 +36,20 @@ const ProblemReportButton = () => {
       <button
         className="report-problem-button"
         onClick={() => setOpen(true)}
-        aria-label="Hiba bejelentése / Feature request"
-        title="Hiba bejelentése / Feature request"
+        aria-label="Report issue or feature request"
+        title="Report issue or feature request"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </button>
       {open && (
         <div className="report-modal-overlay" onClick={() => setOpen(false)}>
           <div className="report-modal" onClick={e => e.stopPropagation()}>
-            <h2>Hiba bejelentése / Feature request</h2>
+            <span className="report-modal-kicker">Support</span>
+            <h2>Report an issue or request a feature</h2>
+            <p>Share the friction point, missing feature, or broken flow. We will use it to improve the workspace.</p>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="reportName">Név</label>
+                <label htmlFor="reportName">Name</label>
                 <input id="reportName" type="text" value={name} onChange={e => setName(e.target.value)} required />
               </div>
               <div className="form-group">
@@ -55,12 +57,12 @@ const ProblemReportButton = () => {
                 <input id="reportEmail" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
               </div>
               <div className="form-group">
-                <label htmlFor="reportMessage">Üzenet</label>
+                <label htmlFor="reportMessage">Message</label>
                 <textarea id="reportMessage" value={message} onChange={e => setMessage(e.target.value)} required />
               </div>
               <div className="modal-actions">
-                <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>Mégse</button>
-                <button type="submit" className="btn btn-primary" disabled={sending}>Küldés</button>
+                <button type="button" className="btn btn-secondary" onClick={() => setOpen(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={sending}>{sending ? 'Sending...' : 'Send report'}</button>
               </div>
             </form>
           </div>

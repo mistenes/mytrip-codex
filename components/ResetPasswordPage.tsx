@@ -12,7 +12,7 @@ const ResetPasswordPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
-      setError("A jelszavak nem egyeznek");
+      setError("Passwords do not match.");
       return;
     }
     try {
@@ -22,21 +22,27 @@ const ResetPasswordPage = () => {
         body: JSON.stringify({ token, password })
       });
       if (!res.ok) {
-        setError("Érvénytelen vagy lejárt token");
+        setError("Invalid or expired reset link.");
       } else {
         window.location.href = "/reset-password/confirm";
       }
     } catch {
-      setError("Kérés sikertelen");
+      setError("Request failed. Please try again.");
     }
   };
 
   if (!token) {
     return (
       <div className="login-container">
-        <div className="login-box">
-          <h1>Érvénytelen link</h1>
-          <button className="btn btn-primary" onClick={() => (window.location.href = "/")}>Vissza a bejelentkezéshez</button>
+        <div className="auth-side-panel">
+          <span className="auth-kicker">Reset link</span>
+          <h2>This link is no longer valid.</h2>
+          <p>Request a new reset link from the sign-in screen if you still need access.</p>
+        </div>
+        <div className="login-box auth-box">
+          <span className="auth-kicker">Link invalid</span>
+          <h1>Invalid reset link</h1>
+          <button className="btn btn-primary" onClick={() => (window.location.href = "/")}>Back to sign in</button>
         </div>
       </div>
     );
@@ -44,11 +50,17 @@ const ResetPasswordPage = () => {
 
   return (
     <div className="login-container">
-      <div className="login-box">
-        <h1>Új jelszó</h1>
+      <div className="auth-side-panel">
+        <span className="auth-kicker">New password</span>
+        <h2>Create a strong password for your workspace access.</h2>
+        <p>Use a password you have not used elsewhere and keep it memorable enough for daily operations.</p>
+      </div>
+      <div className="login-box auth-box">
+        <span className="auth-kicker">Complete reset</span>
+        <h1>Set new password</h1>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="password">Új jelszó</label>
+            <label htmlFor="password">New password</label>
             <input
               id="password"
               type="password"
@@ -58,7 +70,7 @@ const ResetPasswordPage = () => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="confirm">Jelszó megerősítése</label>
+            <label htmlFor="confirm">Confirm password</label>
             <input
               id="confirm"
               type="password"
@@ -68,7 +80,7 @@ const ResetPasswordPage = () => {
             />
           </div>
           {error && <p className="error-message">{error}</p>}
-          <button type="submit" className="btn btn-primary">Mentés</button>
+          <button type="submit" className="btn btn-primary">Save password</button>
         </form>
       </div>
     </div>

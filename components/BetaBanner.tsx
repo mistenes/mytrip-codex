@@ -30,9 +30,9 @@ const BetaBanner = () => {
 
   return (
     <div ref={ref} className="beta-banner">
-      <span className="beta-banner-icon" role="img" aria-label="Figyelmeztetés">❗</span>
-      <span className="beta-banner-text">Ez az oldal béta állapotban működik, előfordulhatnak hibák. Kérjük, jelezd őket a jobb alsó sarokban.</span>
-      <button className="beta-banner-close" onClick={handleClose} aria-label="Bezárás">×</button>
+      <span className="beta-banner-icon" role="img" aria-label="Warning">❗</span>
+      <span className="beta-banner-text">This workspace is still in beta. If something breaks or feels rough, report it from the bottom-right corner.</span>
+      <button className="beta-banner-close" onClick={handleClose} aria-label="Close">×</button>
     </div>
   );
 };

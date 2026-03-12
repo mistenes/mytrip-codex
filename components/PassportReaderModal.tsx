@@ -17,22 +17,22 @@ export default function PassportReaderModal({ onClose, onResult }: Props) {
       onResult(result);
       onClose();
     } else {
-      setError('Érvénytelen MRZ');
+      setError('Invalid MRZ.');
     }
   };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content passport-modal" onClick={e => e.stopPropagation()}>
-        <h2>Útlevél beolvasása</h2>
+        <h2>Scan passport</h2>
         <div className="form-group">
           <label htmlFor="mrzInput">MRZ</label>
-          <textarea id="mrzInput" value={text} onChange={e => setText(e.target.value)} placeholder={"Ide illessze be a két MRZ sort"} />
+          <textarea id="mrzInput" value={text} onChange={e => setText(e.target.value)} placeholder={"Paste the two MRZ lines here"} />
           {error && <small className="error">{error}</small>}
         </div>
         <div className="modal-actions">
-          <button className="btn" onClick={onClose}>Mégse</button>
-          <button className="btn btn-primary" onClick={handleSubmit}>Kitöltés</button>
+          <button className="btn" onClick={onClose}>Cancel</button>
+          <button className="btn btn-primary" onClick={handleSubmit}>Fill fields</button>
         </div>
       </div>
     </div>

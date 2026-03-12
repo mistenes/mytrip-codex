@@ -18,26 +18,33 @@ const ForgotPasswordPage = () => {
       });
       setSent(true);
     } catch {
-      setError("Kérés sikertelen.");
+      setError("Request failed. Please try again.");
     }
   };
 
   return (
     <div className="login-container">
-      <div className="login-box">
+      <div className="auth-side-panel">
+        <span className="auth-kicker">Password recovery</span>
+        <h2>Recover access without losing momentum.</h2>
+        <p>We will send a reset link if the account exists. You can use either the email address or the username tied to the account.</p>
+      </div>
+      <div className="login-box auth-box">
         {sent ? (
           <>
-            <h1>E-mail elküldve</h1>
-            <p>Ha létezik ilyen fiók, jelszó-visszaállító linket küldtünk.</p>
-            <button className="btn btn-primary" onClick={() => (window.location.href = "/")}>Vissza a bejelentkezéshez</button>
+            <span className="auth-kicker">Email sent</span>
+            <h1>Check your inbox</h1>
+            <p>If the account exists, we sent a password reset link.</p>
+            <button className="btn btn-primary" onClick={() => (window.location.href = "/")}>Back to sign in</button>
           </>
         ) : (
           <>
-            <h1>Elfelejtett jelszó</h1>
-            <p>Adja meg e-mail címét vagy felhasználónevét.</p>
+            <span className="auth-kicker">Reset access</span>
+            <h1>Forgot password?</h1>
+            <p>Enter your email address or username to receive a reset link.</p>
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label htmlFor="identifier">Email vagy felhasználónév</label>
+                <label htmlFor="identifier">Email or username</label>
                 <input
                   id="identifier"
                   type="text"
@@ -47,8 +54,8 @@ const ForgotPasswordPage = () => {
                 />
               </div>
               {error && <p className="error-message">{error}</p>}
-              <button type="submit" className="btn btn-primary">Küldés</button>
-              <button type="button" className="link-button" onClick={() => (window.location.href = "/")}>Mégse</button>
+              <button type="submit" className="btn btn-primary">Send reset link</button>
+              <button type="button" className="link-button" onClick={() => (window.location.href = "/")}>Cancel</button>
             </form>
           </>
         )}

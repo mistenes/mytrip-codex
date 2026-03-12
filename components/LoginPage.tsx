@@ -26,14 +26,14 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
         body: JSON.stringify({ username, password })
       });
       if (!res.ok) {
-        const data = await res.json().catch(() => ({ message: 'Érvénytelen felhasználónév vagy jelszó.' }));
-        setError(data.message || 'Érvénytelen felhasználónév vagy jelszó.');
+        const data = await res.json().catch(() => ({ message: 'Invalid username or password.' }));
+        setError(data.message || 'Invalid username or password.');
       } else {
         const data = await res.json();
         onLogin(data);
       }
     } catch {
-      setError('Bejelentkezés sikertelen.');
+      setError('Login failed. Please try again.');
     }
   };
     
@@ -41,34 +41,34 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
     <div className="login-container" style={siteSettings?.loginBackground ? { backgroundImage: `url(${siteSettings.loginBackground})` } : undefined}>
       <div className="login-hero">
         <span className="login-kicker">Travel operations, refined</span>
-        <h2>Utak, dokumentumok es befizetesek vegre egy kifinomult munkafeluleten.</h2>
-        <p>Utasok, szervezok es adminok ugyanabban a rendszerben dolgoznak, sokkal tisztabb informacios renddel.</p>
+        <h2>Trips, documents, and payments finally live in one polished operating system.</h2>
+        <p>Travelers, organizers, and admins work from the same calm control surface, with cleaner priorities and faster access to what matters next.</p>
         <div className="login-hero-band">
           <div className="login-stat-card">
             <strong>1</strong>
-            <span>kozos operacios felulet</span>
+            <span>shared operations workspace</span>
           </div>
           <div className="login-stat-card">
             <strong>3</strong>
-            <span>szerepkor egy rendszerben</span>
+            <span>roles in one system</span>
           </div>
           <div className="login-stat-card">
             <strong>0</strong>
-            <span>elveszo update a levelezesben</span>
+            <span>lost updates in inbox chaos</span>
           </div>
         </div>
         <div className="login-feature-list">
           <div className="login-feature-item">
-            <strong>Dokumentum cockpit</strong>
-            <span>Jegyek, PDF-ek, traveler file-ok es szemelyes adatok egy helyen.</span>
+            <strong>Document cockpit</strong>
+            <span>Tickets, PDFs, traveler uploads, and personal data are organized in one place.</span>
           </div>
           <div className="login-feature-item">
-            <strong>Fizetesek automatikusan</strong>
-            <span>Stripe es PayPal fizetes utan a jovairas rogton megjelenik a trip penzugyeiben.</span>
+            <strong>Payments credited automatically</strong>
+            <span>After Stripe or PayPal payment, the credit lands directly in trip finance records.</span>
           </div>
           <div className="login-feature-item">
-            <strong>Atlathato szervezes</strong>
-            <span>Kevesebb kaosz, jobb hierarchia, gyorsabb eligazodas minden szerepkorben.</span>
+            <strong>Clearer travel operations</strong>
+            <span>Less chaos, stronger hierarchy, and faster orientation across every role.</span>
           </div>
         </div>
       </div>
@@ -77,11 +77,14 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
           const src = theme === 'dark' ? (siteSettings?.logoDark || siteSettings?.logoLight) : (siteSettings?.logoLight || siteSettings?.logoDark);
           return src ? <img src={src} alt="myTrip logo" className="login-logo" /> : null;
         })()}
-        <h1>myTrip</h1>
-        <p>Jelentkezz be az utazasi control centerhez.</p>
+        <div className="login-box-header">
+          <span className="auth-kicker">Access workspace</span>
+          <h1>myTrip</h1>
+          <p>Sign in to your travel operations control center.</p>
+        </div>
         <form onSubmit={handleLoginSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Felhasználónév</label>
+            <label htmlFor="username">Username</label>
             <input
               id="username"
               type="text"
@@ -92,7 +95,7 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
             />
           </div>
           <div className="form-group">
-            <label htmlFor="password">Jelszó</label>
+            <label htmlFor="password">Password</label>
             <input
               id="password"
               type="password"
@@ -103,13 +106,13 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
             />
           </div>
           {error && <p className="error-message">{error}</p>}
-          <button type="submit" className="btn btn-primary">Bejelentkezés</button>
+          <button type="submit" className="btn btn-primary">Sign in</button>
           <button
             type="button"
             className="link-button"
             onClick={() => (window.location.href = '/forgot-password')}
           >
-            Elfelejtett jelszó?
+            Forgot password?
           </button>
         </form>
 

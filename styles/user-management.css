@@ -94,3 +94,70 @@
 .user-management .user-tile.traveler .user-role {
   background-color: var(--color-secondary);
 }
+
+.trip-user-management .assign-row,
+.invite-actions {
+  flex-wrap: wrap;
+}
+
+.trip-user-management select,
+.user-management select {
+  min-height: 42px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--color-text-primary);
+}
+
+html[data-theme='dark'] .trip-user-management select,
+html[data-theme='dark'] .user-management select {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.user-management .user-table,
+.trip-user-management .user-table {
+  overflow: hidden;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 253, 250, 1));
+  box-shadow: 0 18px 36px rgba(18, 35, 52, 0.08);
+}
+
+html[data-theme='dark'] .user-management .user-table,
+html[data-theme='dark'] .trip-user-management .user-table {
+  background: linear-gradient(180deg, rgba(18, 31, 42, 0.96), rgba(10, 21, 30, 0.96));
+}
+
+.user-management .user-table th,
+.trip-user-management .user-table th {
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.user-management .user-tiles {
+  gap: 1.1rem;
+}
+
+.user-management .user-tile {
+  border-radius: 20px;
+  padding: 1.15rem;
+  box-shadow: 0 16px 30px rgba(18, 35, 52, 0.07);
+}
+
+@media (max-width: 767px) {
+  .trip-user-management .assign-row,
+  .invite-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trip-user-management .assign-row .btn,
+  .invite-actions .btn {
+    width: 100%;
+  }
+
+  .user-management .user-tiles {
+    grid-template-columns: 1fr;
+  }
+}

@@ -379,7 +379,7 @@ const App = () => {
         date: r.date,
       }]);
     } else {
-      throw new Error('Nem sikerült hozzáadni a pénzügyi tételt.');
+      throw new Error('Could not add the financial record.');
     }
   };
 
@@ -395,7 +395,7 @@ const App = () => {
     });
     if (!res.ok) {
       const message = await res.json().catch(() => null);
-      throw new Error(message?.message || 'Nem sikerült frissíteni a pénzügyi tételt.');
+      throw new Error(message?.message || 'Could not update the financial record.');
     }
     const r = await res.json();
     setFinancialRecords(prev => prev.map(record => record.id === id ? {
@@ -415,7 +415,7 @@ const App = () => {
       headers: { Authorization: `Bearer ${currentUser.token}` }
     });
     if (!res.ok) {
-      throw new Error('Nem sikerült törölni a pénzügyi tételt.');
+      throw new Error('Could not delete the financial record.');
     }
     setFinancialRecords(prev => prev.filter(record => record.id !== id));
   };
@@ -685,7 +685,7 @@ const App = () => {
 
     const payload = await res.json().catch(() => ({}));
     if (!res.ok || !payload.approvalUrl) {
-      throw new Error(payload?.message || 'Nem sikerult PayPal fizetest inditani.');
+      throw new Error(payload?.message || 'Could not start the PayPal payment.');
     }
 
     window.location.href = payload.approvalUrl;
@@ -696,7 +696,7 @@ const App = () => {
       <div className="login-container">
         <div className="login-box">
           <h1>myTrip</h1>
-          <p>Munkamenet ellenőrzése…</p>
+          <p>Checking session...</p>
         </div>
       </div>
     );
