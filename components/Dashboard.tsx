@@ -1707,19 +1707,21 @@ const OnlinePaymentPanel = ({
     onStartPaypalPayment: (tripId: string, amount: number, description: string) => Promise<void> | void;
 }) => {
     const [amount, setAmount] = useState('');
-    const [description, setDescription] = useState(`${trip.name} befizetes`);
+    const [description, setDescription] = useState(`${trip.name} payment`);
     const [provider, setProvider] = useState<'stripe' | 'paypal'>('stripe');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [paymentError, setPaymentError] = useState('');
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const numericAmount = Number(amount);
 
         if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-            alert('Enter a valid payment amount.');
+            setPaymentError('Enter a valid payment amount before continuing to checkout.');
             return;
         }
 
+        setPaymentError('');
         setIsSubmitting(true);
         try {
             if (provider === 'stripe') {
@@ -1728,20 +1730,20 @@ const OnlinePaymentPanel = ({
                 await Promise.resolve(onStartPaypalPayment(trip.id, numericAmount, description));
             }
         } catch (error: any) {
-            alert(error?.message || 'Unable to start the payment flow.');
+            setPaymentError(error?.message || 'Unable to start the payment flow right now.');
             setIsSubmitting(false);
         }
     };
 
     return (
-        <section className="online-payment-panel">
-            <div className="online-payment-copy">
+        <section className="online-payment-panel online-payment-panel-v2">
+            <div className="online-payment-copy online-payment-copy-v2">
                 <span className="online-payment-eyebrow">Online payments</span>
                 <h3>Fast payment with automatic crediting</h3>
                 <p>
                     After a Stripe or PayPal payment, the system automatically creates the matching finance entry for your traveler profile.
                 </p>
-                <div className="online-payment-highlights">
+                <div className="online-payment-highlights online-payment-highlights-v2">
                     <div>
                         <strong>Automatic finance entry</strong>
                         <span>The credited payment lands directly in this trip’s finance history.</span>
@@ -1752,7 +1754,7 @@ const OnlinePaymentPanel = ({
                     </div>
                 </div>
             </div>
-            <form className="online-payment-form" onSubmit={handleSubmit}>
+            <form className="online-payment-form online-payment-form-v2" onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label htmlFor="online-payment-amount">Amount</label>
                     <input
@@ -1776,10 +1778,11 @@ const OnlinePaymentPanel = ({
                         required
                     />
                 </div>
-                <div className="provider-toggle" role="tablist" aria-label="Payment provider">
+                <div className="provider-toggle provider-toggle-v2" role="tablist" aria-label="Payment provider">
                     <button type="button" className={provider === 'stripe' ? 'active' : ''} onClick={() => setProvider('stripe')}>Stripe</button>
                     <button type="button" className={provider === 'paypal' ? 'active' : ''} onClick={() => setProvider('paypal')}>PayPal</button>
                 </div>
+                {paymentError && <p className="financial-inline-status error">{paymentError}</p>}
                 <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
                     {isSubmitting ? 'Redirecting...' : `Continue with ${provider === 'stripe' ? 'Stripe' : 'PayPal'}`}
                 </button>
@@ -1839,19 +1842,21 @@ const TripFinancials = ({
     }, [records, tripParticipants]);
     
     // Form state for admin/organizer
-    const [description, setDescription] = useState('');
-    const [amount, setAmount] = useState('');
-    const [type, setType] = useState<'expense' | 'payment'>('expense');
-    const [selectedUserId, setSelectedUserId] = useState<string>(tripParticipants[0]?.id || '');
-    const [isAdding, setIsAdding] = useState(false);
+	const [description, setDescription] = useState('');
+	const [amount, setAmount] = useState('');
+	const [type, setType] = useState<'expense' | 'payment'>('expense');
+	const [selectedUserId, setSelectedUserId] = useState<string>(tripParticipants[0]?.id || '');
+	const [isAdding, setIsAdding] = useState(false);
+    const [addError, setAddError] = useState('');
 
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editDescription, setEditDescription] = useState('');
     const [editAmount, setEditAmount] = useState('');
     const [editType, setEditType] = useState<'expense' | 'payment'>('expense');
-    const [editUserId, setEditUserId] = useState('');
-    const [editDate, setEditDate] = useState('');
-    const [isSavingEdit, setIsSavingEdit] = useState(false);
+	const [editUserId, setEditUserId] = useState('');
+	const [editDate, setEditDate] = useState('');
+	const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [editError, setEditError] = useState('');
 
     useEffect(() => {
         if (tripParticipants.length > 0 && !tripParticipants.find(p => p.id === selectedUserId)) {
@@ -1859,16 +1864,17 @@ const TripFinancials = ({
         }
     }, [trip.id, tripParticipants, selectedUserId]);
 
-    const handleAddRecord = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const numericAmount = parseFloat(amount);
-        if (!description || isNaN(numericAmount) || !selectedUserId) {
-            alert("Please complete all fields with valid values.");
-            return;
-        }
+	const handleAddRecord = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+		const numericAmount = parseFloat(amount);
+		if (!description || isNaN(numericAmount) || !selectedUserId) {
+			setAddError('Complete each field with a valid amount before saving the record.');
+			return;
+		}
 
-        setIsAdding(true);
-        try {
+        setAddError('');
+		setIsAdding(true);
+		try {
             await Promise.resolve(onAddRecord({
                 tripId: trip.id,
                 userId: selectedUserId,
@@ -1876,32 +1882,34 @@ const TripFinancials = ({
                 amount: type === 'expense' ? -Math.abs(numericAmount) : Math.abs(numericAmount),
                 date: new Date().toISOString().split('T')[0]
             }));
-            setDescription('');
-            setAmount('');
-        } catch (error: any) {
-            alert(error?.message || 'Unable to add the finance record.');
-        } finally {
-            setIsAdding(false);
-        }
-    };
+	            setDescription('');
+	            setAmount('');
+	        } catch (error: any) {
+	            setAddError(error?.message || 'Unable to add the finance record.');
+	        } finally {
+	            setIsAdding(false);
+	        }
+	    };
 
-    const startEditRecord = (record: FinancialRecord) => {
-        setEditingId(record.id);
-        setEditDescription(record.description);
+	    const startEditRecord = (record: FinancialRecord) => {
+	        setEditingId(record.id);
+            setEditError('');
+	        setEditDescription(record.description);
         setEditAmount(Math.abs(record.amount).toString());
         setEditType(record.amount >= 0 ? 'payment' : 'expense');
         setEditUserId(record.userId || tripParticipants[0]?.id || '');
         setEditDate(record.date || new Date().toISOString().split('T')[0]);
     };
 
-    const handleSaveEdit = async () => {
-        if (!editingId) return;
-        const numericAmount = parseFloat(editAmount);
-        if (!editDescription || isNaN(numericAmount) || !editUserId || !editDate) {
-            alert('Please complete all fields with valid values.');
-            return;
-        }
-        setIsSavingEdit(true);
+	    const handleSaveEdit = async () => {
+	        if (!editingId) return;
+	        const numericAmount = parseFloat(editAmount);
+	        if (!editDescription || isNaN(numericAmount) || !editUserId || !editDate) {
+	            setEditError('Complete each edit field with a valid value before saving.');
+	            return;
+	        }
+            setEditError('');
+	        setIsSavingEdit(true);
         try {
             await Promise.resolve(onUpdateRecord(editingId, {
                 tripId: trip.id,
@@ -1909,18 +1917,19 @@ const TripFinancials = ({
                 description: editDescription,
                 amount: editType === 'expense' ? -Math.abs(numericAmount) : Math.abs(numericAmount),
                 date: editDate,
-            }));
-            setEditingId(null);
-        } catch (error: any) {
-            alert(error?.message || 'Unable to update this finance record.');
-        } finally {
-            setIsSavingEdit(false);
-        }
-    };
+	            }));
+	            setEditingId(null);
+	        } catch (error: any) {
+	            setEditError(error?.message || 'Unable to update this finance record.');
+	        } finally {
+	            setIsSavingEdit(false);
+	        }
+	    };
 
-    const handleCancelEdit = () => {
-        setEditingId(null);
-    };
+	    const handleCancelEdit = () => {
+	        setEditingId(null);
+            setEditError('');
+	    };
 
     const handleDeleteRecord = async (recordId: string) => {
         if (!window.confirm('Delete this finance record?')) {
@@ -1936,31 +1945,47 @@ const TripFinancials = ({
         }
     };
 
-    const visibleRecords = useMemo(() => {
-        return records
-            .filter((record) => user.role !== 'traveler' || record.userId === user.id)
-            .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
-    }, [records, user.id, user.role]);
+	    const visibleRecords = useMemo(() => {
+	        return records
+	            .filter((record) => user.role !== 'traveler' || record.userId === user.id)
+	            .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime());
+	    }, [records, user.id, user.role]);
 
-    return (
-        <div className="financials-page">
-            <div className="financials-hero">
-                <div>
-                    <span className="section-eyebrow">Finance desk</span>
-                    <h2>Finance: {trip.name}</h2>
-                    <p className="section-intro">Track manual finance records, online credits, and participant balances from one clean workspace.</p>
-                </div>
-                <div className="financials-hero-cards">
-                    <div className="summary-card compact">
-                        <h4>Total transactions</h4>
-                        <p className="balance">{records.length}</p>
-                    </div>
-                    <div className="summary-card compact">
-                        <h4>Online payments</h4>
-                        <p className="balance">{tripPaymentTransactions.length}</p>
-                    </div>
-                </div>
-            </div>
+    const travelerBalance = balances.get(user.id) || 0;
+    const outstandingCount = tripParticipants.filter((participant) => (balances.get(participant.id) || 0) < 0).length;
+    const financeMeta = isStaff
+        ? `${tripParticipants.length} participants · ${visibleRecords.length} visible records`
+        : `${visibleRecords.length} records in your traveler ledger`;
+
+	    return (
+	        <div className="financials-page financials-page-v2">
+	            <div className="financials-hero financials-hero-v2">
+	                <div className="financials-hero-copy-v2">
+	                    <span className="section-eyebrow">Finance desk</span>
+	                    <h2>Finance: {trip.name}</h2>
+	                    <p className="section-intro">Track manual finance records, online credits, and participant balances from one clean workspace.</p>
+                        <div className="financials-hero-tags-v2">
+                            <span>{isStaff ? 'Staff view' : 'Traveler view'}</span>
+                            <span>{financeMeta}</span>
+                        </div>
+	                </div>
+	                <div className="financials-hero-cards financials-hero-cards-v2">
+	                    <div className="summary-card compact finance-hero-card-v2">
+	                        <h4>Visible transactions</h4>
+	                        <p className="balance">{visibleRecords.length}</p>
+	                    </div>
+	                    <div className="summary-card compact finance-hero-card-v2">
+	                        <h4>Online payments</h4>
+	                        <p className="balance">{tripPaymentTransactions.length}</p>
+	                    </div>
+                        <div className="summary-card compact finance-hero-card-v2">
+                            <h4>{isStaff ? 'Outstanding balances' : 'Your balance'}</h4>
+                            <p className={`balance ${isStaff ? (outstandingCount > 0 ? 'negative' : 'positive') : (travelerBalance >= 0 ? 'positive' : 'negative')}`}>
+                                {isStaff ? outstandingCount : `${travelerBalance.toLocaleString()} HUF`}
+                            </p>
+                        </div>
+	                </div>
+	            </div>
 
             {!isStaff && (
                 <OnlinePaymentPanel
@@ -1971,26 +1996,35 @@ const TripFinancials = ({
                 />
             )}
 
-            {isStaff && (
-                <>
-                    <h3>Balances</h3>
-                    <div className="financial-summary">
-                        {tripParticipants.map(p => {
-                            const balance = balances.get(p.id) || 0;
-                            const balanceClass = balance >= 0 ? 'positive' : 'negative';
-                            return (
-                                <div key={p.id} className="summary-card">
-                                    <h4>{p.name}</h4>
-                                    <p className={`balance ${balanceClass}`}>{balance.toLocaleString()} HUF</p>
-                                </div>
-                            )
-                        })}
-                    </div>
-
-                    <h3>Add manual record</h3>
-                    <form className="add-record-form" onSubmit={handleAddRecord}>
-                        <div className="form-row">
-                             <div className="form-group">
+	            {isStaff && (
+	                <>
+                        <section className="financial-section-v2">
+                            <div className="financial-section-head-v2">
+                                <h3>Balances</h3>
+                                <p>See who is still outstanding and who is already fully credited.</p>
+                            </div>
+	                    <div className="financial-summary financial-summary-v2">
+	                        {tripParticipants.map(p => {
+	                            const balance = balances.get(p.id) || 0;
+	                            const balanceClass = balance >= 0 ? 'positive' : 'negative';
+	                            return (
+	                                <div key={p.id} className="summary-card finance-balance-card-v2">
+	                                    <h4>{p.name}</h4>
+	                                    <p className={`balance ${balanceClass}`}>{balance.toLocaleString()} HUF</p>
+	                                </div>
+	                            )
+	                        })}
+	                    </div>
+                        </section>
+                        <section className="financial-section-v2">
+                            <div className="financial-section-head-v2">
+                                <h3>Add manual record</h3>
+                                <p>Use manual entries for offline payments, shared costs, and later adjustments.</p>
+                            </div>
+	                    <form className="add-record-form add-record-form-v2" onSubmit={handleAddRecord}>
+                            {addError && <p className="financial-inline-status error">{addError}</p>}
+	                        <div className="form-row">
+	                             <div className="form-group">
                                 <label htmlFor="participant">Participant</label>
                                 <select id="participant" value={selectedUserId} onChange={e => setSelectedUserId(e.target.value)}>
                                     {tripParticipants.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -2012,22 +2046,26 @@ const TripFinancials = ({
                                 </div>
                             </div>
                         </div>
-                        <button type="submit" className="btn btn-primary" disabled={isAdding}>
-                            {isAdding ? 'Saving...' : 'Add record'}
-                        </button>
-                    </form>
-                </>
-            )}
+	                        <button type="submit" className="btn btn-primary" disabled={isAdding}>
+	                            {isAdding ? 'Saving...' : 'Add record'}
+	                        </button>
+	                    </form>
+                        </section>
+	                </>
+	            )}
 
-            {tripPaymentTransactions.length > 0 && (
-                <>
-                    <h3>Online payments</h3>
-                    <div className="payment-activity-list">
-                        {tripPaymentTransactions.slice(0, 8).map((transaction) => {
-                            const payer = users.find((candidate) => candidate.id === transaction.userId);
-                            return (
-                                <article key={transaction.id} className="payment-activity-card">
-                                    <div>
+	            {tripPaymentTransactions.length > 0 && (
+	                <section className="financial-section-v2">
+                        <div className="financial-section-head-v2">
+                            <h3>Online payments</h3>
+                            <p>Recent Stripe and PayPal activity, already linked back to the trip ledger.</p>
+                        </div>
+	                    <div className="payment-activity-list payment-activity-list-v2">
+	                        {tripPaymentTransactions.slice(0, 8).map((transaction) => {
+	                            const payer = users.find((candidate) => candidate.id === transaction.userId);
+	                            return (
+	                                <article key={transaction.id} className="payment-activity-card payment-activity-card-v2">
+	                                    <div>
                                         <div className="payment-activity-provider">
                                             <strong>{transaction.provider === 'stripe' ? 'Stripe' : 'PayPal'}</strong>
                                             <PaymentStatusBadge status={transaction.status} />
@@ -2039,17 +2077,27 @@ const TripFinancials = ({
                                         <strong>{transaction.amount.toLocaleString()} {transaction.currency}</strong>
                                         <span>{transaction.completedAt ? new Date(transaction.completedAt).toLocaleString('en-GB') : 'Processing'}</span>
                                     </div>
-                                </article>
-                            );
-                        })}
-                    </div>
-                </>
-            )}
+	                                </article>
+	                            );
+	                        })}
+	                    </div>
+	                </section>
+	            )}
 
-            <h3>Transactions</h3>
-            <div className="responsive-table-group">
-              <div className="table-container desktop-table">
-                <table className="financial-table">
+                <section className="financial-section-v2">
+                    <div className="financial-section-head-v2">
+                        <h3>Transactions</h3>
+                        <p>Every visible ledger item, with mobile cards for quick scanning and desktop table editing for dense work.</p>
+                    </div>
+                    {visibleRecords.length === 0 ? (
+                        <div className="trip-detail-empty-v2">
+                            <strong>No finance records yet.</strong>
+                            <p>{isStaff ? 'Add the first manual record or wait for the first online payment to land.' : 'Your balance and payment history will appear here once records are added.'}</p>
+                        </div>
+                    ) : (
+	            <div className="responsive-table-group">
+	              <div className="table-container desktop-table">
+	                <table className="financial-table">
                     <thead>
                         <tr>
                             {isStaff && <th>Participant</th>}
@@ -2159,30 +2207,44 @@ const TripFinancials = ({
                                 )
                             })}
                     </tbody>
-                </table>
-              </div>
-              <div className="mobile-record-list finance-mobile-list">
-                {visibleRecords.map((record) => {
-                    const participant = users.find((candidate) => candidate.id === record.userId);
-                    const isEditing = editingId === record.id;
-                    return (
-                        <article key={record.id} className="mobile-record-card finance-record-card">
-                            <div className="mobile-record-head">
-                                <strong>{record.description}</strong>
-                                <span className={record.amount >= 0 ? 'text-positive' : 'text-negative'}>
-                                    {record.amount.toLocaleString()} HUF
-                                </span>
-                            </div>
-                            <div className="mobile-record-meta">
-                                {isStaff && <span>{participant?.name || 'Unknown participant'}</span>}
-                                <span>{record.date}</span>
-                                <span>{record.amount >= 0 ? 'Credit' : 'Expense'}</span>
-                            </div>
-                            {isEditing ? (
-                                <div className="mobile-inline-editor">
+	                </table>
+	              </div>
+	              <div className="mobile-record-list finance-mobile-list finance-mobile-list-v2">
+	                {visibleRecords.map((record) => {
+	                    const participant = users.find((candidate) => candidate.id === record.userId);
+	                    const isEditing = editingId === record.id;
+	                    return (
+	                        <article key={record.id} className="mobile-record-card finance-record-card finance-record-card-v2">
+	                            <div className="finance-record-head-v2">
+                                    <div className="mobile-record-head">
+	                                    <strong>{record.description}</strong>
+                                    </div>
+	                                <span className={`finance-record-amount-pill-v2 ${record.amount >= 0 ? 'text-positive' : 'text-negative'}`}>
+	                                    {record.amount.toLocaleString()} HUF
+	                                </span>
+	                            </div>
+	                            <div className="finance-record-meta-grid-v2">
                                     {isStaff && (
-                                        <div className="form-group">
-                                            <label>Participant</label>
+                                        <div className="finance-record-meta-row-v2">
+                                            <span>Participant</span>
+                                            <strong>{participant?.name || 'Unknown participant'}</strong>
+                                        </div>
+                                    )}
+                                    <div className="finance-record-meta-row-v2">
+                                        <span>Date</span>
+                                        <strong>{record.date}</strong>
+                                    </div>
+                                    <div className="finance-record-meta-row-v2">
+                                        <span>Type</span>
+                                        <strong>{record.amount >= 0 ? 'Credit' : 'Expense'}</strong>
+                                    </div>
+	                            </div>
+	                            {isEditing ? (
+	                                <div className="mobile-inline-editor mobile-inline-editor-v2">
+                                        {editError && <p className="financial-inline-status error">{editError}</p>}
+	                                    {isStaff && (
+	                                        <div className="form-group">
+	                                            <label>Participant</label>
                                             <select value={editUserId} onChange={e => setEditUserId(e.target.value)}>
                                                 {tripParticipants.map(p => (
                                                     <option key={p.id} value={p.id}>{p.name}</option>
@@ -2224,31 +2286,33 @@ const TripFinancials = ({
                                             Credit
                                         </label>
                                     </div>
-                                    <div className="mobile-record-actions">
-                                        <button type="button" className="btn btn-primary btn-small" onClick={handleSaveEdit} disabled={isSavingEdit}>Save</button>
-                                        <button type="button" className="btn btn-secondary btn-small" onClick={handleCancelEdit} disabled={isSavingEdit}>Cancel</button>
-                                    </div>
-                                </div>
-                            ) : (
-                                isStaff && (
-                                    <div className="mobile-record-actions">
-                                        <button type="button" className="btn btn-secondary btn-small" onClick={() => startEditRecord(record)}>Edit</button>
-                                        <button type="button" className="btn btn-danger btn-small" onClick={() => handleDeleteRecord(record.id)}>Delete</button>
-                                    </div>
+	                                    <div className="mobile-record-actions finance-mobile-actions-v2">
+	                                        <button type="button" className="btn btn-primary btn-small" onClick={handleSaveEdit} disabled={isSavingEdit}>Save</button>
+	                                        <button type="button" className="btn btn-secondary btn-small" onClick={handleCancelEdit} disabled={isSavingEdit}>Cancel</button>
+	                                    </div>
+	                                </div>
+	                            ) : (
+	                                isStaff && (
+	                                    <div className="mobile-record-actions finance-mobile-actions-v2">
+	                                        <button type="button" className="btn btn-secondary btn-small" onClick={() => startEditRecord(record)}>Edit</button>
+	                                        <button type="button" className="btn btn-danger btn-small" onClick={() => handleDeleteRecord(record.id)}>Delete</button>
+	                                    </div>
                                 )
                             )}
                         </article>
-                    );
-                })}
-              </div>
-            </div>
+	                    );
+	                })}
+	              </div>
+	            </div>
+                    )}
+                </section>
 
-            {user.role === 'traveler' && (
-                 <div className="financial-summary traveler-summary">
-                    <div className="summary-card">
-                        <h4>Your balance</h4>
-                        <p className={`balance ${(balances.get(user.id) || 0) >= 0 ? 'positive' : 'negative'}`}>
-                            {(balances.get(user.id) || 0).toLocaleString()} HUF
+	            {user.role === 'traveler' && (
+	                 <div className="financial-summary traveler-summary financial-summary-v2">
+	                    <div className="summary-card finance-balance-card-v2">
+	                        <h4>Your balance</h4>
+	                        <p className={`balance ${(balances.get(user.id) || 0) >= 0 ? 'positive' : 'negative'}`}>
+	                            {(balances.get(user.id) || 0).toLocaleString()} HUF
                         </p>
                     </div>
                 </div>
@@ -2889,10 +2953,10 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
         return sortableItems;
     }, [documents, sortConfig]);
 
-    // Traveler View
-    if (user.role === 'traveler') {
-        const travelerVisibleDocs = documents.filter(doc => doc.visibleTo === 'all' || (Array.isArray(doc.visibleTo) && doc.visibleTo.includes(user.id)));
-        const docsByCategory = travelerVisibleDocs.reduce((acc, doc) => {
+	    // Traveler View
+	    if (user.role === 'traveler') {
+	        const travelerVisibleDocs = documents.filter(doc => doc.visibleTo === 'all' || (Array.isArray(doc.visibleTo) && doc.visibleTo.includes(user.id)));
+	        const docsByCategory = travelerVisibleDocs.reduce((acc, doc) => {
             if (!acc[doc.category]) {
                 acc[doc.category] = [];
             }
@@ -2900,50 +2964,80 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
             return acc;
         }, {} as Record<string, Document[]>);
 
-        return (
-             <div>
-                <SectionIntro
-                    eyebrow="Traveler files"
-                    title={`Documents: ${trip.name}`}
-                    description="Your trip files are grouped by category so they stay readable on mobile and easy to download."
-                />
-                {Object.keys(docsByCategory).length > 0 ? (
-                    Object.entries(docsByCategory).map(([category, docs]) => (
-                        <details key={category} className="document-category-group" open>
-                            <summary>{category} <span>{docs.length}</span></summary>
-                            <ul className="document-list">
-                                {docs.map(doc => (
-                                    <li key={doc.id} className="document-item">
-                                        <div className="document-item-copy">
-                                            <strong>{doc.name}</strong>
-                                            <small>Uploaded {doc.uploadDate}</small>
-                                        </div>
-                                        <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} download className="btn btn-secondary">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                            Download
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </details>
-                    ))
-                ) : (
-                    <p>No shared documents are available for this trip yet.</p>
-                )}
-            </div>
-        )
-    }
+	        return (
+	             <div className="trip-documents trip-documents-v2 traveler-documents-v2">
+	                <SectionIntro
+	                    eyebrow="Traveler files"
+	                    title={`Documents: ${trip.name}`}
+	                    description="Your trip files are grouped by category so they stay readable on mobile and easy to download."
+                        meta={
+                            <div className="trip-detail-stats-v2">
+                                <span>{travelerVisibleDocs.length} files</span>
+                                <span>{Object.keys(docsByCategory).length} categories</span>
+                            </div>
+                        }
+	                />
+	                {Object.keys(docsByCategory).length > 0 ? (
+                        <div className="document-category-stack-v2">
+	                            {Object.entries(docsByCategory).map(([category, docs]) => (
+	                        <details key={category} className="document-category-group document-category-group-v2" open>
+	                            <summary>
+                                    <span className="document-category-title-v2">{category}</span>
+                                    <span className="document-category-count-v2">{docs.length}</span>
+                                </summary>
+	                            <ul className="document-list document-list-v2">
+	                                {docs.map(doc => (
+	                                    <li key={doc.id} className="document-item document-item-v2">
+	                                        <div className="document-item-copy document-item-copy-v2">
+	                                            <strong>{doc.name}</strong>
+	                                            <small>Uploaded {doc.uploadDate}</small>
+	                                        </div>
+	                                        <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} download className="btn btn-secondary document-item-action-v2">
+	                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+	                                            Download
+	                                        </a>
+	                                    </li>
+	                                ))}
+	                            </ul>
+	                        </details>
+	                            ))}
+                        </div>
+	                ) : (
+                        <div className="trip-detail-empty-v2">
+                            <strong>No shared documents yet.</strong>
+                            <p>Once organizers upload tickets, PDFs, or travel paperwork, they will appear here by category.</p>
+                        </div>
+	                )}
+	            </div>
+	        )
+	    }
 
-    // Admin & Organizer View
-    return (
-        <div>
-            <SectionIntro
-                eyebrow="Trip files"
-                title={`Documents: ${trip.name}`}
-                description="Keep uploaded files readable on desktop and manageable on mobile with clear visibility and action states."
-                actions={<button onClick={() => setUploadModalOpen(true)} className="btn btn-primary">Upload document</button>}
-            />
-             <div className="responsive-table-group">
+        const privateDocumentCount = documents.filter((doc) => Array.isArray(doc.visibleTo)).length;
+        const categoryCount = new Set(documents.map((doc) => doc.category)).size;
+
+	    // Admin & Organizer View
+	    return (
+	        <div className="trip-documents trip-documents-v2">
+	            <SectionIntro
+	                eyebrow="Trip files"
+	                title={`Documents: ${trip.name}`}
+	                description="Keep uploaded files readable on desktop and manageable on mobile with clear visibility and action states."
+                    meta={
+                        <div className="trip-detail-stats-v2">
+                            <span>{documents.length} files</span>
+                            <span>{categoryCount} categories</span>
+                            <span>{privateDocumentCount} private</span>
+                        </div>
+                    }
+	                actions={<button onClick={() => setUploadModalOpen(true)} className="btn btn-primary">Upload document</button>}
+	            />
+                {sortedDocuments.length === 0 ? (
+                    <div className="trip-detail-empty-v2">
+                        <strong>No trip files have been uploaded yet.</strong>
+                        <p>Start with tickets, PDFs, or personalized files for specific travelers.</p>
+                    </div>
+                ) : (
+	             <div className="responsive-table-group">
               <div className="table-container desktop-table">
                 <table className="documents-table">
                     <thead>
@@ -2980,33 +3074,45 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
                     </tbody>
                 </table>
               </div>
-              <div className="mobile-record-list">
-                {sortedDocuments.map((doc) => {
-                    const visibleToText = Array.isArray(doc.visibleTo)
-                        ? users.filter(u => doc.visibleTo.includes(u.id)).map(u => u.name).join(', ')
-                        : 'Everyone';
-                    return (
-                        <article key={doc.id} className="mobile-record-card">
-                            <div className="mobile-record-head">
-                                <strong>{doc.name}</strong>
-                                <span>{doc.category}</span>
-                            </div>
-                            <div className="mobile-record-meta">
-                                <span>Uploaded {doc.uploadDate}</span>
-                                <span>{visibleToText}</span>
-                            </div>
-                            <div className="mobile-record-actions">
-                                <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Open</a>
-                                <button onClick={() => setEditingDoc(doc)} className="btn btn-secondary btn-small">Edit</button>
-                                <button onClick={() => handleDelete(doc.id)} className="btn btn-danger btn-small">Delete</button>
+	              <div className="mobile-record-list document-mobile-list-v2">
+	                {sortedDocuments.map((doc) => {
+	                    const visibleToText = Array.isArray(doc.visibleTo)
+	                        ? users.filter(u => doc.visibleTo.includes(u.id)).map(u => u.name).join(', ')
+	                        : 'Everyone';
+	                    return (
+	                        <article key={doc.id} className="mobile-record-card document-mobile-card-v2">
+	                            <div className="document-mobile-head-v2">
+                                    <div className="mobile-record-head">
+	                                    <strong>{doc.name}</strong>
+	                                    <span>{doc.category}</span>
+                                    </div>
+                                    <span className={`document-visibility-badge-v2 ${Array.isArray(doc.visibleTo) ? 'private' : 'shared'}`}>
+                                        {Array.isArray(doc.visibleTo) ? 'Private' : 'Shared'}
+                                    </span>
+	                            </div>
+	                            <div className="document-mobile-meta-v2">
+                                    <div className="document-mobile-meta-row-v2">
+                                        <span>Uploaded</span>
+                                        <strong>{doc.uploadDate}</strong>
+                                    </div>
+                                    <div className="document-mobile-meta-row-v2">
+                                        <span>Visible to</span>
+                                        <strong>{visibleToText}</strong>
+                                    </div>
+	                            </div>
+	                            <div className="mobile-record-actions document-mobile-actions-v2">
+	                                <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Open</a>
+	                                <button onClick={() => setEditingDoc(doc)} className="btn btn-secondary btn-small">Edit</button>
+	                                <button onClick={() => handleDelete(doc.id)} className="btn btn-danger btn-small">Delete</button>
                             </div>
                         </article>
-                    );
-                })}
-              </div>
-            </div>
+	                    );
+	                })}
+	              </div>
+	            </div>
+                )}
 
-            <UploadDocumentModal
+	            <UploadDocumentModal
                 isOpen={isUploadModalOpen}
                 onClose={() => setUploadModalOpen(false)}
                 onUpload={handleUpload}
@@ -3050,10 +3156,11 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
     const [hasTouchedRecipients, setHasTouchedRecipients] = useState(false);
     const [editing, setEditing] = useState<Message | null>(null);
     const [unreadIds, setUnreadIds] = useState<string[]>([]);
-    const [fontFamily, setFontFamily] = useState('Poppins');
-    const [textColor, setTextColor] = useState(() => getCssColor('--color-text-primary', '#212529'));
-    const [highlightColor, setHighlightColor] = useState(() => getCssColor('--color-surface', '#ffffff'));
-    const defaultColorsRef = useRef({ text: getCssColor('--color-text-primary', '#212529'), background: getCssColor('--color-surface', '#ffffff') });
+	    const [fontFamily, setFontFamily] = useState('Poppins');
+	    const [textColor, setTextColor] = useState(() => getCssColor('--color-text-primary', '#212529'));
+	    const [highlightColor, setHighlightColor] = useState(() => getCssColor('--color-surface', '#ffffff'));
+	    const defaultColorsRef = useRef({ text: getCssColor('--color-text-primary', '#212529'), background: getCssColor('--color-surface', '#ffffff') });
+        const [composerError, setComposerError] = useState('');
 
     useEffect(() => {
         const unread = messages.filter(m => !m.readBy.includes(String(user.id))).map(m => m.id);
@@ -3206,15 +3313,16 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
         setHighlightColor(defaultColorsRef.current.background);
     };
 
-    const handleSend = () => {
-        const html = editorRef.current?.innerHTML || '';
-        if (!recipientIds.length) {
-            alert('Choose at least one recipient before sending.');
-            return;
-        }
-        if (html.trim()) {
-            if (editing) {
-                onUpdateMessage(trip.id, editing.id, recipientIds, html);
+	    const handleSend = () => {
+	        const html = editorRef.current?.innerHTML || '';
+	        if (!recipientIds.length) {
+	            setComposerError('Choose at least one recipient before sending the update.');
+	            return;
+	        }
+	        if (html.trim()) {
+                setComposerError('');
+	            if (editing) {
+	                onUpdateMessage(trip.id, editing.id, recipientIds, html);
             } else {
                 onAddMessage(trip.id, recipientIds, html);
             }
@@ -3229,9 +3337,10 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
         }
     };
 
-    const startEdit = (m: Message) => {
-        setEditing(m);
-        setRecipientIds(m.recipientIds);
+	    const startEdit = (m: Message) => {
+	        setEditing(m);
+            setComposerError('');
+	        setRecipientIds(m.recipientIds);
         setHasTouchedRecipients(true);
         if (editorRef.current) {
             editorRef.current.innerHTML = m.content;
@@ -3253,9 +3362,10 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
         setHighlightColor(defaultColorsRef.current.background);
     };
 
-    const cancelEdit = () => {
-        setEditing(null);
-        if (editorRef.current) editorRef.current.innerHTML = '';
+	    const cancelEdit = () => {
+	        setEditing(null);
+            setComposerError('');
+	        if (editorRef.current) editorRef.current.innerHTML = '';
         setRecipientIds(participants.map(p => p.id));
         setHasTouchedRecipients(false);
         setFontFamily('Poppins');
@@ -3267,48 +3377,66 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
     const canPost = user.role === 'admin' || (user.role === 'organizer' && trip.organizerIds.includes(String(user.id)));
     const allSelected = participants.length > 0 && participants.every(p => recipientIds.includes(p.id));
 
-    return (
-        <div className="trip-messages">
-            <SectionIntro
-                eyebrow="Trip updates"
-                title={`Messages: ${trip.name}`}
-                description="Keep communications focused, easy to scan, and clean on both desktop and mobile."
-            />
-            {canPost && (
-                <div className="message-editor-container">
-                    <div className="recipient-selector">
-                        <label className="recipient-option">
-                            <input
+	    return (
+	        <div className="trip-messages trip-messages-v2">
+	            <SectionIntro
+	                eyebrow="Trip updates"
+	                title={`Messages: ${trip.name}`}
+	                description="Keep communications focused, easy to scan, and clean on both desktop and mobile."
+                    meta={
+                        <div className="trip-detail-stats-v2">
+                            <span>{messages.length} messages</span>
+                            <span>{participants.length} recipients</span>
+                            {unreadIds.length > 0 && <span>{unreadIds.length} new</span>}
+                        </div>
+                    }
+	            />
+	            {canPost && (
+	                <div className="message-editor-container message-editor-container-v2">
+                        <div className="message-editor-head-v2">
+                            <div>
+                                <span className="message-editor-label-v2">{editing ? 'Editing update' : 'Compose update'}</span>
+                                <h3>{editing ? 'Update the message' : 'Send a trip update'}</h3>
+                            </div>
+                            <div className="message-editor-count-v2">
+                                {recipientIds.length}/{participants.length} selected
+                            </div>
+                        </div>
+	                    <div className="recipient-selector recipient-selector-v2">
+	                        <label className="recipient-option">
+	                            <input
                                 type="checkbox"
                                 checked={allSelected}
-                                onChange={() => {
-                                    if (allSelected) {
-                                        setRecipientIds([]);
-                                    } else {
-                                        setRecipientIds(participants.map(p => p.id));
-                                    }
-                                    setHasTouchedRecipients(true);
-                                }}
-                            />
-                            <span>Everyone</span>
-                        </label>
-                        {participants.map(p => (
-                            <label key={p.id} className="recipient-option">
-                                <input
-                                    type="checkbox"
-                                    checked={recipientIds.includes(p.id)}
+	                                onChange={() => {
+	                                    if (allSelected) {
+	                                        setRecipientIds([]);
+	                                    } else {
+	                                        setRecipientIds(participants.map(p => p.id));
+	                                    }
+	                                    setHasTouchedRecipients(true);
+                                        setComposerError('');
+	                                }}
+	                            />
+	                            <span>Everyone</span>
+	                        </label>
+	                        {participants.map(p => (
+	                            <label key={p.id} className="recipient-option recipient-option-v2">
+	                                <input
+	                                    type="checkbox"
+	                                    checked={recipientIds.includes(p.id)}
                                     onChange={() => {
-                                        setRecipientIds(prev => prev.includes(p.id)
-                                            ? prev.filter(id => id !== p.id)
-                                            : [...prev, p.id]);
-                                        setHasTouchedRecipients(true);
-                                    }}
-                                />
-                                <span>{p.name}</span>
-                            </label>
-                        ))}
-                    </div>
-                    <div className="message-toolbar">
+	                                        setRecipientIds(prev => prev.includes(p.id)
+	                                            ? prev.filter(id => id !== p.id)
+	                                            : [...prev, p.id]);
+	                                        setHasTouchedRecipients(true);
+                                            setComposerError('');
+	                                    }}
+	                                />
+	                                <span>{p.name}</span>
+	                            </label>
+	                        ))}
+	                    </div>
+	                    <div className="message-toolbar message-toolbar-v2">
                         <button
                             type="button"
                             className="format-btn bold"
@@ -3375,34 +3503,49 @@ const TripMessages = ({ trip, user, users, messages, onAddMessage, onUpdateMessa
                             Tx
                         </button>
                     </div>
-                    <div
-                        className="message-editor"
-                        ref={editorRef}
+	                    <div
+	                        className="message-editor message-editor-v2"
+	                        ref={editorRef}
                         contentEditable
                         suppressContentEditableWarning
                         onPaste={handlePaste}
                         onInput={saveSelection}
                         onKeyUp={saveSelection}
                         onMouseUp={saveSelection}
-                        onFocus={saveSelection}
-                        onBlur={saveSelection}
-                    />
-                    <div className="message-actions">
-                        <button className="btn btn-primary" onClick={handleSend} disabled={recipientIds.length === 0}>{editing ? 'Save message' : 'Send update'}</button>
-                        {editing && <button className="btn" onClick={cancelEdit}>Cancel</button>}
-                    </div>
-                </div>
-            )}
-            <div className="messages-list">
-                {messages.map(m => {
-                    const recips = users.filter(u => m.recipientIds.includes(u.id));
-                    const names = recips.map(r => r.name).join(', ');
-                    return (
-                        <div key={m.id} className={`message-item${unreadIds.includes(m.id) ? ' unread' : ''}`}>
-                            <div className="meta">{new Date(m.createdAt).toLocaleString('en-GB')} · {names}</div>
-                            <div className="content" dangerouslySetInnerHTML={{ __html: m.content }} />
-                            {canPost && (
-                                <div className="actions">
+	                        onFocus={saveSelection}
+	                        onBlur={saveSelection}
+	                    />
+                        {composerError && <p className="message-editor-status-v2 error">{composerError}</p>}
+	                    <div className="message-actions message-actions-v2">
+	                        <button className="btn btn-primary" onClick={handleSend} disabled={recipientIds.length === 0}>{editing ? 'Save message' : 'Send update'}</button>
+	                        {editing && <button className="btn btn-secondary" onClick={cancelEdit}>Cancel</button>}
+	                    </div>
+	                </div>
+	            )}
+	            <div className="messages-list messages-list-v2">
+                    {messages.length === 0 && (
+                        <div className="trip-detail-empty-v2">
+                            <strong>No messages yet.</strong>
+                            <p>{canPost ? 'Send the first trip update to establish the communication thread.' : 'Trip updates will appear here once an organizer sends them.'}</p>
+                        </div>
+                    )}
+	                {messages.map(m => {
+	                    const recips = users.filter(u => m.recipientIds.includes(u.id));
+	                    const names = recips.map(r => r.name).join(', ');
+                        const author = users.find((candidate) => candidate.id === m.authorId);
+	                    return (
+	                        <div key={m.id} className={`message-item message-item-v2${unreadIds.includes(m.id) ? ' unread' : ''}`}>
+                                <div className="message-item-head-v2">
+                                    <div className="message-item-meta-v2">
+	                                    <div className="meta">{new Date(m.createdAt).toLocaleString('en-GB')}</div>
+                                        <strong>{author?.name || 'Trip organizer'}</strong>
+                                        <span>To: {names || 'No recipients selected'}</span>
+                                    </div>
+                                    {unreadIds.includes(m.id) && <span className="message-unread-pill-v2">New</span>}
+                                </div>
+	                            <div className="content message-content-v2" dangerouslySetInnerHTML={{ __html: m.content }} />
+	                            {canPost && (
+	                                <div className="actions message-actions-row-v2">
                                     <button className="action-btn" onClick={() => startEdit(m)} aria-label="Edit message">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                                     </button>

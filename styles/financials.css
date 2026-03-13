@@ -558,6 +558,252 @@ html[data-theme='dark'] .financial-table {
     padding: 1rem 1.1rem;
 }
 
+/* --- Trip Detail Finance V2 --- */
+.financials-page.financials-page-v2 {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.financials-page.financials-page-v2 .financials-hero.financials-hero-v2 {
+    margin-bottom: 0;
+}
+
+.financials-hero-copy-v2 {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.financials-hero-tags-v2 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+}
+
+.financials-hero-tags-v2 span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-surface-secondary) 88%, white 12%);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border) 90%);
+    color: var(--color-text-secondary);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.financials-hero-cards.financials-hero-cards-v2 {
+    grid-template-columns: repeat(3, minmax(160px, 1fr));
+}
+
+.finance-hero-card-v2,
+.finance-balance-card-v2 {
+    height: 100%;
+}
+
+.financial-section-v2 {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.financial-section-head-v2 {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.financial-section-head-v2 h3 {
+    margin: 0;
+}
+
+.financial-section-head-v2 p {
+    margin: 0;
+    max-width: 58ch;
+    color: var(--color-text-secondary);
+    line-height: 1.55;
+}
+
+.financial-summary.financial-summary-v2 {
+    margin-bottom: 0;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.add-record-form.add-record-form-v2 {
+    margin-bottom: 0;
+}
+
+.financial-inline-status {
+    margin: 0 0 0.35rem;
+    padding: 0.85rem 0.95rem;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.financial-inline-status.error {
+    color: #8a1c2d;
+    background: rgba(217, 72, 95, 0.11);
+    border-color: rgba(217, 72, 95, 0.24);
+}
+
+.payment-activity-list.payment-activity-list-v2 {
+    margin-bottom: 0;
+}
+
+.payment-activity-card.payment-activity-card-v2 {
+    align-items: start;
+}
+
+.online-payment-panel.online-payment-panel-v2 {
+    margin-bottom: 0;
+}
+
+.online-payment-form.online-payment-form-v2 .btn {
+    min-height: 52px;
+}
+
+.finance-record-card.finance-record-card-v2 {
+    gap: 0.95rem;
+}
+
+.finance-record-head-v2 {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.85rem;
+}
+
+.finance-record-amount-pill-v2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.2rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-surface-secondary) 88%, white 12%);
+    border: 1px solid var(--color-border);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.finance-record-meta-grid-v2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+.finance-record-meta-row-v2 {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.8rem 0.9rem;
+    border-radius: 16px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface-secondary) 88%, white 12%);
+}
+
+.finance-record-meta-row-v2 span {
+    color: var(--color-text-secondary);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.finance-record-meta-row-v2 strong {
+    color: var(--color-text-primary);
+    overflow-wrap: anywhere;
+}
+
+.mobile-inline-editor.mobile-inline-editor-v2 {
+    padding-top: 0;
+}
+
+.finance-mobile-actions-v2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+}
+
+.finance-mobile-actions-v2 .btn {
+    width: 100%;
+}
+
+html[data-theme='dark'] .financials-hero-tags-v2 span,
+html[data-theme='dark'] .finance-record-amount-pill-v2,
+html[data-theme='dark'] .finance-record-meta-row-v2 {
+    background: color-mix(in srgb, var(--color-surface-secondary) 88%, #0f172a 12%);
+}
+
+html[data-theme='dark'] .financial-inline-status.error {
+    color: #fecdd3;
+}
+
+@media (max-width: 900px) {
+    .financials-hero-cards.financials-hero-cards-v2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .finance-hero-card-v2:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767px) {
+    .financials-page.financials-page-v2 {
+        gap: 1rem;
+    }
+
+    .financials-page.financials-page-v2 .financials-hero.financials-hero-v2 {
+        padding: 1.1rem;
+        border-radius: 22px;
+    }
+
+    .financial-section-head-v2 {
+        align-items: flex-start;
+    }
+
+    .financial-section-head-v2 p {
+        max-width: none;
+    }
+
+    .financials-hero-cards.financials-hero-cards-v2,
+    .finance-record-meta-grid-v2,
+    .financial-summary.financial-summary-v2 {
+        grid-template-columns: 1fr;
+    }
+
+    .finance-hero-card-v2:last-child {
+        grid-column: auto;
+    }
+
+    .add-record-form.add-record-form-v2 {
+        padding: 1rem;
+        border-radius: 20px;
+    }
+
+    .payment-activity-card.payment-activity-card-v2 {
+        padding: 1rem;
+    }
+
+    .finance-record-head-v2 {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .finance-mobile-actions-v2 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .finance-mobile-actions-v2 {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* --- Contrast Rescue Pass --- */
 .summary-card,
 .add-record-form,
