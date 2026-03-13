@@ -191,7 +191,7 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
     onToggleSidebar: () => void;
     showHamburger: boolean;
 }) => (
-  <header className="app-header">
+  <header className="app-header app-header-v2">
     <div className="header-left">
          {showHamburger && (
             <button className="hamburger-menu" onClick={onToggleSidebar} aria-label="Open navigation">
@@ -204,7 +204,7 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
          </div>
     </div>
     <div className="user-info">
-      <div className="user-badge">
+      <div className="user-badge user-badge-v2">
         <span className="user-badge-label">Signed in</span>
         <strong>{user.name}</strong>
         <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
@@ -1002,34 +1002,34 @@ const TripCard = ({ trip, onSelectTrip }: { trip: Trip; onSelectTrip: () => void
     const durationDays = getTripDurationDays(trip);
 
     return (
-        <article className="trip-card">
-            <div className="trip-card-shell">
-                <div className="trip-card-topline">
+        <article className="trip-card trip-card-v2">
+            <div className="trip-card-shell trip-card-shell-v2">
+                <div className="trip-card-topline trip-card-topline-v2">
                     <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
                     <span className="trip-card-range">{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</span>
                 </div>
                 <h3>{trip.name}</h3>
                 <p className="trip-card-summary">{stage.summary}</p>
-                <div className="trip-card-metrics">
-                    <div className="trip-card-metric">
+                <div className="trip-card-metrics trip-card-metrics-v2">
+                    <div className="trip-card-metric trip-card-metric-v2">
                         <span>Duration</span>
                         <strong>{durationDays} days</strong>
                     </div>
-                    <div className="trip-card-metric">
+                    <div className="trip-card-metric trip-card-metric-v2">
                         <span>Organizers</span>
                         <strong>{trip.organizerNames?.length || 0}</strong>
                     </div>
-                    <div className="trip-card-metric">
+                    <div className="trip-card-metric trip-card-metric-v2">
                         <span>Participants</span>
                         <strong>{trip.travelerIds.length}</strong>
                     </div>
                 </div>
-                <div className="trip-card-foot">
+                <div className="trip-card-foot trip-card-foot-v2">
                     <span>Lead organizers</span>
                     <strong>{trip.organizerNames?.join(', ') || 'Not assigned yet'}</strong>
                 </div>
             </div>
-            <div className="trip-card-actions">
+            <div className="trip-card-actions trip-card-actions-v2">
                 <button onClick={onSelectTrip} className="btn btn-primary">
                    Open trip
                 </button>
@@ -3884,12 +3884,10 @@ const Sidebar = ({
     }
 
     return (
-        <aside className={`sidebar ${isOpen ? 'is-open' : ''}`}>
-            <div className="sidebar-logo">
-                {(() => {
-                    const src = currentTheme === 'dark' ? (logos?.logoDark || logos?.logoLight) : (logos?.logoLight || logos?.logoDark);
-                    return src ? <img src={src} alt="myTrip logo" /> : <h2>myTrip</h2>;
-                })()}
+        <aside className={`sidebar sidebar-v2 ${isOpen ? 'is-open' : ''}`}>
+            <div className="sidebar-logo sidebar-logo-v2">
+                <span className="sidebar-brand-label">Travel ops</span>
+                <h2>myTrip</h2>
             </div>
             <nav>
                 <div className="sidebar-section-label">Workspace</div>
@@ -4365,8 +4363,8 @@ const Dashboard = ({
                     <button type="button" onClick={onDismissPaymentFeedback} aria-label="Dismiss notification">×</button>
                 </div>
             )}
-            <section className="dashboard-overview-hero">
-                <div className="dashboard-overview-copy">
+            <section className="dashboard-overview-hero dashboard-overview-v2">
+                <div className="dashboard-overview-copy dashboard-overview-copy-v2">
                     <span className="section-eyebrow">Travel operations board</span>
                     <h2>Trips, travelers, and payments in one calm, premium workspace</h2>
                     <p>
@@ -4385,26 +4383,26 @@ const Dashboard = ({
                         )}
                     </div>
                 </div>
-                <div className="dashboard-overview-rail">
-                    <div className="dashboard-overview-stats">
-                        <div className="overview-stat-card">
+                <div className="dashboard-overview-rail dashboard-overview-rail-v2">
+                    <div className="dashboard-overview-stats dashboard-overview-stats-v2">
+                        <div className="overview-stat-card overview-stat-card-v2">
                             <span>Active trips</span>
                             <strong>{overviewMetrics.tripCount}</strong>
                         </div>
-                        <div className="overview-stat-card">
+                        <div className="overview-stat-card overview-stat-card-v2">
                             <span>Unread messages</span>
                             <strong>{overviewMetrics.unreadMessages}</strong>
                         </div>
-                        <div className="overview-stat-card">
+                        <div className="overview-stat-card overview-stat-card-v2">
                             <span>Online payments</span>
                             <strong>{overviewMetrics.onlinePaymentsCount}</strong>
                         </div>
-                        <div className="overview-stat-card">
+                        <div className="overview-stat-card overview-stat-card-v2">
                             <span>Balance</span>
                             <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
                         </div>
                     </div>
-                    <div className="dashboard-overview-note">
+                    <div className="dashboard-overview-note dashboard-overview-note-v2">
                         <span className="dashboard-overview-note-label">Featured trip</span>
                         <strong>{featuredTrip ? featuredTrip.name : 'No trip highlighted yet'}</strong>
                         <p>
@@ -4415,13 +4413,13 @@ const Dashboard = ({
                     </div>
                 </div>
             </section>
-            <div className="dashboard-header">
+            <div className="dashboard-header dashboard-header-v2">
                 <div>
                     <h2>Active trips</h2>
                     <p className="dashboard-header-intro">Open a trip to move between itinerary, documents, finance, traveler data, and communications without losing context.</p>
                 </div>
             </div>
-            <div className="trip-list">
+            <div className="trip-list trip-list-v2">
                 {visibleTrips.length > 0 ? (
                 visibleTrips.map((trip: Trip) => (
                     <React.Fragment key={trip.id}>
@@ -4440,7 +4438,7 @@ const Dashboard = ({
   };
 
   return (
-     <div className={`dashboard-layout with-sidebar ${isMobileSidebarOpen ? 'sidebar-is-open' : ''}`}>
+     <div className={`dashboard-layout dashboard-layout-v2 with-sidebar ${isMobileSidebarOpen ? 'sidebar-is-open' : ''}`}>
         <Sidebar
             trips={visibleTrips}
             selectedTripId={selectedTripId}
@@ -4464,7 +4462,7 @@ const Dashboard = ({
             logos={siteSettings}
         />
         <div className="sidebar-overlay" onClick={() => setMobileSidebarOpen(false)}></div>
-        <div className="dashboard-container">
+        <div className="dashboard-container dashboard-container-v2">
           <Header
             user={user}
             onToggleSidebar={() => setMobileSidebarOpen(true)}
@@ -4479,7 +4477,7 @@ const Dashboard = ({
               onSelectView={handleSelectView}
             />
           )}
-          <main className="dashboard-content">
+          <main className="dashboard-content dashboard-content-v2">
             {renderContent()}
           </main>
           {isMobile && (
