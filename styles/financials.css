@@ -804,6 +804,36 @@ html[data-theme='dark'] .financial-inline-status.error {
     }
 }
 
+/* --- Financials Visual Pass (v3) --- */
+.financials-page.financials-page-v2 .summary-card.compact.finance-hero-card-v2:nth-child(1) {
+    background: linear-gradient(165deg, rgba(13, 139, 123, 0.14), rgba(255, 255, 255, 0.95));
+}
+
+.financials-page.financials-page-v2 .summary-card.compact.finance-hero-card-v2:nth-child(2) {
+    background: linear-gradient(165deg, rgba(39, 74, 112, 0.14), rgba(255, 255, 255, 0.95));
+}
+
+.financials-page.financials-page-v2 .summary-card.compact.finance-hero-card-v2:nth-child(3) {
+    background: linear-gradient(165deg, rgba(217, 134, 52, 0.16), rgba(255, 255, 255, 0.95));
+}
+
+html[data-theme='dark'] .financials-page.financials-page-v2 .summary-card.compact.finance-hero-card-v2:nth-child(1),
+html[data-theme='dark'] .financials-page.financials-page-v2 .summary-card.compact.finance-hero-card-v2:nth-child(2),
+html[data-theme='dark'] .financials-page.financials-page-v2 .summary-card.compact.finance-hero-card-v2:nth-child(3) {
+    background: linear-gradient(170deg, rgba(17, 34, 48, 0.95), rgba(14, 29, 41, 0.95));
+}
+
+.payment-activity-card.payment-activity-card-v2 {
+    border: 1px solid color-mix(in srgb, var(--color-primary) 12%, var(--color-border) 88%);
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 94%, #f6fbff 6%), var(--color-surface));
+}
+
+html[data-theme='dark'] .payment-activity-card.payment-activity-card-v2 {
+    background:
+        linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, #102233 8%), var(--color-surface));
+}
+
 /* --- Contrast Rescue Pass --- */
 .summary-card,
 .add-record-form,

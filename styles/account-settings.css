@@ -279,3 +279,35 @@ html[data-theme='dark'] .brand-placeholder {
   background: #13232f;
   border-color: #233a4a;
 }
+
+/* --- Settings Visual Pass (v3) --- */
+.settings-hero {
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border) 84%);
+  background:
+    radial-gradient(360px 220px at 8% -4%, rgba(13, 139, 123, 0.14), transparent 72%),
+    radial-gradient(340px 220px at 92% -4%, rgba(39, 74, 112, 0.12), transparent 72%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(247, 252, 255, 0.9));
+}
+
+html[data-theme='dark'] .settings-hero {
+  background:
+    radial-gradient(360px 220px at 8% -4%, rgba(68, 200, 177, 0.16), transparent 72%),
+    radial-gradient(340px 220px at 92% -4%, rgba(63, 103, 145, 0.16), transparent 72%),
+    linear-gradient(165deg, rgba(16, 32, 43, 0.95), rgba(12, 25, 36, 0.95));
+}
+
+.settings-panel,
+.brand-card,
+.settings-hero-card {
+  border-color: color-mix(in srgb, var(--color-primary) 11%, var(--color-border) 89%);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 94%, #f4f9fe 6%), var(--color-surface));
+  box-shadow: 0 14px 30px rgba(16, 35, 55, 0.08);
+}
+
+html[data-theme='dark'] .settings-panel,
+html[data-theme='dark'] .brand-card,
+html[data-theme='dark'] .settings-hero-card {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-surface) 92%, #102233 8%), var(--color-surface));
+}

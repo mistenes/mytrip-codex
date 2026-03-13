@@ -15,7 +15,6 @@ const ROLE_LABELS: Record<Role, string> = {
     organizer: 'Organizer',
     traveler: 'Traveler',
 };
-const UI_BUILD_TAG = 'ui-refresh-cd94f61';
 
 type MainView = 'trips' | 'users' | 'files' | 'account' | 'site';
 
@@ -412,7 +411,7 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
     onToggleSidebar: () => void;
     showHamburger: boolean;
 }) => (
-  <header className="app-header app-header-v2">
+  <header className="app-header app-header-v2 app-header-v3">
     <div className="header-left">
          {showHamburger && (
             <button className="hamburger-menu" onClick={onToggleSidebar} aria-label="Open navigation">
@@ -429,7 +428,6 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
 	        <span className="user-badge-label">Signed in</span>
 	        <strong>{user.name}</strong>
 	        <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
-            <span className="ui-build-tag-v2">{UI_BUILD_TAG}</span>
 	      </div>
 	    </div>
 	  </header>
@@ -4483,7 +4481,7 @@ const Sidebar = ({
     }
 
     return (
-        <aside className={`sidebar sidebar-v2 ${isOpen ? 'is-open' : ''}`}>
+        <aside className={`sidebar sidebar-v2 sidebar-v3 ${isOpen ? 'is-open' : ''}`}>
             <div className="sidebar-mobile-head-v2">
                 <div className="sidebar-logo sidebar-logo-v2">
                     <span className="sidebar-brand-label">Travel ops</span>
@@ -5188,7 +5186,7 @@ const Dashboard = ({
   };
 
   return (
-     <div className={`dashboard-layout dashboard-layout-v2 with-sidebar ${isMobileSidebarOpen ? 'sidebar-is-open' : ''}`}>
+     <div className={`dashboard-layout dashboard-layout-v2 dashboard-layout-v3 with-sidebar ${isMobileSidebarOpen ? 'sidebar-is-open' : ''}`}>
         <Sidebar
             trips={visibleTrips}
             selectedTripId={selectedTripId}
@@ -5207,7 +5205,7 @@ const Dashboard = ({
             logos={siteSettings}
         />
         <div className="sidebar-overlay" onClick={() => setMobileSidebarOpen(false)}></div>
-        <div className="dashboard-container dashboard-container-v2">
+        <div className="dashboard-container dashboard-container-v2 dashboard-container-v3">
           <Header
             user={user}
             onToggleSidebar={() => setMobileSidebarOpen(prev => !prev)}
@@ -5222,7 +5220,7 @@ const Dashboard = ({
               onSelectView={handleSelectView}
             />
           )}
-          <main className="dashboard-content dashboard-content-v2">
+          <main className="dashboard-content dashboard-content-v2 dashboard-content-v3">
             {renderContent()}
           </main>
           {user.role === 'admin' && (

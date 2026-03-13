@@ -38,9 +38,9 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
   };
     
   return (
-    <div className="login-container login-container-v2" style={siteSettings?.loginBackground ? { backgroundImage: `url(${siteSettings.loginBackground})` } : undefined}>
-      <div className="login-stage-v2">
-        <div className="login-hero login-hero-v2">
+    <div className="login-container login-container-v2 login-container-v3" style={siteSettings?.loginBackground ? { backgroundImage: `url(${siteSettings.loginBackground})` } : undefined}>
+      <div className="login-stage-v2 login-stage-v3">
+        <div className="login-hero login-hero-v2 login-hero-v3">
           <span className="login-kicker">Travel operations, refined</span>
           <h2>Run trips, files, and payments from one clear workspace.</h2>
           <p>Built for organizers and travelers who need structure, not clutter.</p>
@@ -59,7 +59,7 @@ const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: '
             </div>
           </div>
         </div>
-        <div className="login-box login-box-v2">
+        <div className="login-box login-box-v2 login-box-v3">
           {(() => {
             const src = theme === 'dark' ? (siteSettings?.logoDark || siteSettings?.logoLight) : (siteSettings?.logoLight || siteSettings?.logoDark);
             return src ? <img src={src} alt="myTrip logo" className="login-logo" /> : null;

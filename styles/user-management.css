@@ -161,3 +161,37 @@ html[data-theme='dark'] .trip-user-management .user-table {
     grid-template-columns: 1fr;
   }
 }
+
+/* --- User Management Visual Pass (v3) --- */
+.user-management .user-tile {
+  border-color: color-mix(in srgb, var(--color-primary) 12%, var(--color-border) 88%);
+  background:
+    linear-gradient(170deg, color-mix(in srgb, var(--color-surface) 94%, #f5fafe 6%), var(--color-surface));
+}
+
+.user-management .user-tile.admin {
+  border-color: rgba(124, 58, 237, 0.24);
+  background: linear-gradient(165deg, rgba(124, 58, 237, 0.1), rgba(255, 255, 255, 0.96));
+}
+
+.user-management .user-tile.organizer {
+  border-color: rgba(13, 139, 123, 0.24);
+  background: linear-gradient(165deg, rgba(13, 139, 123, 0.1), rgba(255, 255, 255, 0.96));
+}
+
+.user-management .user-tile.traveler {
+  border-color: rgba(39, 74, 112, 0.2);
+  background: linear-gradient(165deg, rgba(39, 74, 112, 0.08), rgba(255, 255, 255, 0.96));
+}
+
+.user-management .user-table,
+.trip-user-management .user-table {
+  border: 1px solid color-mix(in srgb, var(--color-primary) 11%, var(--color-border) 89%);
+}
+
+html[data-theme='dark'] .user-management .user-tile,
+html[data-theme='dark'] .user-management .user-tile.admin,
+html[data-theme='dark'] .user-management .user-tile.organizer,
+html[data-theme='dark'] .user-management .user-tile.traveler {
+  background: linear-gradient(170deg, rgba(17, 34, 48, 0.95), rgba(14, 29, 41, 0.95));
+}
