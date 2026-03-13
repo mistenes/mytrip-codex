@@ -4691,45 +4691,78 @@ const MobileDashboardHome = ({
 }) => {
     const totalTravelers = visibleTrips.reduce((sum, trip) => sum + trip.travelerIds.length, 0);
     const nextActionTrip = featuredTrip || visibleTrips.find((trip) => unreadCounts[trip.id] > 0) || visibleTrips[0] || null;
+    const liveTrips = visibleTrips.filter((trip) => getTripStageMeta(trip).className === 'is-live').length;
+    const preparingTrips = visibleTrips.filter((trip) => getTripStageMeta(trip).className === 'is-upcoming').length;
+    const compactTrips = [...visibleTrips]
+        .sort((left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime())
+        .slice(0, 5);
+    const roleTone = user.role === 'traveler'
+        ? 'Your trip essentials are surfaced first: balance, updates, and documents.'
+        : 'Keep invites, unread updates, and the next operational trip visible without hunting through menus.';
+
+    const canCreateTrip = user.role === 'admin';
+    const canSendInvite = user.role === 'admin' || user.role === 'organizer';
+    const actionCount = Number(canCreateTrip) + Number(canSendInvite);
 
     return (
-        <div className="dashboard-mobile-home-v2">
-            <section className="dashboard-mobile-hero-v2">
-                <span className="section-eyebrow">Dashboard</span>
-                <h2>Everything important, without desktop clutter.</h2>
-                <p>Open a trip fast, catch unread updates, and keep operations moving from one clear mobile view.</p>
-                <div className="dashboard-mobile-actions-v2">
-                    {user.role === 'admin' && (
+        <div className="dashboard-mobile-home-v2 dashboard-mobile-home-v4">
+            <section className="dashboard-mobile-hero-v2 dashboard-mobile-hero-v4">
+                <div className="dashboard-mobile-hero-head-v4">
+                    <div>
+                        <span className="section-eyebrow">Mobile dashboard</span>
+                        <h2>Compact control for trips that still feels premium.</h2>
+                    </div>
+                    <span className="dashboard-mobile-role-pill-v4">{ROLE_LABELS[user.role]}</span>
+                </div>
+                <p>{roleTone}</p>
+                <div className="dashboard-mobile-priority-strip-v4" aria-label="Workspace status">
+                    <article className="dashboard-mobile-priority-card-v4">
+                        <span>Live now</span>
+                        <strong>{liveTrips}</strong>
+                    </article>
+                    <article className="dashboard-mobile-priority-card-v4">
+                        <span>Preparing</span>
+                        <strong>{preparingTrips}</strong>
+                    </article>
+                    <article className="dashboard-mobile-priority-card-v4">
+                        <span>Unread</span>
+                        <strong>{overviewMetrics.unreadMessages}</strong>
+                    </article>
+                </div>
+                {actionCount > 0 && (
+                <div className={`dashboard-mobile-actions-v2 dashboard-mobile-actions-v4 ${actionCount === 1 ? 'dashboard-mobile-actions-single-v4' : ''}`}>
+                    {canCreateTrip && (
                         <button onClick={onCreateTrip} className="btn btn-primary">Create trip</button>
                     )}
-                    {(user.role === 'admin' || user.role === 'organizer') && (
+                    {canSendInvite && (
                         <button onClick={onInvite} className="btn btn-secondary">Send invite</button>
                     )}
                 </div>
+                )}
             </section>
 
-            <section className="dashboard-mobile-metrics-v2" aria-label="Workspace overview">
-                <article className="dashboard-mobile-metric-card-v2">
+            <section className="dashboard-mobile-metrics-v2 dashboard-mobile-metrics-v4" aria-label="Workspace overview">
+                <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
                     <span>Trips</span>
                     <strong>{overviewMetrics.tripCount}</strong>
                 </article>
-                <article className="dashboard-mobile-metric-card-v2">
+                <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
                     <span>Unread</span>
                     <strong>{overviewMetrics.unreadMessages}</strong>
                 </article>
-                <article className="dashboard-mobile-metric-card-v2">
+                <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
                     <span>Travelers</span>
                     <strong>{totalTravelers}</strong>
                 </article>
-                <article className="dashboard-mobile-metric-card-v2">
+                <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
                     <span>Balance</span>
                     <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
                 </article>
             </section>
 
             {nextActionTrip && (
-                <section className="dashboard-mobile-featured-v2">
-                    <div className="dashboard-mobile-featured-head-v2">
+                <section className="dashboard-mobile-featured-v2 dashboard-mobile-featured-v4">
+                    <div className="dashboard-mobile-featured-head-v2 dashboard-mobile-featured-head-v4">
                         <div>
                             <span className="dashboard-mobile-featured-label-v2">Featured trip</span>
                             <h3>{nextActionTrip.name}</h3>
@@ -4741,7 +4774,12 @@ const MobileDashboardHome = ({
                     <p className="dashboard-mobile-featured-copy-v2">
                         {formatDisplayDate(nextActionTrip.startDate)} - {formatDisplayDate(nextActionTrip.endDate)} · {getTripStageMeta(nextActionTrip).summary}
                     </p>
-                    <div className="dashboard-mobile-featured-actions-v2">
+                    <div className="dashboard-mobile-featured-meta-v4">
+                        <span>{getTripDurationDays(nextActionTrip)} days</span>
+                        <span>{nextActionTrip.travelerIds.length} travelers</span>
+                        <span>{nextActionTrip.organizerNames?.length || 0} organizers</span>
+                    </div>
+                    <div className="dashboard-mobile-featured-actions-v2 dashboard-mobile-featured-actions-v4">
                         <button className="btn btn-primary" onClick={() => onOpenTrip(nextActionTrip.id)}>Open trip</button>
                         <button className="btn btn-secondary" onClick={() => onOpenTripMessages(nextActionTrip.id)}>
                             Messages{unreadCounts[nextActionTrip.id] ? ` (${unreadCounts[nextActionTrip.id]})` : ''}
@@ -4750,29 +4788,34 @@ const MobileDashboardHome = ({
                 </section>
             )}
 
-            <section className="dashboard-mobile-trip-list-v2">
-                <div className="dashboard-mobile-section-head-v2">
-                    <h3>Your trips</h3>
+            <section className="dashboard-mobile-trip-list-v2 dashboard-mobile-trip-list-v4">
+                <div className="dashboard-mobile-section-head-v2 dashboard-mobile-section-head-v4">
+                    <div>
+                        <h3>Your trips</h3>
+                        <p>Open the next trip fast without a crowded table layout.</p>
+                    </div>
                     <span>{visibleTrips.length}</span>
                 </div>
                 {visibleTrips.length > 0 ? (
-                    visibleTrips.map((trip) => {
+                    compactTrips.map((trip) => {
                         const stage = getTripStageMeta(trip);
                         return (
-                            <article key={trip.id} className="dashboard-mobile-trip-card-v2">
-                                <div className="dashboard-mobile-trip-top-v2">
+                            <article key={trip.id} className="dashboard-mobile-trip-card-v2 dashboard-mobile-trip-card-v4">
+                                <div className="dashboard-mobile-trip-top-v2 dashboard-mobile-trip-top-v4">
                                     <div>
                                         <strong>{trip.name}</strong>
                                         <p>{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</p>
                                     </div>
                                     <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
                                 </div>
-                                <div className="dashboard-mobile-trip-meta-v2">
+                                <p className="dashboard-mobile-trip-summary-v4">{stage.summary}</p>
+                                <div className="dashboard-mobile-trip-meta-v2 dashboard-mobile-trip-meta-v4">
+                                    <span>{getTripDurationDays(trip)} days</span>
                                     <span>{trip.travelerIds.length} travelers</span>
                                     <span>{trip.organizerNames?.length || 0} organizers</span>
                                     {unreadCounts[trip.id] > 0 && <span>{unreadCounts[trip.id]} unread</span>}
                                 </div>
-                                <div className="dashboard-mobile-trip-actions-v2">
+                                <div className="dashboard-mobile-trip-actions-v2 dashboard-mobile-trip-actions-v4">
                                     <button className="btn btn-primary" onClick={() => onOpenTrip(trip.id)}>Open</button>
                                     <button className="btn btn-secondary" onClick={() => onOpenTripMessages(trip.id)}>Messages</button>
                                 </div>
@@ -4780,7 +4823,7 @@ const MobileDashboardHome = ({
                         );
                     })
                 ) : (
-                    <div className="dashboard-mobile-empty-v2">
+                    <div className="dashboard-mobile-empty-v2 dashboard-mobile-empty-v4">
                         No trips are available for this account yet.
                     </div>
                 )}
