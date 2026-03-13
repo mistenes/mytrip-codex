@@ -4301,6 +4301,7 @@ const Sidebar = ({
     userRole,
     userId,
     isOpen,
+    onClose,
     onNavigate,
     onLogout,
     unreadCounts,
@@ -4316,6 +4317,7 @@ const Sidebar = ({
     userRole: Role,
     userId: string,
     isOpen: boolean,
+    onClose: () => void,
     onNavigate: () => void,
     onLogout: () => void,
     unreadCounts: Record<string, number>,
@@ -4337,9 +4339,14 @@ const Sidebar = ({
 
     return (
         <aside className={`sidebar sidebar-v2 ${isOpen ? 'is-open' : ''}`}>
-            <div className="sidebar-logo sidebar-logo-v2">
-                <span className="sidebar-brand-label">Travel ops</span>
-                <h2>myTrip</h2>
+            <div className="sidebar-mobile-head-v2">
+                <div className="sidebar-logo sidebar-logo-v2">
+                    <span className="sidebar-brand-label">Travel ops</span>
+                    <h2>myTrip</h2>
+                </div>
+                <button type="button" className="sidebar-close-btn-v2" onClick={onClose} aria-label="Close navigation">
+                    ×
+                </button>
             </div>
             <nav>
                 <div className="sidebar-section-label">Workspace</div>
@@ -4898,6 +4905,7 @@ const Dashboard = ({
             userRole={user.role}
             userId={String(user.id)}
             isOpen={isMobileSidebarOpen}
+            onClose={() => setMobileSidebarOpen(false)}
             onNavigate={() => setMobileSidebarOpen(false)}
             onLogout={onLogout}
             unreadCounts={unreadCounts}
@@ -4910,7 +4918,7 @@ const Dashboard = ({
         <div className="dashboard-container dashboard-container-v2">
           <Header
             user={user}
-            onToggleSidebar={() => setMobileSidebarOpen(true)}
+            onToggleSidebar={() => setMobileSidebarOpen(prev => !prev)}
             showHamburger={isTabletOrBelow}
           />
           {isMobile && selectedTrip && (
@@ -4925,20 +4933,6 @@ const Dashboard = ({
           <main className="dashboard-content dashboard-content-v2">
             {renderContent()}
           </main>
-          {isMobile && (
-            <MobileBottomNav
-              role={user.role}
-              mainView={mainView}
-              selectedTrip={selectedTrip}
-              activeTripView={activeTripView}
-              onShowHome={handleShowTrips}
-              onOpenTrip={handleOpenMobileTrip}
-              onOpenMessages={handleOpenMobileMessages}
-              onShowFiles={handleShowFiles}
-              onShowAccount={handleShowAccount}
-              onOpenMore={() => setMobileSidebarOpen(true)}
-            />
-          )}
           {user.role === 'admin' && (
             <CreateTripModal
                 isOpen={isModalOpen}
