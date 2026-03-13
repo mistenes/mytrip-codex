@@ -343,26 +343,6 @@ const getTripNavItems = (trip: Trip, userRole: Role, userId: string) => {
     return tripNavItems;
 };
 
-const getPrimaryMobileNavItems = (role: Role): Array<{ key: string; label: string }> => {
-    if (role === 'traveler') {
-        return [
-            { key: 'home', label: 'Home' },
-            { key: 'trips', label: 'Trips' },
-            { key: 'messages', label: 'Messages' },
-            { key: 'account', label: 'Account' },
-            { key: 'more', label: 'More' },
-        ];
-    }
-
-    return [
-        { key: 'home', label: 'Home' },
-        { key: 'trips', label: 'Trips' },
-        { key: 'files', label: 'Files' },
-        { key: 'account', label: 'Account' },
-        { key: 'more', label: 'More' },
-    ];
-};
-
 const SectionIntro = ({
     eyebrow,
     title,
@@ -4439,12 +4419,14 @@ const AllFilesView = ({ documents, users, trips, user }: { documents: Document[]
 
 const Sidebar = ({
     trips,
+    selectedTrip,
     selectedTripId,
     activeView,
     mainView,
     userRole,
     userId,
     isOpen,
+    isCompactNav,
     onClose,
     onNavigate,
     onLogout,
@@ -4455,12 +4437,14 @@ const Sidebar = ({
     logos
 }: {
     trips: Trip[],
+    selectedTrip: Trip | null,
     selectedTripId: string | null,
     activeView: TripView,
     mainView: MainView,
     userRole: Role,
     userId: string,
     isOpen: boolean,
+    isCompactNav: boolean,
     onClose: () => void,
     onNavigate: () => void,
     onLogout: () => void,
@@ -4481,6 +4465,8 @@ const Sidebar = ({
         mainNavItems.push({ key: 'site', label: 'Brand settings' });
     }
 
+    const currentTripNavItems = selectedTrip ? getTripNavItems(selectedTrip, userRole, userId) : [];
+
     return (
         <aside className={`sidebar sidebar-v2 sidebar-v3 ${isOpen ? 'is-open' : ''}`}>
             <div className="sidebar-mobile-head-v2">
@@ -4493,6 +4479,32 @@ const Sidebar = ({
                 </button>
             </div>
             <nav>
+                {isCompactNav && selectedTrip && (
+                    <div className="sidebar-current-trip-v4">
+                        <div className="sidebar-section-label">Current trip</div>
+                        <div className="sidebar-current-trip-card-v4">
+                            <Link to={getTripPath(selectedTrip.id)} onClick={onNavigate} className={activeView === 'summary' ? 'active' : ''}>
+                                <span>{selectedTrip.name}</span>
+                                <small>{formatDisplayDate(selectedTrip.startDate)} - {formatDisplayDate(selectedTrip.endDate)}</small>
+                            </Link>
+                            <div className="sidebar-current-trip-links-v4">
+                                {currentTripNavItems.map((item) => (
+                                    <Link
+                                        key={item.key}
+                                        to={getTripPath(selectedTrip.id, item.key)}
+                                        onClick={onNavigate}
+                                        className={activeView === item.key ? 'active' : ''}
+                                    >
+                                        {item.label}
+                                        {item.key === 'messages' && unreadCounts[selectedTrip.id] > 0 && (
+                                            <span className="unread-badge">{unreadCounts[selectedTrip.id]}</span>
+                                        )}
+                                    </Link>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
                 <div className="sidebar-section-label">Workspace</div>
                 <ul className="main-nav-list">
                     {mainNavItems.map((item) => {
@@ -4557,112 +4569,6 @@ const Sidebar = ({
     );
 };
 
-const TripSubnav = ({
-    trip,
-    user,
-    activeView,
-    unreadCount,
-    onSelectView,
-}: {
-    trip: Trip;
-    user: User;
-    activeView: TripView;
-    unreadCount: number;
-    onSelectView: (view: TripView) => void;
-}) => {
-    const items = getTripNavItems(trip, user.role, String(user.id));
-
-    return (
-        <div className="trip-mobile-subnav">
-            <div className="trip-mobile-subnav-head">
-                <span className="trip-mobile-subnav-label">Current trip</span>
-                <strong>{trip.name}</strong>
-            </div>
-            <div className="trip-mobile-subnav-scroll" role="tablist" aria-label="Trip sections">
-                {items.map((item) => (
-                    <button
-                        key={item.key}
-                        type="button"
-                        className={activeView === item.key ? 'active' : ''}
-                        onClick={() => onSelectView(item.key)}
-                    >
-                        {item.label}
-                        {item.key === 'messages' && unreadCount > 0 && (
-                            <span className="trip-mobile-subnav-badge">{unreadCount}</span>
-                        )}
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-const MobileBottomNav = ({
-    role,
-    mainView,
-    selectedTrip,
-    activeTripView,
-    onShowHome,
-    onOpenTrip,
-    onOpenMessages,
-    onShowFiles,
-    onShowAccount,
-    onOpenMore,
-}: {
-    role: Role;
-    mainView: MainView;
-    selectedTrip: Trip | null;
-    activeTripView: TripView;
-    onShowHome: () => void;
-    onOpenTrip: () => void;
-    onOpenMessages: () => void;
-    onShowFiles: () => void;
-    onShowAccount: () => void;
-    onOpenMore: () => void;
-}) => {
-    const items = getPrimaryMobileNavItems(role);
-
-    const isActive = (key: string) => {
-        if (key === 'home') {
-            return mainView === 'trips' && !selectedTrip;
-        }
-        if (key === 'trips') {
-            return mainView === 'trips' && Boolean(selectedTrip) && activeTripView !== 'messages';
-        }
-        if (key === 'messages') {
-            return mainView === 'trips' && activeTripView === 'messages';
-        }
-        if (key === 'files') {
-            return mainView === 'files';
-        }
-        if (key === 'account') {
-            return mainView === 'account';
-        }
-        return false;
-    };
-
-    return (
-        <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation">
-            {items.map((item) => {
-                const onClick = () => {
-                    if (item.key === 'home') onShowHome();
-                    if (item.key === 'trips') onOpenTrip();
-                    if (item.key === 'messages') onOpenMessages();
-                    if (item.key === 'files') onShowFiles();
-                    if (item.key === 'account') onShowAccount();
-                    if (item.key === 'more') onOpenMore();
-                };
-
-                return (
-                    <button key={item.key} type="button" className={isActive(item.key) ? 'active' : ''} onClick={onClick}>
-                        <span>{item.label}</span>
-                    </button>
-                );
-            })}
-        </nav>
-    );
-};
-
 const MobileDashboardHome = ({
     user,
     visibleTrips,
@@ -4673,6 +4579,7 @@ const MobileDashboardHome = ({
     onInvite,
     onOpenTrip,
     onOpenTripMessages,
+    onOpenTripFinancials,
 }: {
     user: User;
     visibleTrips: Trip[];
@@ -4688,17 +4595,21 @@ const MobileDashboardHome = ({
     onInvite: () => void;
     onOpenTrip: (tripId: string) => void;
     onOpenTripMessages: (tripId: string) => void;
+    onOpenTripFinancials: (tripId: string) => void;
 }) => {
+    const [showAllTrips, setShowAllTrips] = useState(false);
     const totalTravelers = visibleTrips.reduce((sum, trip) => sum + trip.travelerIds.length, 0);
     const nextActionTrip = featuredTrip || visibleTrips.find((trip) => unreadCounts[trip.id] > 0) || visibleTrips[0] || null;
     const liveTrips = visibleTrips.filter((trip) => getTripStageMeta(trip).className === 'is-live').length;
     const preparingTrips = visibleTrips.filter((trip) => getTripStageMeta(trip).className === 'is-upcoming').length;
-    const compactTrips = [...visibleTrips]
+    const sortedTrips = [...visibleTrips]
         .sort((left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime())
-        .slice(0, 5);
+    const compactTrips = showAllTrips ? sortedTrips : sortedTrips.slice(0, 3);
+    const hiddenTripCount = Math.max(0, sortedTrips.length - 3);
+    const priorityActionLabel = user.role === 'traveler' ? 'Finance' : 'Messages';
     const roleTone = user.role === 'traveler'
-        ? 'Your trip essentials are surfaced first: balance, updates, and documents.'
-        : 'Keep invites, unread updates, and the next operational trip visible without hunting through menus.';
+        ? 'Balance, documents, and your next trip stay close without oversized cards.'
+        : 'The next operational trip stays first, with invites and updates one tap away.';
 
     const canCreateTrip = user.role === 'admin';
     const canSendInvite = user.role === 'admin' || user.role === 'organizer';
@@ -4706,42 +4617,55 @@ const MobileDashboardHome = ({
 
     return (
         <div className="dashboard-mobile-home-v2 dashboard-mobile-home-v4">
-            <section className="dashboard-mobile-hero-v2 dashboard-mobile-hero-v4">
-                <div className="dashboard-mobile-hero-head-v4">
-                    <div>
-                        <span className="section-eyebrow">Mobile dashboard</span>
-                        <h2>Compact control for trips that still feels premium.</h2>
-                    </div>
-                    <span className="dashboard-mobile-role-pill-v4">{ROLE_LABELS[user.role]}</span>
+            <section className="dashboard-mobile-masthead-v4">
+                <div>
+                    <span className="section-eyebrow">Dashboard</span>
+                    <h2>Next trip first.</h2>
                 </div>
-                <p>{roleTone}</p>
-                <div className="dashboard-mobile-priority-strip-v4" aria-label="Workspace status">
-                    <article className="dashboard-mobile-priority-card-v4">
-                        <span>Live now</span>
-                        <strong>{liveTrips}</strong>
-                    </article>
-                    <article className="dashboard-mobile-priority-card-v4">
-                        <span>Preparing</span>
-                        <strong>{preparingTrips}</strong>
-                    </article>
-                    <article className="dashboard-mobile-priority-card-v4">
-                        <span>Unread</span>
-                        <strong>{overviewMetrics.unreadMessages}</strong>
-                    </article>
-                </div>
-                {actionCount > 0 && (
-                <div className={`dashboard-mobile-actions-v2 dashboard-mobile-actions-v4 ${actionCount === 1 ? 'dashboard-mobile-actions-single-v4' : ''}`}>
-                    {canCreateTrip && (
-                        <button onClick={onCreateTrip} className="btn btn-primary">Create trip</button>
-                    )}
-                    {canSendInvite && (
-                        <button onClick={onInvite} className="btn btn-secondary">Send invite</button>
-                    )}
-                </div>
-                )}
+                <span className="dashboard-mobile-role-pill-v4">{ROLE_LABELS[user.role]}</span>
             </section>
 
-            <section className="dashboard-mobile-metrics-v2 dashboard-mobile-metrics-v4" aria-label="Workspace overview">
+            {nextActionTrip && (
+                <section className="dashboard-mobile-priority-panel-v4">
+                    <div className="dashboard-mobile-priority-header-v4">
+                        <div>
+                            <span className="dashboard-mobile-featured-label-v2">Next trip</span>
+                            <h3>{nextActionTrip.name}</h3>
+                            <p>{formatDisplayDate(nextActionTrip.startDate)} - {formatDisplayDate(nextActionTrip.endDate)}</p>
+                        </div>
+                        <span className={`trip-stage-badge ${getTripStageMeta(nextActionTrip).className}`}>
+                            {getTripStageMeta(nextActionTrip).label}
+                        </span>
+                    </div>
+                    <p className="dashboard-mobile-priority-copy-v4">{roleTone}</p>
+                    <div className="dashboard-mobile-featured-meta-v4">
+                        <span>{getTripDurationDays(nextActionTrip)} days</span>
+                        <span>{nextActionTrip.travelerIds.length} travelers</span>
+                        {unreadCounts[nextActionTrip.id] > 0 && <span>{unreadCounts[nextActionTrip.id]} unread</span>}
+                    </div>
+                    <div className="dashboard-mobile-priority-actions-v4">
+                        <button className="btn btn-primary" onClick={() => onOpenTrip(nextActionTrip.id)}>Open trip</button>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => user.role === 'traveler' ? onOpenTripFinancials(nextActionTrip.id) : onOpenTripMessages(nextActionTrip.id)}
+                        >
+                            {priorityActionLabel}
+                        </button>
+                    </div>
+                    {actionCount > 0 && (
+                        <div className={`dashboard-mobile-actions-v2 dashboard-mobile-actions-v4 ${actionCount === 1 ? 'dashboard-mobile-actions-single-v4' : ''}`}>
+                            {canCreateTrip && (
+                                <button onClick={onCreateTrip} className="btn btn-primary">Create trip</button>
+                            )}
+                            {canSendInvite && (
+                                <button onClick={onInvite} className="btn btn-secondary">Send invite</button>
+                            )}
+                        </div>
+                    )}
+                </section>
+            )}
+
+            <section className="dashboard-mobile-metrics-v2 dashboard-mobile-metrics-v4 dashboard-mobile-status-grid-v4" aria-label="Workspace overview">
                 <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
                     <span>Trips</span>
                     <strong>{overviewMetrics.tripCount}</strong>
@@ -4758,41 +4682,25 @@ const MobileDashboardHome = ({
                     <span>Balance</span>
                     <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
                 </article>
+                <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
+                    <span>Live now</span>
+                    <strong>{liveTrips}</strong>
+                </article>
+                <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
+                    <span>Preparing</span>
+                    <strong>{preparingTrips}</strong>
+                </article>
+                <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
+                    <span>Unread</span>
+                    <strong>{overviewMetrics.unreadMessages}</strong>
+                </article>
             </section>
-
-            {nextActionTrip && (
-                <section className="dashboard-mobile-featured-v2 dashboard-mobile-featured-v4">
-                    <div className="dashboard-mobile-featured-head-v2 dashboard-mobile-featured-head-v4">
-                        <div>
-                            <span className="dashboard-mobile-featured-label-v2">Featured trip</span>
-                            <h3>{nextActionTrip.name}</h3>
-                        </div>
-                        <span className={`trip-stage-badge ${getTripStageMeta(nextActionTrip).className}`}>
-                            {getTripStageMeta(nextActionTrip).label}
-                        </span>
-                    </div>
-                    <p className="dashboard-mobile-featured-copy-v2">
-                        {formatDisplayDate(nextActionTrip.startDate)} - {formatDisplayDate(nextActionTrip.endDate)} · {getTripStageMeta(nextActionTrip).summary}
-                    </p>
-                    <div className="dashboard-mobile-featured-meta-v4">
-                        <span>{getTripDurationDays(nextActionTrip)} days</span>
-                        <span>{nextActionTrip.travelerIds.length} travelers</span>
-                        <span>{nextActionTrip.organizerNames?.length || 0} organizers</span>
-                    </div>
-                    <div className="dashboard-mobile-featured-actions-v2 dashboard-mobile-featured-actions-v4">
-                        <button className="btn btn-primary" onClick={() => onOpenTrip(nextActionTrip.id)}>Open trip</button>
-                        <button className="btn btn-secondary" onClick={() => onOpenTripMessages(nextActionTrip.id)}>
-                            Messages{unreadCounts[nextActionTrip.id] ? ` (${unreadCounts[nextActionTrip.id]})` : ''}
-                        </button>
-                    </div>
-                </section>
-            )}
 
             <section className="dashboard-mobile-trip-list-v2 dashboard-mobile-trip-list-v4">
                 <div className="dashboard-mobile-section-head-v2 dashboard-mobile-section-head-v4">
                     <div>
                         <h3>Your trips</h3>
-                        <p>Open the next trip fast without a crowded table layout.</p>
+                        <p>Only the most relevant trips stay visible first.</p>
                     </div>
                     <span>{visibleTrips.length}</span>
                 </div>
@@ -4808,16 +4716,20 @@ const MobileDashboardHome = ({
                                     </div>
                                     <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
                                 </div>
-                                <p className="dashboard-mobile-trip-summary-v4">{stage.summary}</p>
                                 <div className="dashboard-mobile-trip-meta-v2 dashboard-mobile-trip-meta-v4">
                                     <span>{getTripDurationDays(trip)} days</span>
                                     <span>{trip.travelerIds.length} travelers</span>
-                                    <span>{trip.organizerNames?.length || 0} organizers</span>
+                                    {trip.organizerNames?.length > 0 && <span>{trip.organizerNames?.length} organizers</span>}
                                     {unreadCounts[trip.id] > 0 && <span>{unreadCounts[trip.id]} unread</span>}
                                 </div>
                                 <div className="dashboard-mobile-trip-actions-v2 dashboard-mobile-trip-actions-v4">
                                     <button className="btn btn-primary" onClick={() => onOpenTrip(trip.id)}>Open</button>
-                                    <button className="btn btn-secondary" onClick={() => onOpenTripMessages(trip.id)}>Messages</button>
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => user.role === 'traveler' ? onOpenTripFinancials(trip.id) : onOpenTripMessages(trip.id)}
+                                    >
+                                        {priorityActionLabel}
+                                    </button>
                                 </div>
                             </article>
                         );
@@ -4826,6 +4738,15 @@ const MobileDashboardHome = ({
                     <div className="dashboard-mobile-empty-v2 dashboard-mobile-empty-v4">
                         No trips are available for this account yet.
                     </div>
+                )}
+                {hiddenTripCount > 0 && (
+                    <button
+                        type="button"
+                        className="dashboard-mobile-see-all-v4"
+                        onClick={() => setShowAllTrips((current) => !current)}
+                    >
+                        {showAllTrips ? 'Show fewer trips' : `See all trips (${hiddenTripCount} more)`}
+                    </button>
                 )}
             </section>
         </div>
@@ -5093,6 +5014,11 @@ const Dashboard = ({
     setMobileSidebarOpen(false);
   };
 
+  const handleOpenTripFinancialsById = (tripId: string) => {
+    navigate(getTripPath(tripId, 'financials'));
+    setMobileSidebarOpen(false);
+  };
+
   const renderContent = () => {
     if (mainView === 'users') {
         return <UserManagement onInvite={() => setInviteOpen(true)} trips={trips} users={allUsers} refreshKey={inviteRefresh} onUsersChanged={() => { setUserRefresh(v => v + 1); refreshTrips(); }} currentUserRole={user.role} />;
@@ -5143,6 +5069,7 @@ const Dashboard = ({
                 onInvite={() => setInviteOpen(true)}
                 onOpenTrip={handleSelectTrip}
                 onOpenTripMessages={handleOpenTripMessagesById}
+                onOpenTripFinancials={handleOpenTripFinancialsById}
             />
         );
     }
@@ -5233,12 +5160,14 @@ const Dashboard = ({
      <div className={`dashboard-layout dashboard-layout-v2 dashboard-layout-v3 with-sidebar ${isMobileSidebarOpen ? 'sidebar-is-open' : ''}`}>
         <Sidebar
             trips={visibleTrips}
+            selectedTrip={selectedTrip}
             selectedTripId={selectedTripId}
             activeView={activeTripView}
             mainView={mainView}
             userRole={user.role}
             userId={String(user.id)}
             isOpen={isMobileSidebarOpen}
+            isCompactNav={isTabletOrBelow}
             onClose={() => setMobileSidebarOpen(false)}
             onNavigate={() => setMobileSidebarOpen(false)}
             onLogout={onLogout}
@@ -5255,15 +5184,6 @@ const Dashboard = ({
             onToggleSidebar={() => setMobileSidebarOpen(prev => !prev)}
             showHamburger={isTabletOrBelow}
           />
-          {isMobile && selectedTrip && (
-            <TripSubnav
-              trip={selectedTrip}
-              user={user}
-              activeView={activeTripView}
-              unreadCount={unreadCounts[selectedTrip.id] || 0}
-              onSelectView={handleSelectView}
-            />
-          )}
           <main className="dashboard-content dashboard-content-v2 dashboard-content-v3">
             {renderContent()}
           </main>
