@@ -4498,3 +4498,184 @@ html[data-theme='dark'] .trip-summary.trip-summary-v2 .contact-empty {
         min-height: 0;
     }
 }
+
+/* --- Dashboard Action Modals --- */
+.modal-content.dashboard-modal {
+    width: min(92vw, 760px);
+    max-width: 760px;
+    padding: 1.4rem;
+    border-radius: 28px;
+}
+
+.modal-content.dashboard-modal.invite-modal {
+    max-width: 860px;
+}
+
+.dashboard-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.dashboard-modal-header h2 {
+    margin: 0.35rem 0 0;
+}
+
+.dashboard-modal-header p {
+    margin: 0.55rem 0 0;
+    color: var(--color-text-secondary);
+    line-height: 1.55;
+    max-width: 58ch;
+}
+
+.dashboard-modal-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-secondary) 90%);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border) 84%);
+}
+
+.dashboard-modal-close {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface-secondary);
+    color: var(--color-text-primary);
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.dashboard-modal-close:hover {
+    background: var(--color-surface-tertiary);
+}
+
+.dashboard-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dashboard-modal-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.dashboard-modal-field-wide {
+    grid-column: 1 / -1;
+}
+
+.dashboard-modal-preview,
+.dashboard-modal-section-card {
+    padding: 1rem 1.05rem;
+    border-radius: 20px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface-secondary) 86%, white 14%);
+}
+
+.dashboard-modal-preview-label {
+    display: block;
+    margin-bottom: 0.45rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
+}
+
+.dashboard-modal-preview strong {
+    display: block;
+    font-size: 1.05rem;
+    color: var(--color-text-primary);
+}
+
+.dashboard-modal-preview p {
+    margin: 0.4rem 0 0;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+}
+
+.dashboard-modal-status {
+    padding: 0.85rem 0.95rem;
+    border-radius: 16px;
+    border: 1px solid transparent;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.dashboard-modal-status.error {
+    color: #8a1c2d;
+    background: rgba(217, 72, 95, 0.11);
+    border-color: rgba(217, 72, 95, 0.24);
+}
+
+.dashboard-modal-status.info {
+    color: #1f4b87;
+    background: rgba(37, 99, 235, 0.1);
+    border-color: rgba(37, 99, 235, 0.2);
+}
+
+.dashboard-modal-actions {
+    margin-top: 0.25rem;
+}
+
+.dashboard-modal-section-card h3 {
+    margin: 0 0 1rem;
+}
+
+.dashboard-modal .pending-invites {
+    margin-top: 1rem;
+}
+
+.dashboard-modal .responsive-table-group {
+    margin-top: 0.75rem;
+}
+
+.dashboard-modal .mobile-record-list {
+    margin-top: 0.75rem;
+}
+
+html[data-theme='dark'] .dashboard-modal-close {
+    background: color-mix(in srgb, var(--color-surface-secondary) 92%, #111827 8%);
+}
+
+html[data-theme='dark'] .dashboard-modal-preview,
+html[data-theme='dark'] .dashboard-modal-section-card {
+    background: color-mix(in srgb, var(--color-surface-secondary) 88%, #0f172a 12%);
+}
+
+html[data-theme='dark'] .dashboard-modal-status.error {
+    color: #fecdd3;
+}
+
+html[data-theme='dark'] .dashboard-modal-status.info {
+    color: #bfdbfe;
+}
+
+@media (max-width: 767px) {
+    .modal-content.dashboard-modal {
+        width: 100%;
+        max-width: none;
+        border-radius: 24px 24px 0 0;
+        padding: 1.1rem 1rem calc(1.15rem + env(safe-area-inset-bottom));
+    }
+
+    .dashboard-modal-header {
+        gap: 0.75rem;
+    }
+
+    .dashboard-modal-field-grid {
+        grid-template-columns: 1fr;
+    }
+}

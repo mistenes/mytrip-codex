@@ -436,10 +436,12 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
 const CreateTripModal = ({
   isOpen,
   onClose,
+  currentUser,
   onCreated,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  currentUser: User;
   onCreated: (trip: Trip) => void;
 }) => {
   const [name, setName] = useState('');
@@ -447,73 +449,180 @@ const CreateTripModal = ({
   const [endDate, setEndDate] = useState('');
   const [organizerId, setOrganizerId] = useState('');
   const [organizers, setOrganizers] = useState<any[]>([]);
+  const [isLoadingOrganizers, setIsLoadingOrganizers] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const resetForm = () => {
+    setName('');
+    setStartDate('');
+    setEndDate('');
+    setOrganizerId('');
+    setOrganizers([]);
+    setIsLoadingOrganizers(false);
+    setIsSubmitting(false);
+    setFormError('');
+  };
+
+  const handleDismiss = () => {
+    resetForm();
+    onClose();
+  };
 
   useEffect(() => {
-    if (isOpen) {
-      fetch(`${API_BASE}/api/users`)
-        .then(res => res.json())
-        .then(users => setOrganizers(users.filter((u: any) => u.role === 'organizer')));
+    if (!isOpen) {
+      return;
     }
-  }, [isOpen]);
+
+    let cancelled = false;
+    setIsLoadingOrganizers(true);
+    setFormError('');
+
+    fetch(`${API_BASE}/api/users`)
+      .then(async (res) => {
+        const payload = await res.json().catch(() => []);
+        if (!res.ok) {
+          throw new Error('load_failed');
+        }
+        return payload;
+      })
+      .then((users) => {
+        if (cancelled) {
+          return;
+        }
+
+        const eligibleLeads = users.filter((u: any) => u.role === 'organizer' || u.role === 'admin');
+        setOrganizers(eligibleLeads);
+
+        const currentUserOption = eligibleLeads.find((u: any) => String(u._id) === String(currentUser.id));
+        setOrganizerId(currentUserOption?._id || eligibleLeads[0]?._id || '');
+
+        if (eligibleLeads.length === 0) {
+          setFormError('No organizer or admin account is available to own this trip yet.');
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setFormError('We could not load the available trip leads. Please try again.');
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingOrganizers(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser.id, isOpen]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !startDate || !endDate || !organizerId) {
-      alert('Please complete every required field.');
+    const trimmedName = name.trim();
+
+    if (!trimmedName || !startDate || !endDate || !organizerId) {
+      setFormError('Please complete every required field before creating the trip.');
       return;
     }
-    const tripRes = await fetch(`${API_BASE}/api/trips`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, startDate, endDate, organizerIds: [organizerId], travelerIds: [] })
-    });
-    const trip = await tripRes.json();
-    const selectedOrganizer = organizers.find(o => o._id === organizerId);
-    onCreated({
-      id: trip._id,
-      name: trip.name,
-      startDate: trip.startDate,
-      endDate: trip.endDate,
-      organizerIds: [organizerId],
-      organizerNames: selectedOrganizer ? [selectedOrganizer.name] : [],
-      travelerIds: trip.travelerIds || [],
-      emergencyContacts: [],
-    });
-    onClose();
-    setName(''); setStartDate(''); setEndDate(''); setOrganizerId('');
+
+    if (endDate < startDate) {
+      setFormError('End date cannot be earlier than the start date.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFormError('');
+
+    try {
+      const tripRes = await fetch(`${API_BASE}/api/trips`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: trimmedName, startDate, endDate, organizerIds: [organizerId], travelerIds: [] })
+      });
+
+      const trip = await tripRes.json().catch(() => null);
+      if (!tripRes.ok || !trip?._id) {
+        throw new Error(trip?.message || 'create_failed');
+      }
+
+      const selectedOrganizer = organizers.find(o => o._id === organizerId);
+      onCreated({
+        id: trip._id,
+        name: trip.name,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        organizerIds: [organizerId],
+        organizerNames: selectedOrganizer ? [selectedOrganizer.name] : [],
+        travelerIds: trip.travelerIds || [],
+        emergencyContacts: [],
+      });
+      handleDismiss();
+    } catch (error) {
+      setFormError(error instanceof Error && error.message !== 'create_failed'
+        ? error.message
+        : 'We could not create the trip. Please check the details and try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <h2>Create trip</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="tripName">Trip name</label>
-            <input id="tripName" type="text" value={name} onChange={e => setName(e.target.value)} required />
+    <div className="modal-overlay dashboard-modal-overlay" onClick={handleDismiss}>
+      <div className="modal-content dashboard-modal create-trip-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="createTripModalTitle">
+        <div className="dashboard-modal-header">
+          <div>
+            <span className="dashboard-modal-eyebrow">Workspace setup</span>
+            <h2 id="createTripModalTitle">Create trip</h2>
+            <p>Set the trip window, assign the lead owner, and create a clean starting point for the operational flow.</p>
           </div>
-          <div className="form-group">
-            <label htmlFor="startDate">Start date</label>
-            <input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required />
+          <button type="button" className="dashboard-modal-close" onClick={handleDismiss} aria-label="Close create trip modal">×</button>
+        </div>
+        {formError && (
+          <div className="dashboard-modal-status error" role="alert">
+            {formError}
           </div>
-          <div className="form-group">
-            <label htmlFor="endDate">End date</label>
-            <input id="endDate" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} required />
+        )}
+        <form className="dashboard-modal-form" onSubmit={handleSubmit}>
+          <div className="dashboard-modal-field-grid">
+            <div className="form-group">
+              <label htmlFor="tripName">Trip name</label>
+              <input id="tripName" type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Example: MSC Grandiosa" required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="organizer">Lead organizer</label>
+              <select id="organizer" value={organizerId} onChange={e => setOrganizerId(e.target.value)} required disabled={isLoadingOrganizers || organizers.length === 0}>
+                <option value="">{isLoadingOrganizers ? 'Loading leads...' : 'Choose a lead'}</option>
+                {organizers.map(o => (
+                  <option key={o._id} value={o._id}>{o.name}{o.role === 'admin' ? ' · Admin' : ''}</option>
+                ))}
+              </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="startDate">Start date</label>
+              <input id="startDate" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="endDate">End date</label>
+              <input id="endDate" type="date" value={endDate} onChange={e => setEndDate(e.target.value)} min={startDate || undefined} required />
+            </div>
           </div>
-          <div className="form-group">
-            <label htmlFor="organizer">Lead organizer</label>
-            <select id="organizer" value={organizerId} onChange={e => setOrganizerId(e.target.value)} required>
-              <option value="">Choose an organizer</option>
-              {organizers.map(o => (
-                <option key={o._id} value={o._id}>{o.name}</option>
-              ))}
-            </select>
+          <div className="dashboard-modal-preview">
+            <span className="dashboard-modal-preview-label">Trip setup preview</span>
+            <strong>{name.trim() || 'Untitled trip'}</strong>
+            <p>
+              {startDate && endDate
+                ? `${formatDisplayDate(startDate)} - ${formatDisplayDate(endDate)}`
+                : 'Choose the trip window to preview the final schedule block.'}
+            </p>
           </div>
-          <div className="modal-actions">
-            <button type="button" onClick={onClose} className="btn btn-secondary">Cancel</button>
-            <button type="submit" className="btn btn-primary">Create trip</button>
+          <div className="modal-actions dashboard-modal-actions">
+            <button type="button" onClick={handleDismiss} className="btn btn-secondary" disabled={isSubmitting}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting || isLoadingOrganizers || organizers.length === 0}>
+              {isSubmitting ? 'Creating...' : 'Create trip'}
+            </button>
           </div>
         </form>
       </div>
@@ -892,16 +1001,73 @@ const InviteUserModal = ({
   const [role, setRole] = useState<Role>('traveler');
   const [tripId, setTripId] = useState<string>(fixedTripId || '');
   const [invites, setInvites] = useState<any[]>([]);
+  const [isLoadingInvites, setIsLoadingInvites] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
 
   const isOrganizer = currentUser.role === 'organizer';
   const availableTrips = isOrganizer ? trips.filter(t => t.organizerIds.includes(currentUser.id)) : trips;
 
+  const visibleInvites = useMemo(() => {
+    return invites.filter((invite) => {
+      if (fixedTripId) {
+        return invite.tripId === fixedTripId;
+      }
+
+      if (isOrganizer) {
+        return !invite.tripId || availableTrips.some((trip) => trip.id === invite.tripId);
+      }
+
+      return true;
+    });
+  }, [availableTrips, fixedTripId, invites, isOrganizer]);
+
+  const selectedTripName = fixedTripId
+    ? trips.find((trip) => trip.id === fixedTripId)?.name || 'Assigned after send'
+    : availableTrips.find((trip) => trip.id === tripId)?.name || 'No trip assigned yet';
+  const invitePreviewFirstName = firstName.trim() || 'First name';
+  const invitePreviewLastName = lastName.trim() || 'Last name';
+
+  const resetInviteForm = () => {
+    setFirstName('');
+    setLastName('');
+    setEmail('');
+    setTripId(fixedTripId || '');
+    setRole('traveler');
+    setInvites([]);
+    setIsSubmitting(false);
+    setFormError('');
+  };
+
+  const handleDismiss = () => {
+    resetInviteForm();
+    onClose();
+  };
+
   const loadInvites = () => {
-    fetch(`${API_BASE}/api/invitations`).then(res => res.json()).then(setInvites);
+    setIsLoadingInvites(true);
+    setFormError('');
+
+    fetch(`${API_BASE}/api/invitations`)
+      .then(async (res) => {
+        const payload = await res.json().catch(() => []);
+        if (!res.ok) {
+          throw new Error('load_failed');
+        }
+        return payload;
+      })
+      .then(setInvites)
+      .catch(() => {
+        setFormError('We could not load the pending invites right now.');
+      })
+      .finally(() => {
+        setIsLoadingInvites(false);
+      });
   };
 
   useEffect(() => {
     if (isOpen) {
+      resetInviteForm();
       loadInvites();
       if (isOrganizer) {
         setRole('traveler');
@@ -910,87 +1076,135 @@ const InviteUserModal = ({
         setTripId(fixedTripId);
       }
     }
-  }, [isOpen]);
+  }, [fixedTripId, isOpen, isOrganizer]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await fetch(`${API_BASE}/api/invitations`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, firstName, lastName, role: isOrganizer ? 'traveler' : role, tripId: tripId || undefined })
-    });
-    if (res.status === 409) {
-      alert('There is already an invite for this email address. Resend it from the People area.');
+
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedFirstName || !trimmedLastName || !trimmedEmail) {
+      setFormError('Please complete every required field before sending the invite.');
       return;
     }
-    if (!res.ok) {
-      alert('Unable to send the invite.');
+
+    if (isOrganizer && !fixedTripId && !tripId) {
+      setFormError('Choose a trip before sending an organizer-managed invite.');
       return;
     }
-    alert('Invite sent.');
-    onSent();
-    loadInvites();
-    onClose();
-    setFirstName('');
-    setLastName('');
-    setEmail('');
-    setTripId(fixedTripId || '');
-    setRole('traveler');
+
+    setIsSubmitting(true);
+    setFormError('');
+
+    try {
+      const res = await fetch(`${API_BASE}/api/invitations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: trimmedEmail,
+          firstName: trimmedFirstName,
+          lastName: trimmedLastName,
+          role: isOrganizer ? 'traveler' : role,
+          tripId: tripId || undefined
+        })
+      });
+
+      const payload = await res.json().catch(() => null);
+      if (res.status === 409) {
+        setFormError('There is already an invite for this email address. Resend it from the People area.');
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(payload?.message || 'Unable to send the invite.');
+      }
+
+      onSent();
+      handleDismiss();
+    } catch (error) {
+      setFormError(error instanceof Error ? error.message : 'Unable to send the invite.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <h2>Send invite</h2>
+    <div className="modal-overlay dashboard-modal-overlay" onClick={handleDismiss}>
+      <div className="modal-content dashboard-modal invite-modal" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="inviteModalTitle">
+        <div className="dashboard-modal-header">
+          <div>
+            <span className="dashboard-modal-eyebrow">Traveler onboarding</span>
+            <h2 id="inviteModalTitle">Send invite</h2>
+            <p>Use passport-style spelling and make the role and trip assignment explicit before sending the access email.</p>
+          </div>
+          <button type="button" className="dashboard-modal-close" onClick={handleDismiss} aria-label="Close invite modal">×</button>
+        </div>
         <p className="modal-note">Use passport-style English spelling for names and keep the invite details clean and complete.</p>
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="inviteFirstName">First name</label>
-            <input id="inviteFirstName" type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required />
+        {formError && (
+          <div className="dashboard-modal-status error" role="alert">
+            {formError}
           </div>
-          <div className="form-group">
-            <label htmlFor="inviteLastName">Last name</label>
-            <input id="inviteLastName" type="text" value={lastName} onChange={e => setLastName(e.target.value)} required />
-          </div>
-          <div className="form-group">
-            <label htmlFor="inviteEmail">Email</label>
-            <input id="inviteEmail" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-          </div>
-          {!isOrganizer && (
+        )}
+        <form className="dashboard-modal-form" onSubmit={handleSubmit}>
+          <div className="dashboard-modal-field-grid">
             <div className="form-group">
-              <label htmlFor="inviteRole">Role</label>
-              <select id="inviteRole" value={role} onChange={e => setRole(e.target.value as Role)}>
-                <option value="organizer">Organizer</option>
-                <option value="traveler">Traveler</option>
-              </select>
+              <label htmlFor="inviteFirstName">First name</label>
+              <input id="inviteFirstName" type="text" value={firstName} onChange={e => setFirstName(e.target.value)} required />
             </div>
-          )}
-          {!fixedTripId && (
             <div className="form-group">
-              <label htmlFor="inviteTrip">Trip{isOrganizer ? '' : ' (optional)'}</label>
-              <select id="inviteTrip" value={tripId} onChange={e => setTripId(e.target.value)} required={isOrganizer}>
-                {!isOrganizer && <option value="">No trip yet</option>}
-                {availableTrips.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
+              <label htmlFor="inviteLastName">Last name</label>
+              <input id="inviteLastName" type="text" value={lastName} onChange={e => setLastName(e.target.value)} required />
             </div>
-          )}
-          <div className="modal-actions">
-            <button type="button" onClick={onClose} className="btn btn-secondary">Cancel</button>
-            <button type="submit" className="btn btn-primary">Send invite</button>
+            <div className="form-group dashboard-modal-field-wide">
+              <label htmlFor="inviteEmail">Email</label>
+              <input id="inviteEmail" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+            </div>
+            {!isOrganizer && (
+              <div className="form-group">
+                <label htmlFor="inviteRole">Role</label>
+                <select id="inviteRole" value={role} onChange={e => setRole(e.target.value as Role)}>
+                  <option value="organizer">Organizer</option>
+                  <option value="traveler">Traveler</option>
+                </select>
+              </div>
+            )}
+            {!fixedTripId && (
+              <div className="form-group">
+                <label htmlFor="inviteTrip">Trip{isOrganizer ? '' : ' (optional)'}</label>
+                <select id="inviteTrip" value={tripId} onChange={e => setTripId(e.target.value)} required={isOrganizer}>
+                  {!isOrganizer && <option value="">No trip yet</option>}
+                  {availableTrips.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </div>
+            )}
+          </div>
+          <div className="dashboard-modal-preview">
+            <span className="dashboard-modal-preview-label">Invite summary</span>
+            <strong>{invitePreviewFirstName} {invitePreviewLastName}</strong>
+            <p>{isOrganizer ? 'Traveler access' : `${ROLE_LABELS[role]} access`} · {selectedTripName}</p>
+          </div>
+          <div className="modal-actions dashboard-modal-actions">
+            <button type="button" onClick={handleDismiss} className="btn btn-secondary" disabled={isSubmitting}>Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {isSubmitting ? 'Sending...' : 'Send invite'}
+            </button>
           </div>
         </form>
-        {invites.length > 0 && (
-          <div className="pending-invites">
+        {visibleInvites.length > 0 && (
+          <div className="pending-invites dashboard-modal-section-card">
             <h3>Pending invites</h3>
+            {isLoadingInvites && <p className="dashboard-modal-status info">Refreshing invite list…</p>}
             <div className="responsive-table-group">
               <table className="user-table desktop-table">
                 <thead>
                   <tr><th>Name</th><th>Email</th><th>Role</th><th>Trip</th><th>Expires</th></tr>
                 </thead>
                 <tbody>
-                  {invites.map((inv: any) => (
+                  {visibleInvites.map((inv: any) => (
                     <tr key={inv._id}>
                       <td>{inv.firstName} {inv.lastName}</td>
                       <td>{inv.email}</td>
@@ -1002,7 +1216,7 @@ const InviteUserModal = ({
                 </tbody>
               </table>
               <div className="mobile-record-list">
-                {invites.map((inv: any) => (
+                {visibleInvites.map((inv: any) => (
                   <article key={inv._id} className="mobile-record-card">
                     <div className="mobile-record-head">
                       <strong>{inv.firstName} {inv.lastName}</strong>
@@ -4729,6 +4943,7 @@ const Dashboard = ({
             <CreateTripModal
                 isOpen={isModalOpen}
                 onClose={() => setModalOpen(false)}
+                currentUser={user}
                 onCreated={onCreateTrip}
             />
           )}
