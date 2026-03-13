@@ -3172,3 +3172,176 @@ html[data-theme='dark'] .modal-content {
         background: rgba(16, 32, 43, 0.94);
     }
 }
+
+/* --- Card System Reset --- */
+.trip-card,
+.summary-tile,
+.mobile-record-card,
+.document-item,
+.user-management .user-tile,
+.trip-summary-panel,
+.trip-summary .contact-card {
+    background: var(--color-surface);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 8%, var(--color-border) 92%);
+    box-shadow: 0 12px 28px rgba(18, 35, 52, 0.07);
+}
+
+html[data-theme='dark'] .trip-card,
+html[data-theme='dark'] .summary-tile,
+html[data-theme='dark'] .mobile-record-card,
+html[data-theme='dark'] .document-item,
+html[data-theme='dark'] .user-management .user-tile,
+html[data-theme='dark'] .trip-summary-panel,
+html[data-theme='dark'] .trip-summary .contact-card {
+    background: var(--color-surface);
+}
+
+.trip-list {
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1rem;
+}
+
+.trip-card {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.trip-card-shell {
+    gap: 0.9rem;
+    padding: 1.1rem 1.1rem 0.5rem;
+}
+
+.trip-card h3 {
+    font-family: var(--font-family);
+    font-size: 1.35rem;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+}
+
+.trip-card-summary {
+    min-height: 0;
+    font-size: 0.95rem;
+}
+
+.trip-card-range,
+.trip-card-summary,
+.trip-card-foot span,
+.trip-card-metric span {
+    color: var(--color-text-secondary);
+}
+
+.trip-card-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.trip-card-metric {
+    padding: 0.8rem;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--color-surface-secondary) 90%, white 10%);
+    border: 1px solid var(--color-border);
+}
+
+html[data-theme='dark'] .trip-card-metric {
+    background: color-mix(in srgb, var(--color-surface-secondary) 94%, black 6%);
+}
+
+.trip-card-metric strong {
+    font-size: 0.96rem;
+    line-height: 1.2;
+}
+
+.trip-card-foot strong {
+    line-height: 1.35;
+}
+
+.trip-card-actions {
+    padding: 0 1.1rem 1.1rem;
+}
+
+.summary-tiles {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.85rem;
+}
+
+.summary-tile {
+    position: relative;
+    display: grid;
+    gap: 0.45rem;
+    align-content: end;
+    min-height: 124px;
+    height: auto;
+    padding: 1rem;
+    border-radius: 18px;
+    color: var(--color-text-primary);
+    text-align: left;
+    text-shadow: none;
+    background-image: none;
+}
+
+.summary-tile::after {
+    display: none;
+}
+
+.summary-tile span,
+.summary-tile small {
+    position: static;
+    z-index: auto;
+}
+
+.summary-tile span {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.summary-tile small {
+    color: var(--color-text-secondary);
+    font-size: 0.84rem;
+}
+
+.summary-tile.tile-itinerary { box-shadow: inset 0 3px 0 #0d7a67, 0 12px 28px rgba(18, 35, 52, 0.07); }
+.summary-tile.tile-documents { box-shadow: inset 0 3px 0 #2563eb, 0 12px 28px rgba(18, 35, 52, 0.07); }
+.summary-tile.tile-messages { box-shadow: inset 0 3px 0 #7c3aed, 0 12px 28px rgba(18, 35, 52, 0.07); }
+.summary-tile.tile-financials { box-shadow: inset 0 3px 0 #de8a3e, 0 12px 28px rgba(18, 35, 52, 0.07); }
+.summary-tile.tile-personal { box-shadow: inset 0 3px 0 #0f766e, 0 12px 28px rgba(18, 35, 52, 0.07); }
+.summary-tile.tile-users { box-shadow: inset 0 3px 0 #15324a, 0 12px 28px rgba(18, 35, 52, 0.07); }
+.summary-tile.tile-settings { box-shadow: inset 0 3px 0 #6b7280, 0 12px 28px rgba(18, 35, 52, 0.07); }
+
+.trip-summary-panel,
+.trip-summary .contact-card {
+    border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(18, 35, 52, 0.06);
+}
+
+.document-item,
+.mobile-record-card {
+    border-radius: 18px;
+}
+
+.mobile-record-card {
+    padding: 0.95rem;
+    gap: 0.7rem;
+}
+
+.user-management .user-tiles {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+
+.user-management .user-tile {
+    padding: 1rem;
+    border-radius: 18px;
+}
+
+@media (max-width: 767px) {
+    .trip-card-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-tiles {
+        grid-template-columns: 1fr;
+    }
+
+    .summary-tile {
+        min-height: 108px;
+    }
+}

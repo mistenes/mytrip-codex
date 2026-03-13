@@ -526,3 +526,34 @@ html[data-theme='dark'] .mobile-inline-editor select {
         grid-template-columns: 1fr;
     }
 }
+
+/* --- Financial Card Reset --- */
+.summary-card,
+.add-record-form,
+.payment-activity-card,
+.financial-table {
+    background: var(--color-surface);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 8%, var(--color-border) 92%);
+    box-shadow: 0 12px 28px rgba(18, 35, 52, 0.07);
+}
+
+html[data-theme='dark'] .summary-card,
+html[data-theme='dark'] .add-record-form,
+html[data-theme='dark'] .payment-activity-card,
+html[data-theme='dark'] .financial-table {
+    background: var(--color-surface);
+}
+
+.summary-card,
+.add-record-form,
+.payment-activity-card {
+    border-radius: 18px;
+}
+
+.financial-table {
+    border-radius: 18px;
+}
+
+.payment-activity-card {
+    padding: 1rem 1.1rem;
+}
