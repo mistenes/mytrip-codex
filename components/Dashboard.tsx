@@ -4419,14 +4419,12 @@ const AllFilesView = ({ documents, users, trips, user }: { documents: Document[]
 
 const Sidebar = ({
     trips,
-    selectedTrip,
     selectedTripId,
     activeView,
     mainView,
     userRole,
     userId,
     isOpen,
-    isCompactNav,
     onClose,
     onNavigate,
     onLogout,
@@ -4437,14 +4435,12 @@ const Sidebar = ({
     logos
 }: {
     trips: Trip[],
-    selectedTrip: Trip | null,
     selectedTripId: string | null,
     activeView: TripView,
     mainView: MainView,
     userRole: Role,
     userId: string,
     isOpen: boolean,
-    isCompactNav: boolean,
     onClose: () => void,
     onNavigate: () => void,
     onLogout: () => void,
@@ -4465,8 +4461,6 @@ const Sidebar = ({
         mainNavItems.push({ key: 'site', label: 'Brand settings' });
     }
 
-    const currentTripNavItems = selectedTrip ? getTripNavItems(selectedTrip, userRole, userId) : [];
-
     return (
         <aside className={`sidebar sidebar-v2 sidebar-v3 ${isOpen ? 'is-open' : ''}`}>
             <div className="sidebar-mobile-head-v2">
@@ -4479,32 +4473,6 @@ const Sidebar = ({
                 </button>
             </div>
             <nav>
-                {isCompactNav && selectedTrip && (
-                    <div className="sidebar-current-trip-v4">
-                        <div className="sidebar-section-label">Current trip</div>
-                        <div className="sidebar-current-trip-card-v4">
-                            <Link to={getTripPath(selectedTrip.id)} onClick={onNavigate} className={activeView === 'summary' ? 'active' : ''}>
-                                <span>{selectedTrip.name}</span>
-                                <small>{formatDisplayDate(selectedTrip.startDate)} - {formatDisplayDate(selectedTrip.endDate)}</small>
-                            </Link>
-                            <div className="sidebar-current-trip-links-v4">
-                                {currentTripNavItems.map((item) => (
-                                    <Link
-                                        key={item.key}
-                                        to={getTripPath(selectedTrip.id, item.key)}
-                                        onClick={onNavigate}
-                                        className={activeView === item.key ? 'active' : ''}
-                                    >
-                                        {item.label}
-                                        {item.key === 'messages' && unreadCounts[selectedTrip.id] > 0 && (
-                                            <span className="unread-badge">{unreadCounts[selectedTrip.id]}</span>
-                                        )}
-                                    </Link>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
                 <div className="sidebar-section-label">Workspace</div>
                 <ul className="main-nav-list">
                     {mainNavItems.map((item) => {
@@ -4517,7 +4485,7 @@ const Sidebar = ({
                                 >
                                     {item.label}
                                 </Link>
-                                {item.key === 'trips' && mainView === 'trips' && (
+                                {item.key === 'trips' && (
                                     <ul className="trip-nav-list">
                                         {trips.map((trip) => {
                                             const tripNavItems = getTripNavItems(trip, userRole, userId);
@@ -4603,7 +4571,7 @@ const MobileDashboardHome = ({
     const liveTrips = visibleTrips.filter((trip) => getTripStageMeta(trip).className === 'is-live').length;
     const preparingTrips = visibleTrips.filter((trip) => getTripStageMeta(trip).className === 'is-upcoming').length;
     const sortedTrips = [...visibleTrips]
-        .sort((left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime())
+        .sort((left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime());
     const compactTrips = showAllTrips ? sortedTrips : sortedTrips.slice(0, 3);
     const hiddenTripCount = Math.max(0, sortedTrips.length - 3);
     const priorityActionLabel = user.role === 'traveler' ? 'Finance' : 'Messages';
@@ -4689,10 +4657,6 @@ const MobileDashboardHome = ({
                 <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
                     <span>Preparing</span>
                     <strong>{preparingTrips}</strong>
-                </article>
-                <article className="dashboard-mobile-metric-card-v2 dashboard-mobile-metric-card-v4">
-                    <span>Unread</span>
-                    <strong>{overviewMetrics.unreadMessages}</strong>
                 </article>
             </section>
 
@@ -5160,14 +5124,12 @@ const Dashboard = ({
      <div className={`dashboard-layout dashboard-layout-v2 dashboard-layout-v3 with-sidebar ${isMobileSidebarOpen ? 'sidebar-is-open' : ''}`}>
         <Sidebar
             trips={visibleTrips}
-            selectedTrip={selectedTrip}
             selectedTripId={selectedTripId}
             activeView={activeTripView}
             mainView={mainView}
             userRole={user.role}
             userId={String(user.id)}
             isOpen={isMobileSidebarOpen}
-            isCompactNav={isTabletOrBelow}
             onClose={() => setMobileSidebarOpen(false)}
             onNavigate={() => setMobileSidebarOpen(false)}
             onLogout={onLogout}
