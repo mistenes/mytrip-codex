@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import LoginPage from "./components/LoginPage";
 import SignupPage from "./components/SignupPage";
 import Dashboard from "./components/Dashboard";
@@ -702,60 +702,61 @@ const App = () => {
     );
   }
 
+  const protectedElement = !currentUser ? (
+    <LoginPage onLogin={handleLogin} theme={currentTheme} />
+  ) : currentUser.mustChangePassword ? (
+    <ChangePasswordPage user={currentUser} onSuccess={() => setCurrentUser({ ...currentUser, mustChangePassword: false })} />
+  ) : (
+    <Dashboard
+      user={currentUser}
+      trips={trips}
+      refreshTrips={refreshTrips}
+      onLogout={handleLogout}
+      onCreateTrip={handleCreateTrip}
+      financialRecords={financialRecords}
+      paymentTransactions={paymentTransactions}
+      onAddFinancialRecord={handleAddFinancialRecord}
+      onUpdateFinancialRecord={handleUpdateFinancialRecord}
+      onRemoveFinancialRecord={handleRemoveFinancialRecord}
+      onStartStripePayment={handleStartStripePayment}
+      onStartPaypalPayment={handleStartPaypalPayment}
+      documents={documents}
+      onAddDocument={handleAddDocument}
+      onUpdateDocument={handleUpdateDocument}
+      onRemoveDocument={handleRemoveDocument}
+      personalDataConfigs={personalDataConfigs}
+      personalDataRecords={personalDataRecords}
+      onUpdatePersonalData={handleUpdatePersonalData}
+      onTogglePersonalDataLock={handleTogglePersonalDataLock}
+      onUpsertPersonalDataConfig={handleUpsertPersonalDataConfig}
+      onRemovePersonalDataConfig={handleRemovePersonalDataConfig}
+      itineraryItems={itineraryItems}
+      onAddItineraryItem={handleAddItineraryItem}
+      onUpdateItineraryItem={handleUpdateItineraryItem}
+      onRemoveItineraryItem={handleRemoveItineraryItem}
+      messages={messages}
+      onAddMessage={handleAddMessage}
+      onUpdateMessage={handleUpdateMessage}
+      onRemoveMessage={handleRemoveMessage}
+      onMarkMessageRead={handleMarkMessageRead}
+      theme={theme}
+      onThemeChange={setTheme}
+      currentTheme={currentTheme}
+      paymentFeedback={paymentFeedback}
+      onDismissPaymentFeedback={() => setPaymentFeedback(null)}
+    />
+  );
+
   return (
     <>
       <BetaBanner />
       <Routes>
+        <Route path="/" element={!currentUser ? <LoginPage onLogin={handleLogin} theme={currentTheme} /> : currentUser.mustChangePassword ? <ChangePasswordPage user={currentUser} onSuccess={() => setCurrentUser({ ...currentUser, mustChangePassword: false })} /> : <Navigate to="/dashboard" replace />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/reset-password/confirm" element={<ResetPasswordConfirmPage />} />
-        <Route path="*" element={
-          !currentUser ? (
-            <LoginPage onLogin={handleLogin} theme={currentTheme} />
-          ) : currentUser.mustChangePassword ? (
-            <ChangePasswordPage user={currentUser} onSuccess={() => setCurrentUser({ ...currentUser, mustChangePassword: false })} />
-          ) : (
-            <Dashboard
-              user={currentUser}
-              trips={trips}
-              refreshTrips={refreshTrips}
-              onLogout={handleLogout}
-              onCreateTrip={handleCreateTrip}
-              financialRecords={financialRecords}
-              paymentTransactions={paymentTransactions}
-              onAddFinancialRecord={handleAddFinancialRecord}
-              onUpdateFinancialRecord={handleUpdateFinancialRecord}
-              onRemoveFinancialRecord={handleRemoveFinancialRecord}
-              onStartStripePayment={handleStartStripePayment}
-              onStartPaypalPayment={handleStartPaypalPayment}
-              documents={documents}
-              onAddDocument={handleAddDocument}
-              onUpdateDocument={handleUpdateDocument}
-              onRemoveDocument={handleRemoveDocument}
-              personalDataConfigs={personalDataConfigs}
-              personalDataRecords={personalDataRecords}
-              onUpdatePersonalData={handleUpdatePersonalData}
-              onTogglePersonalDataLock={handleTogglePersonalDataLock}
-              onUpsertPersonalDataConfig={handleUpsertPersonalDataConfig}
-              onRemovePersonalDataConfig={handleRemovePersonalDataConfig}
-              itineraryItems={itineraryItems}
-              onAddItineraryItem={handleAddItineraryItem}
-              onUpdateItineraryItem={handleUpdateItineraryItem}
-              onRemoveItineraryItem={handleRemoveItineraryItem}
-              messages={messages}
-              onAddMessage={handleAddMessage}
-              onUpdateMessage={handleUpdateMessage}
-              onRemoveMessage={handleRemoveMessage}
-              onMarkMessageRead={handleMarkMessageRead}
-              theme={theme}
-              onThemeChange={setTheme}
-              currentTheme={currentTheme}
-              paymentFeedback={paymentFeedback}
-              onDismissPaymentFeedback={() => setPaymentFeedback(null)}
-            />
-          )
-        } />
+        <Route path="*" element={protectedElement} />
       </Routes>
       <ProblemReportButton />
     </>

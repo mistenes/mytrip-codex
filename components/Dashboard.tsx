@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { API_BASE } from "../api";
 import { User, Trip, FinancialRecord, Document, PersonalDataFieldConfig, PersonalDataRecord, PersonalDataUpdatePayload, ItineraryItem, Role, TripView, Theme, Message, SiteSettings, PaymentTransaction } from "../types";
 import AccountSettings from "./AccountSettings";
@@ -20,6 +21,225 @@ type MainView = 'trips' | 'users' | 'files' | 'account' | 'site';
 type NavItem = {
     key: MainView;
     label: string;
+};
+
+type ResolvedDashboardRoute = {
+    mainView: MainView;
+    selectedTripId: string | null;
+    activeTripView: TripView;
+    canonicalPath: string | null;
+};
+
+const DASHBOARD_HOME_PATH = '/dashboard';
+
+const MAIN_VIEW_PATHS: Record<Exclude<MainView, 'trips'>, string> = {
+    users: '/dashboard/people',
+    files: '/dashboard/files',
+    account: '/dashboard/account',
+    site: '/dashboard/site',
+};
+
+const TRIP_VIEW_SEGMENTS: Record<TripView, string> = {
+    summary: '',
+    financials: 'finances',
+    itinerary: 'itinerary',
+    documents: 'documents',
+    personalData: 'personal-data',
+    messages: 'messages',
+    contact: 'contact',
+    users: 'participants',
+    settings: 'settings',
+};
+
+const TRIP_VIEW_ALIASES: Record<string, TripView> = {
+    summary: 'summary',
+    overview: 'summary',
+    financials: 'financials',
+    finances: 'financials',
+    itinerary: 'itinerary',
+    documents: 'documents',
+    'personal-data': 'personalData',
+    personaldata: 'personalData',
+    messages: 'messages',
+    contact: 'contact',
+    participants: 'users',
+    users: 'users',
+    settings: 'settings',
+};
+
+const normalizePathname = (pathname: string) => {
+    if (!pathname) {
+        return DASHBOARD_HOME_PATH;
+    }
+
+    const trimmed = pathname.replace(/\/+$/, '');
+    return trimmed || '/';
+};
+
+const getMainViewPath = (view: MainView) => {
+    if (view === 'trips') {
+        return DASHBOARD_HOME_PATH;
+    }
+
+    return MAIN_VIEW_PATHS[view];
+};
+
+const getTripPath = (tripId: string, view: TripView = 'summary') => {
+    const safeTripId = encodeURIComponent(tripId);
+    const segment = TRIP_VIEW_SEGMENTS[view];
+    return segment ? `/dashboard/trips/${safeTripId}/${segment}` : `/dashboard/trips/${safeTripId}`;
+};
+
+const parseTripView = (segment?: string): TripView => {
+    if (!segment) {
+        return 'summary';
+    }
+
+    return TRIP_VIEW_ALIASES[segment.toLowerCase()] || 'summary';
+};
+
+const resolveDashboardRoute = ({
+    pathname,
+    visibleTrips,
+    featuredTrip,
+    unreadCounts,
+}: {
+    pathname: string;
+    visibleTrips: Trip[];
+    featuredTrip: Trip | null;
+    unreadCounts: Record<string, number>;
+}): ResolvedDashboardRoute => {
+    const normalizedPath = normalizePathname(pathname);
+    const segments = normalizedPath
+        .split('/')
+        .filter(Boolean)
+        .map((segment) => decodeURIComponent(segment));
+
+    const pickDefaultTrip = (view: TripView) => {
+        if (view === 'messages') {
+            return visibleTrips.find((trip) => unreadCounts[trip.id] > 0) || featuredTrip || visibleTrips[0] || null;
+        }
+
+        return featuredTrip || visibleTrips[0] || null;
+    };
+
+    const resolveTripAlias = (view: TripView): ResolvedDashboardRoute => {
+        const targetTrip = pickDefaultTrip(view);
+        if (!targetTrip) {
+            return {
+                mainView: 'trips',
+                selectedTripId: null,
+                activeTripView: 'summary',
+                canonicalPath: null,
+            };
+        }
+
+        return {
+            mainView: 'trips',
+            selectedTripId: targetTrip.id,
+            activeTripView: view,
+            canonicalPath: getTripPath(targetTrip.id, view),
+        };
+    };
+
+    if (segments[0]?.toLowerCase() === 'dashboard') {
+        segments.shift();
+    }
+
+    if (segments.length === 0) {
+        return {
+            mainView: 'trips',
+            selectedTripId: null,
+            activeTripView: 'summary',
+            canonicalPath: DASHBOARD_HOME_PATH,
+        };
+    }
+
+    const head = segments[0].toLowerCase();
+
+    if (head === 'trips') {
+        const tripId = segments[1] || null;
+        const activeTripView = parseTripView(segments[2]);
+
+        if (!tripId) {
+            return {
+                mainView: 'trips',
+                selectedTripId: null,
+                activeTripView: 'summary',
+                canonicalPath: DASHBOARD_HOME_PATH,
+            };
+        }
+
+        return {
+            mainView: 'trips',
+            selectedTripId: tripId,
+            activeTripView,
+            canonicalPath: getTripPath(tripId, activeTripView),
+        };
+    }
+
+    if (head === 'people') {
+        return {
+            mainView: 'users',
+            selectedTripId: null,
+            activeTripView: 'summary',
+            canonicalPath: MAIN_VIEW_PATHS.users,
+        };
+    }
+
+    if (head === 'files') {
+        return {
+            mainView: 'files',
+            selectedTripId: null,
+            activeTripView: 'summary',
+            canonicalPath: MAIN_VIEW_PATHS.files,
+        };
+    }
+
+    if (head === 'account') {
+        return {
+            mainView: 'account',
+            selectedTripId: null,
+            activeTripView: 'summary',
+            canonicalPath: MAIN_VIEW_PATHS.account,
+        };
+    }
+
+    if (head === 'site' || head === 'brand-settings') {
+        return {
+            mainView: 'site',
+            selectedTripId: null,
+            activeTripView: 'summary',
+            canonicalPath: MAIN_VIEW_PATHS.site,
+        };
+    }
+
+    if (head === 'finances' || head === 'finance') {
+        return resolveTripAlias('financials');
+    }
+
+    if (head === 'documents') {
+        return resolveTripAlias('documents');
+    }
+
+    if (head === 'messages') {
+        return resolveTripAlias('messages');
+    }
+
+    if (head === 'itinerary') {
+        return resolveTripAlias('itinerary');
+    }
+
+    if (head === 'personal-data') {
+        return resolveTripAlias('personalData');
+    }
+
+    return {
+        mainView: 'trips',
+        selectedTripId: null,
+        activeTripView: 'summary',
+        canonicalPath: DASHBOARD_HOME_PATH,
+    };
 };
 
 const formatDisplayDate = (value: string) => {
@@ -997,7 +1217,7 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
   );
 };
 
-const TripCard = ({ trip, onSelectTrip }: { trip: Trip; onSelectTrip: () => void; }) => {
+const TripCard = ({ trip, tripPath }: { trip: Trip; tripPath: string; }) => {
     const stage = getTripStageMeta(trip);
     const durationDays = getTripDurationDays(trip);
 
@@ -1030,9 +1250,9 @@ const TripCard = ({ trip, onSelectTrip }: { trip: Trip; onSelectTrip: () => void
                 </div>
             </div>
             <div className="trip-card-actions trip-card-actions-v2">
-                <button onClick={onSelectTrip} className="btn btn-primary">
-                   Open trip
-                </button>
+                <Link to={tripPath} className="btn btn-primary">
+                    Open trip
+                </Link>
             </div>
         </article>
     );
@@ -3833,17 +4053,11 @@ const Sidebar = ({
     trips,
     selectedTripId,
     activeView,
-    onSelectTrip,
-    onSelectView,
-    onShowTrips,
-    onShowUsers,
-    onShowFiles,
-    onShowAccount,
-    onShowSiteSettings,
     mainView,
     userRole,
     userId,
     isOpen,
+    onNavigate,
     onLogout,
     unreadCounts,
     theme,
@@ -3854,17 +4068,11 @@ const Sidebar = ({
     trips: Trip[],
     selectedTripId: string | null,
     activeView: TripView,
-    onSelectTrip: (id: string) => void,
-    onSelectView: (view: TripView) => void,
-    onShowTrips: () => void,
-    onShowUsers: () => void,
-    onShowFiles: () => void,
-    onShowAccount: () => void,
-    onShowSiteSettings: () => void,
     mainView: MainView,
     userRole: Role,
     userId: string,
     isOpen: boolean,
+    onNavigate: () => void,
     onLogout: () => void,
     unreadCounts: Record<string, number>,
     theme: Theme,
@@ -3893,49 +4101,38 @@ const Sidebar = ({
                 <div className="sidebar-section-label">Workspace</div>
                 <ul className="main-nav-list">
                     {mainNavItems.map((item) => {
-                        const handlers: Record<MainView, () => void> = {
-                            trips: onShowTrips,
-                            users: onShowUsers,
-                            files: onShowFiles,
-                            account: onShowAccount,
-                            site: onShowSiteSettings,
-                        };
-
                         return (
                             <li key={item.key} className="nav-item">
-                                <a
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handlers[item.key]();
-                                    }}
+                                <Link
+                                    to={getMainViewPath(item.key)}
+                                    onClick={onNavigate}
                                     className={mainView === item.key ? 'active' : ''}
                                 >
                                     {item.label}
-                                </a>
+                                </Link>
                                 {item.key === 'trips' && mainView === 'trips' && (
                                     <ul className="trip-nav-list">
                                         {trips.map((trip) => {
                                             const tripNavItems = getTripNavItems(trip, userRole, userId);
                                             return (
                                                 <li key={trip.id} className={`trip-item ${trip.id === selectedTripId ? 'active' : ''}`}>
-                                                    <a href="#" onClick={(e) => { e.preventDefault(); onSelectTrip(trip.id); }}>
+                                                    <Link to={getTripPath(trip.id)} onClick={onNavigate}>
                                                         {trip.name}
-                                                    </a>
+                                                    </Link>
                                                     {trip.id === selectedTripId && (
                                                         <ul className="trip-submenu">
                                                             {tripNavItems.map((submenuItem) => (
                                                                 <li key={submenuItem.key}>
-                                                                    <a
-                                                                        href="#"
-                                                                        onClick={(e) => { e.preventDefault(); onSelectView(submenuItem.key); }}
+                                                                    <Link
+                                                                        to={getTripPath(trip.id, submenuItem.key)}
+                                                                        onClick={onNavigate}
                                                                         className={activeView === submenuItem.key ? 'active' : ''}
                                                                     >
                                                                         {submenuItem.label}
                                                                         {submenuItem.key === 'messages' && unreadCounts[trip.id] > 0 && (
                                                                             <span className="unread-badge">{unreadCounts[trip.id]}</span>
                                                                         )}
-                                                                    </a>
+                                                                    </Link>
                                                                 </li>
                                                             ))}
                                                         </ul>
@@ -3951,16 +4148,13 @@ const Sidebar = ({
                 </ul>
             </nav>
             <div className="sidebar-footer">
-                <a
-                    href="#"
-                    onClick={(e) => {
-                        e.preventDefault();
-                    onShowAccount();
-                    }}
+                <Link
+                    to={getMainViewPath('account')}
+                    onClick={onNavigate}
                     className={mainView === 'account' ? 'active' : ''}
                 >
                     Account
-                </a>
+                </Link>
                 <ThemeSwitcher theme={theme} onThemeChange={onThemeChange} />
                 <button onClick={onLogout} className="btn btn-logout">Sign out</button>
             </div>
@@ -4121,13 +4315,12 @@ const Dashboard = ({
     paymentFeedback: { type: 'success' | 'error' | 'info'; message: string } | null,
     onDismissPaymentFeedback: () => void
 }) => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
   const [isInviteOpen, setInviteOpen] = useState(false);
   const [inviteRefresh, setInviteRefresh] = useState(0);
-  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
-  const [mainView, setMainView] = useState<MainView>('trips');
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
-  const [activeTripView, setActiveTripView] = useState<TripView>('summary');
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userRefresh, setUserRefresh] = useState(0);
@@ -4142,13 +4335,6 @@ const Dashboard = ({
     });
     return counts;
   }, [messages, user.id]);
-
-  const tripMessages = useMemo(
-    () => messages
-      .filter(m => m.tripId === selectedTripId)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-    [messages, selectedTripId]
-  );
 
   useEffect(() => {
     fetch(`${API_BASE}/api/settings/logo`)
@@ -4197,10 +4383,54 @@ const Dashboard = ({
     }
   }, [user, trips]);
 
+  const overviewMetrics = useMemo(() => {
+      const visibleTripIds = new Set(visibleTrips.map((trip) => trip.id));
+      const unreadMessages = messages.filter((message) => !message.readBy.includes(String(user.id))).length;
+      const myBalance = financialRecords
+          .filter((record) => visibleTripIds.has(record.tripId))
+          .filter((record) => user.role !== 'traveler' || record.userId === user.id)
+          .reduce((sum, record) => sum + record.amount, 0);
+      const onlinePaymentsCount = paymentTransactions
+          .filter((transaction) => visibleTripIds.has(transaction.tripId))
+          .filter((transaction) => user.role !== 'traveler' || transaction.userId === user.id)
+          .length;
+
+      return {
+          tripCount: visibleTrips.length,
+          unreadMessages,
+          myBalance,
+          onlinePaymentsCount,
+      };
+  }, [financialRecords, messages, paymentTransactions, user.id, user.role, visibleTrips]);
+
+  const featuredTrip = useMemo(() => {
+    return [...visibleTrips].sort((left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime())[0] || null;
+  }, [visibleTrips]);
+
+  const routeState = useMemo(
+    () =>
+      resolveDashboardRoute({
+        pathname: location.pathname,
+        visibleTrips,
+        featuredTrip,
+        unreadCounts,
+      }),
+    [featuredTrip, location.pathname, unreadCounts, visibleTrips]
+  );
+
+  const { mainView, selectedTripId, activeTripView } = routeState;
+
+  const tripMessages = useMemo(
+    () => messages
+      .filter(m => m.tripId === selectedTripId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    [messages, selectedTripId]
+  );
+
   const selectedTrip = useMemo(() => {
     if (!selectedTripId) return null;
-    return trips.find(t => t.id === selectedTripId);
-  }, [selectedTripId, trips]);
+    return visibleTrips.find(t => t.id === selectedTripId) || null;
+  }, [selectedTripId, visibleTrips]);
 
   const tripFinancialRecords = useMemo(() => {
       if (!selectedTripId) return [];
@@ -4226,70 +4456,51 @@ const Dashboard = ({
       return itineraryItems.filter(i => i.tripId === selectedTripId);
   }, [selectedTripId, itineraryItems]);
 
-  const overviewMetrics = useMemo(() => {
-      const visibleTripIds = new Set(visibleTrips.map((trip) => trip.id));
-      const unreadMessages = messages.filter((message) => !message.readBy.includes(String(user.id))).length;
-      const myBalance = financialRecords
-          .filter((record) => visibleTripIds.has(record.tripId))
-          .filter((record) => user.role !== 'traveler' || record.userId === user.id)
-          .reduce((sum, record) => sum + record.amount, 0);
-      const onlinePaymentsCount = paymentTransactions
-          .filter((transaction) => visibleTripIds.has(transaction.tripId))
-          .filter((transaction) => user.role !== 'traveler' || transaction.userId === user.id)
-          .length;
-
-      return {
-          tripCount: visibleTrips.length,
-          unreadMessages,
-          myBalance,
-          onlinePaymentsCount,
-      };
-  }, [financialRecords, messages, paymentTransactions, user.id, user.role, visibleTrips]);
-
-  const featuredTrip = useMemo(() => {
-    return [...visibleTrips].sort((left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime())[0] || null;
-  }, [visibleTrips]);
+  useEffect(() => {
+    const normalizedPath = normalizePathname(location.pathname);
+    if (routeState.canonicalPath && routeState.canonicalPath !== normalizedPath) {
+      navigate(routeState.canonicalPath, { replace: true });
+    }
+  }, [location.pathname, navigate, routeState.canonicalPath]);
 
   const handleSelectTrip = (tripId: string) => {
-    setMainView('trips');
-    setSelectedTripId(tripId);
-    setActiveTripView('summary');
+    navigate(getTripPath(tripId));
     setMobileSidebarOpen(false);
   };
 
   const handleSelectView = (view: TripView) => {
-    setMainView('trips');
-    setActiveTripView(view);
+    if (!selectedTripId) {
+      navigate(DASHBOARD_HOME_PATH);
+      setMobileSidebarOpen(false);
+      return;
+    }
+
+    navigate(getTripPath(selectedTripId, view));
     setMobileSidebarOpen(false);
   };
 
   const handleShowTrips = () => {
-    setMainView('trips');
-    setSelectedTripId(null);
+    navigate(getMainViewPath('trips'));
     setMobileSidebarOpen(false);
   }
 
   const handleShowUsers = () => {
-    setMainView('users');
-    setSelectedTripId(null);
+    navigate(getMainViewPath('users'));
     setMobileSidebarOpen(false);
   }
 
   const handleShowAccount = () => {
-    setMainView('account');
-    setSelectedTripId(null);
+    navigate(getMainViewPath('account'));
     setMobileSidebarOpen(false);
   }
 
   const handleShowSiteSettings = () => {
-    setMainView('site');
-    setSelectedTripId(null);
+    navigate(getMainViewPath('site'));
     setMobileSidebarOpen(false);
   }
 
   const handleShowFiles = () => {
-    setMainView('files');
-    setSelectedTripId(null);
+    navigate(getMainViewPath('files'));
     setMobileSidebarOpen(false);
   }
 
@@ -4299,9 +4510,7 @@ const Dashboard = ({
       handleShowTrips();
       return;
     }
-    setMainView('trips');
-    setSelectedTripId(targetTrip.id);
-    setActiveTripView('summary');
+    navigate(getTripPath(targetTrip.id));
     setMobileSidebarOpen(false);
   };
 
@@ -4311,9 +4520,7 @@ const Dashboard = ({
       handleShowTrips();
       return;
     }
-    setMainView('trips');
-    setSelectedTripId(targetTrip.id);
-    setActiveTripView('messages');
+    navigate(getTripPath(targetTrip.id, 'messages'));
     setMobileSidebarOpen(false);
   };
 
@@ -4350,7 +4557,7 @@ const Dashboard = ({
             case 'contact':
               return <TripContactInfo user={user} onSaved={() => setUserRefresh(v => v + 1)} />;
             case 'settings':
-              return <TripSettings trip={selectedTrip} user={user} onUpdated={refreshTrips} onDeleted={() => { setSelectedTripId(null); refreshTrips(); }} />;
+              return <TripSettings trip={selectedTrip} user={user} onUpdated={refreshTrips} onDeleted={() => { navigate(DASHBOARD_HOME_PATH); refreshTrips(); }} />;
             default: return <h2>Select a view</h2>;
         }
     }
@@ -4425,7 +4632,7 @@ const Dashboard = ({
                     <React.Fragment key={trip.id}>
                         <TripCard
                             trip={trip}
-                            onSelectTrip={() => handleSelectTrip(trip.id)}
+                            tripPath={getTripPath(trip.id)}
                         />
                     </React.Fragment>
                 ))
@@ -4443,17 +4650,11 @@ const Dashboard = ({
             trips={visibleTrips}
             selectedTripId={selectedTripId}
             activeView={activeTripView}
-            onSelectTrip={handleSelectTrip}
-            onSelectView={handleSelectView}
-            onShowTrips={handleShowTrips}
-            onShowUsers={handleShowUsers}
-            onShowFiles={handleShowFiles}
-            onShowAccount={handleShowAccount}
-            onShowSiteSettings={handleShowSiteSettings}
             mainView={mainView}
             userRole={user.role}
             userId={String(user.id)}
             isOpen={isMobileSidebarOpen}
+            onNavigate={() => setMobileSidebarOpen(false)}
             onLogout={onLogout}
             unreadCounts={unreadCounts}
             theme={theme}
