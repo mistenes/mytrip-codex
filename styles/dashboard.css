@@ -4768,3 +4768,216 @@ html[data-theme='dark'] .dashboard-modal-status.info {
 .mobile-bottom-nav {
     display: none !important;
 }
+
+/* --- Mobile Dashboard Home --- */
+.dashboard-mobile-home-v2 {
+    display: grid;
+    gap: 1rem;
+}
+
+.dashboard-mobile-hero-v2,
+.dashboard-mobile-featured-v2,
+.dashboard-mobile-trip-card-v2,
+.dashboard-mobile-empty-v2 {
+    border-radius: 22px;
+    border: 1px solid #d8e2ec;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(18, 35, 52, 0.06);
+}
+
+.dashboard-mobile-hero-v2,
+.dashboard-mobile-featured-v2,
+.dashboard-mobile-empty-v2 {
+    padding: 1.2rem;
+}
+
+.dashboard-mobile-hero-v2 h2,
+.dashboard-mobile-featured-v2 h3,
+.dashboard-mobile-section-head-v2 h3 {
+    margin: 0;
+    color: #102132;
+}
+
+.dashboard-mobile-hero-v2 h2 {
+    margin-top: 0.6rem;
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    line-height: 0.98;
+    letter-spacing: -0.05em;
+    max-width: 10ch;
+}
+
+.dashboard-mobile-hero-v2 p,
+.dashboard-mobile-featured-copy-v2,
+.dashboard-mobile-trip-top-v2 p {
+    margin: 0.7rem 0 0;
+    color: #5a6a7d;
+    line-height: 1.6;
+}
+
+.dashboard-mobile-actions-v2,
+.dashboard-mobile-featured-actions-v2,
+.dashboard-mobile-trip-actions-v2 {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.dashboard-mobile-actions-v2,
+.dashboard-mobile-featured-actions-v2 {
+    margin-top: 1rem;
+}
+
+.dashboard-mobile-actions-v2 .btn,
+.dashboard-mobile-featured-actions-v2 .btn,
+.dashboard-mobile-trip-actions-v2 .btn {
+    width: 100%;
+    min-height: 52px;
+    border-radius: 16px;
+    box-shadow: none;
+}
+
+.dashboard-mobile-metrics-v2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.dashboard-mobile-metric-card-v2 {
+    padding: 0.95rem;
+    border-radius: 18px;
+    border: 1px solid #d8e2ec;
+    background: #f5f8fb;
+}
+
+.dashboard-mobile-metric-card-v2 span {
+    display: block;
+    color: #5a6a7d;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.dashboard-mobile-metric-card-v2 strong {
+    display: block;
+    margin-top: 0.35rem;
+    color: #102132;
+    font-size: 1.2rem;
+    line-height: 1.15;
+}
+
+.dashboard-mobile-featured-head-v2,
+.dashboard-mobile-trip-top-v2,
+.dashboard-mobile-section-head-v2 {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.dashboard-mobile-featured-label-v2 {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #5a6a7d;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.dashboard-mobile-trip-list-v2 {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.dashboard-mobile-section-head-v2 span {
+    min-width: 2rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    background: #f0f5fa;
+    color: #4a6175;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.dashboard-mobile-trip-card-v2 {
+    padding: 1rem;
+}
+
+.dashboard-mobile-trip-top-v2 strong {
+    display: block;
+    color: #102132;
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+.dashboard-mobile-trip-meta-v2 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: 0.8rem;
+}
+
+.dashboard-mobile-trip-meta-v2 span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: #f5f8fb;
+    border: 1px solid #d8e2ec;
+    color: #4a6175;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.dashboard-mobile-trip-actions-v2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-top: 0.95rem;
+}
+
+.dashboard-mobile-empty-v2 {
+    color: #5a6a7d;
+    text-align: center;
+}
+
+html[data-theme='dark'] .dashboard-mobile-hero-v2,
+html[data-theme='dark'] .dashboard-mobile-featured-v2,
+html[data-theme='dark'] .dashboard-mobile-trip-card-v2,
+html[data-theme='dark'] .dashboard-mobile-empty-v2 {
+    background: #10202b;
+    border-color: #223847;
+}
+
+html[data-theme='dark'] .dashboard-mobile-metric-card-v2,
+html[data-theme='dark'] .dashboard-mobile-trip-meta-v2 span,
+html[data-theme='dark'] .dashboard-mobile-section-head-v2 span {
+    background: #13232f;
+    border-color: #233a4a;
+}
+
+html[data-theme='dark'] .dashboard-mobile-hero-v2 h2,
+html[data-theme='dark'] .dashboard-mobile-featured-v2 h3,
+html[data-theme='dark'] .dashboard-mobile-section-head-v2 h3,
+html[data-theme='dark'] .dashboard-mobile-metric-card-v2 strong,
+html[data-theme='dark'] .dashboard-mobile-trip-top-v2 strong {
+    color: #edf4f6;
+}
+
+html[data-theme='dark'] .dashboard-mobile-hero-v2 p,
+html[data-theme='dark'] .dashboard-mobile-featured-copy-v2,
+html[data-theme='dark'] .dashboard-mobile-trip-top-v2 p,
+html[data-theme='dark'] .dashboard-mobile-featured-label-v2,
+html[data-theme='dark'] .dashboard-mobile-metric-card-v2 span,
+html[data-theme='dark'] .dashboard-mobile-trip-meta-v2 span,
+html[data-theme='dark'] .dashboard-mobile-section-head-v2 span,
+html[data-theme='dark'] .dashboard-mobile-empty-v2 {
+    color: #9fb0bf;
+}
+
+@media (min-width: 768px) {
+    .dashboard-mobile-home-v2 {
+        display: none;
+    }
+}

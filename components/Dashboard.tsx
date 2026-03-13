@@ -4519,6 +4519,132 @@ const MobileBottomNav = ({
     );
 };
 
+const MobileDashboardHome = ({
+    user,
+    visibleTrips,
+    featuredTrip,
+    overviewMetrics,
+    unreadCounts,
+    onCreateTrip,
+    onInvite,
+    onOpenTrip,
+    onOpenTripMessages,
+}: {
+    user: User;
+    visibleTrips: Trip[];
+    featuredTrip: Trip | null;
+    overviewMetrics: {
+        tripCount: number;
+        unreadMessages: number;
+        myBalance: number;
+        onlinePaymentsCount: number;
+    };
+    unreadCounts: Record<string, number>;
+    onCreateTrip: () => void;
+    onInvite: () => void;
+    onOpenTrip: (tripId: string) => void;
+    onOpenTripMessages: (tripId: string) => void;
+}) => {
+    const totalTravelers = visibleTrips.reduce((sum, trip) => sum + trip.travelerIds.length, 0);
+    const nextActionTrip = featuredTrip || visibleTrips.find((trip) => unreadCounts[trip.id] > 0) || visibleTrips[0] || null;
+
+    return (
+        <div className="dashboard-mobile-home-v2">
+            <section className="dashboard-mobile-hero-v2">
+                <span className="section-eyebrow">Dashboard</span>
+                <h2>Everything important, without desktop clutter.</h2>
+                <p>Open a trip fast, catch unread updates, and keep operations moving from one clear mobile view.</p>
+                <div className="dashboard-mobile-actions-v2">
+                    {user.role === 'admin' && (
+                        <button onClick={onCreateTrip} className="btn btn-primary">Create trip</button>
+                    )}
+                    {(user.role === 'admin' || user.role === 'organizer') && (
+                        <button onClick={onInvite} className="btn btn-secondary">Send invite</button>
+                    )}
+                </div>
+            </section>
+
+            <section className="dashboard-mobile-metrics-v2" aria-label="Workspace overview">
+                <article className="dashboard-mobile-metric-card-v2">
+                    <span>Trips</span>
+                    <strong>{overviewMetrics.tripCount}</strong>
+                </article>
+                <article className="dashboard-mobile-metric-card-v2">
+                    <span>Unread</span>
+                    <strong>{overviewMetrics.unreadMessages}</strong>
+                </article>
+                <article className="dashboard-mobile-metric-card-v2">
+                    <span>Travelers</span>
+                    <strong>{totalTravelers}</strong>
+                </article>
+                <article className="dashboard-mobile-metric-card-v2">
+                    <span>Balance</span>
+                    <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
+                </article>
+            </section>
+
+            {nextActionTrip && (
+                <section className="dashboard-mobile-featured-v2">
+                    <div className="dashboard-mobile-featured-head-v2">
+                        <div>
+                            <span className="dashboard-mobile-featured-label-v2">Featured trip</span>
+                            <h3>{nextActionTrip.name}</h3>
+                        </div>
+                        <span className={`trip-stage-badge ${getTripStageMeta(nextActionTrip).className}`}>
+                            {getTripStageMeta(nextActionTrip).label}
+                        </span>
+                    </div>
+                    <p className="dashboard-mobile-featured-copy-v2">
+                        {formatDisplayDate(nextActionTrip.startDate)} - {formatDisplayDate(nextActionTrip.endDate)} · {getTripStageMeta(nextActionTrip).summary}
+                    </p>
+                    <div className="dashboard-mobile-featured-actions-v2">
+                        <button className="btn btn-primary" onClick={() => onOpenTrip(nextActionTrip.id)}>Open trip</button>
+                        <button className="btn btn-secondary" onClick={() => onOpenTripMessages(nextActionTrip.id)}>
+                            Messages{unreadCounts[nextActionTrip.id] ? ` (${unreadCounts[nextActionTrip.id]})` : ''}
+                        </button>
+                    </div>
+                </section>
+            )}
+
+            <section className="dashboard-mobile-trip-list-v2">
+                <div className="dashboard-mobile-section-head-v2">
+                    <h3>Your trips</h3>
+                    <span>{visibleTrips.length}</span>
+                </div>
+                {visibleTrips.length > 0 ? (
+                    visibleTrips.map((trip) => {
+                        const stage = getTripStageMeta(trip);
+                        return (
+                            <article key={trip.id} className="dashboard-mobile-trip-card-v2">
+                                <div className="dashboard-mobile-trip-top-v2">
+                                    <div>
+                                        <strong>{trip.name}</strong>
+                                        <p>{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</p>
+                                    </div>
+                                    <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
+                                </div>
+                                <div className="dashboard-mobile-trip-meta-v2">
+                                    <span>{trip.travelerIds.length} travelers</span>
+                                    <span>{trip.organizerNames?.length || 0} organizers</span>
+                                    {unreadCounts[trip.id] > 0 && <span>{unreadCounts[trip.id]} unread</span>}
+                                </div>
+                                <div className="dashboard-mobile-trip-actions-v2">
+                                    <button className="btn btn-primary" onClick={() => onOpenTrip(trip.id)}>Open</button>
+                                    <button className="btn btn-secondary" onClick={() => onOpenTripMessages(trip.id)}>Messages</button>
+                                </div>
+                            </article>
+                        );
+                    })
+                ) : (
+                    <div className="dashboard-mobile-empty-v2">
+                        No trips are available for this account yet.
+                    </div>
+                )}
+            </section>
+        </div>
+    );
+};
+
 
 const Dashboard = ({
     user, trips, refreshTrips, onLogout, onCreateTrip,
@@ -4775,6 +4901,11 @@ const Dashboard = ({
     setMobileSidebarOpen(false);
   };
 
+  const handleOpenTripMessagesById = (tripId: string) => {
+    navigate(getTripPath(tripId, 'messages'));
+    setMobileSidebarOpen(false);
+  };
+
   const renderContent = () => {
     if (mainView === 'users') {
         return <UserManagement onInvite={() => setInviteOpen(true)} trips={trips} users={allUsers} refreshKey={inviteRefresh} onUsersChanged={() => { setUserRefresh(v => v + 1); refreshTrips(); }} currentUserRole={user.role} />;
@@ -4811,6 +4942,22 @@ const Dashboard = ({
               return <TripSettings trip={selectedTrip} user={user} onUpdated={refreshTrips} onDeleted={() => { navigate(DASHBOARD_HOME_PATH); refreshTrips(); }} />;
             default: return <h2>Select a view</h2>;
         }
+    }
+
+    if (isMobile) {
+        return (
+            <MobileDashboardHome
+                user={user}
+                visibleTrips={visibleTrips}
+                featuredTrip={featuredTrip}
+                overviewMetrics={overviewMetrics}
+                unreadCounts={unreadCounts}
+                onCreateTrip={() => setModalOpen(true)}
+                onInvite={() => setInviteOpen(true)}
+                onOpenTrip={handleSelectTrip}
+                onOpenTripMessages={handleOpenTripMessagesById}
+            />
+        );
     }
 
     return (
