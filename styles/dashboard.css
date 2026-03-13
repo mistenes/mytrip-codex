@@ -4692,6 +4692,7 @@ html[data-theme='dark'] .dashboard-modal-status.info {
 @media (max-width: 1199px) {
     .sidebar.sidebar-v2 {
         padding-top: 1rem;
+        z-index: 1100;
     }
 
     .sidebar-mobile-head-v2 {
@@ -4734,6 +4735,16 @@ html[data-theme='dark'] .dashboard-modal-status.info {
 
     .sidebar.sidebar-v2 .sidebar-footer {
         padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
+    .dashboard-layout.dashboard-layout-v2 .sidebar-overlay {
+        z-index: 1090;
+        pointer-events: none;
+    }
+
+    .dashboard-layout.dashboard-layout-v2.sidebar-is-open .sidebar-overlay {
+        display: block;
+        pointer-events: auto;
     }
 }
 
