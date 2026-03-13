@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { User, SiteSettings } from "../types";
 import { API_BASE } from "../api";
 import "../styles/login.css";
+import "../styles/ui-v4.css";
 
 const LoginPage = ({ onLogin, theme }: { onLogin: (user: User) => void; theme: 'light' | 'dark' }) => {
   const [username, setUsername] = useState('');
