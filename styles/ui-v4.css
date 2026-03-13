@@ -334,11 +334,162 @@ html[data-theme='dark'] .dashboard-mobile-empty-v2 {
   color: var(--color-text-secondary);
 }
 
+.dashboard-home-v5 {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.dashboard-home-head-v5 {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dashboard-home-head-v5 h2 {
+  margin: 0.55rem 0 0;
+  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
+}
+
+.dashboard-home-actions-v5 {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-kpi-grid-v5 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.dashboard-kpi-card-v5 {
+  padding: 1rem 1.05rem;
+  border-radius: 16px;
+  background: #111827;
+  border: 1px solid #1f2937;
+  box-shadow: 0 12px 28px rgba(6, 13, 24, 0.28);
+}
+
+.dashboard-kpi-card-v5 span {
+  display: block;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.dashboard-kpi-card-v5 strong {
+  display: block;
+  margin-top: 0.45rem;
+  color: #f8fafc;
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.dashboard-kpi-card-v5 strong.is-negative {
+  color: #f87171;
+}
+
+.dashboard-controls-v5 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.95rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border) 90%);
+}
+
+.dashboard-tabs-v5 {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-tabs-v5 button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0 0.75rem;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dashboard-tabs-v5 button span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.4rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--color-surface-secondary);
+  color: inherit;
+  font-size: 0.74rem;
+}
+
+.dashboard-tabs-v5 button.active {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.dashboard-tools-v5 {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.dashboard-search-v5 input {
+  min-width: 280px;
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border) 90%);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  padding: 0 0.9rem;
+}
+
+.dashboard-view-toggle-v5 {
+  display: inline-flex;
+  padding: 0.2rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border) 90%);
+  background: var(--color-surface);
+}
+
+.dashboard-view-toggle-v5 button {
+  min-height: 38px;
+  padding: 0 0.8rem;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.dashboard-view-toggle-v5 button.active {
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
+}
+
 .trip-list.trip-list-v2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1rem;
   align-items: stretch;
+}
+
+.trip-list.trip-list-v5 {
+  gap: 1rem;
+}
+
+.trip-list.trip-list-v5.is-list {
+  grid-template-columns: 1fr;
 }
 
 .trip-card.trip-card-v2 {
@@ -425,6 +576,130 @@ html[data-theme='dark'] .trip-stage-badge.is-live {
   padding: 0;
   font-size: clamp(1.5rem, 2vw, 2rem);
   line-height: 1.05;
+}
+
+.trip-card.trip-card-v5 {
+  padding: 1.15rem;
+  border-radius: 16px;
+  border: 1px solid #1f2937;
+  background: #111827;
+  box-shadow: 0 12px 28px rgba(6, 13, 24, 0.2);
+}
+
+.trip-card.trip-card-v5:hover {
+  transform: translateY(-2px);
+  border-color: #334155;
+}
+
+.trip-card-header-v5 {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.trip-card-title-group-v5 {
+  min-width: 0;
+}
+
+.trip-card.trip-card-v5 h3 {
+  color: #f8fafc;
+  font-size: 1.1rem;
+}
+
+.trip-card-range-v5 {
+  margin-top: 0.25rem;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.trip-card-summary-v5 {
+  margin-top: 0.8rem;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.trip-card-stats-v5 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.trip-card-stat-v5 {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.trip-card-stat-v5 span {
+  color: #64748b;
+  font-size: 0.75rem;
+}
+
+.trip-card-stat-v5 strong {
+  color: #f8fafc;
+  font-size: 0.9rem;
+}
+
+.trip-card-footer-v5 {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #1f2937;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.trip-card-organizer-v5 {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.trip-card-organizer-v5 span {
+  color: #64748b;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.trip-card-organizer-v5 strong {
+  color: #cbd5e1;
+  font-size: 0.84rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trip-card-link-v5 {
+  color: var(--color-primary);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.trip-card.trip-card-v5.is-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) auto auto;
+  align-items: center;
+  gap: 1rem;
+}
+
+.trip-card.trip-card-v5.is-list .trip-card-summary-v5 {
+  margin-top: 0.35rem;
+}
+
+.trip-card.trip-card-v5.is-list .trip-card-stats-v5 {
+  margin-top: 0;
+}
+
+.trip-card.trip-card-v5.is-list .trip-card-footer-v5 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+  justify-content: flex-end;
 }
 
 .trip-card.trip-card-v2 .trip-card-summary {
@@ -798,6 +1073,19 @@ html[data-theme='dark'] .dashboard-mobile-priority-panel-v4 {
     line-height: 1;
     cursor: pointer;
   }
+
+  .dashboard-kpi-grid-v5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-controls-v5 {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-tools-v5 {
+    justify-content: space-between;
+  }
 }
 
 @media (max-width: 767px) {
@@ -841,6 +1129,47 @@ html[data-theme='dark'] .dashboard-mobile-priority-panel-v4 {
   .dashboard-content.dashboard-content-v3 > * {
     width: 100%;
     max-width: 100%;
+  }
+
+  .dashboard-home-head-v5 {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .dashboard-home-actions-v5 {
+    width: 100%;
+  }
+
+  .dashboard-home-actions-v5 .btn {
+    flex: 1 1 0;
+  }
+
+  .dashboard-kpi-grid-v5 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .dashboard-kpi-card-v5 {
+    padding: 0.9rem;
+  }
+
+  .dashboard-tools-v5 {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .dashboard-search-v5 input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .dashboard-view-toggle-v5 {
+    width: 100%;
+  }
+
+  .dashboard-view-toggle-v5 button {
+    flex: 1 1 0;
   }
 
   .dashboard-overview-hero.dashboard-overview-v2 {
@@ -969,6 +1298,21 @@ html[data-theme='dark'] .dashboard-mobile-priority-panel-v4 {
 
   .dashboard-mobile-status-grid-v4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-kpi-grid-v5 {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-tabs-v5 {
+    gap: 0.85rem;
+  }
+
+  .trip-card.trip-card-v5,
+  .trip-card.trip-card-v5.is-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
 
   .dashboard-mobile-masthead-v4 {

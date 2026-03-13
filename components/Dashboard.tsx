@@ -1412,40 +1412,52 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
   );
 };
 
-const TripCard = ({ trip, tripPath }: { trip: Trip; tripPath: string; }) => {
+const TripCard = ({
+    trip,
+    tripPath,
+    unreadCount = 0,
+    viewMode = 'grid',
+}: {
+    trip: Trip;
+    tripPath: string;
+    unreadCount?: number;
+    viewMode?: 'grid' | 'list';
+}) => {
     const stage = getTripStageMeta(trip);
     const durationDays = getTripDurationDays(trip);
 
     return (
-        <article className="trip-card trip-card-v2">
-            <div className="trip-card-shell trip-card-shell-v2">
-                <div className="trip-card-topline trip-card-topline-v2">
-                    <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
-                    <span className="trip-card-range">{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</span>
+        <article className={`trip-card trip-card-v2 trip-card-v5 ${viewMode === 'list' ? 'is-list' : ''}`}>
+            <div className="trip-card-header-v5">
+                <div className="trip-card-title-group-v5">
+                    <h3>{trip.name}</h3>
+                    <p className="trip-card-range-v5">{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</p>
                 </div>
-                <h3>{trip.name}</h3>
-                <p className="trip-card-summary">{stage.summary}</p>
-                <div className="trip-card-metrics trip-card-metrics-v2">
-                    <div className="trip-card-metric trip-card-metric-v2">
-                        <span>Duration</span>
-                        <strong>{durationDays} days</strong>
-                    </div>
-                    <div className="trip-card-metric trip-card-metric-v2">
-                        <span>Organizers</span>
-                        <strong>{trip.organizerNames?.length || 0}</strong>
-                    </div>
-                    <div className="trip-card-metric trip-card-metric-v2">
-                        <span>Participants</span>
-                        <strong>{trip.travelerIds.length}</strong>
-                    </div>
+                <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
+            </div>
+            <p className="trip-card-summary trip-card-summary-v5">{stage.summary}</p>
+            <div className="trip-card-stats-v5">
+                <div className="trip-card-stat-v5">
+                    <span>Duration</span>
+                    <strong>{durationDays} days</strong>
                 </div>
-                <div className="trip-card-foot trip-card-foot-v2">
-                    <span>Lead organizers</span>
+                <div className="trip-card-stat-v5">
+                    <span>Participants</span>
+                    <strong>{trip.travelerIds.length}</strong>
+                </div>
+                {unreadCount > 0 && (
+                    <div className="trip-card-stat-v5">
+                        <span>Unread</span>
+                        <strong>{unreadCount}</strong>
+                    </div>
+                )}
+            </div>
+            <div className="trip-card-footer-v5">
+                <div className="trip-card-organizer-v5">
+                    <span>Lead</span>
                     <strong>{trip.organizerNames?.join(', ') || 'Not assigned yet'}</strong>
                 </div>
-            </div>
-            <div className="trip-card-actions trip-card-actions-v2">
-                <Link to={tripPath} className="btn btn-primary">
+                <Link to={tripPath} className="trip-card-link-v5">
                     Open trip
                 </Link>
             </div>
@@ -4773,6 +4785,9 @@ const Dashboard = ({
   const [isMobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userRefresh, setUserRefresh] = useState(0);
+  const [dashboardTripFilter, setDashboardTripFilter] = useState<'all' | 'active' | 'completed'>('active');
+  const [dashboardViewMode, setDashboardViewMode] = useState<'grid' | 'list'>('grid');
+  const [dashboardSearch, setDashboardSearch] = useState('');
   const isMobile = useMediaQuery('(max-width: 767px)');
   const isTabletOrBelow = useMediaQuery('(max-width: 1199px)');
   const unreadCounts = useMemo(() => {
@@ -4855,6 +4870,31 @@ const Dashboard = ({
   const featuredTrip = useMemo(() => {
     return [...visibleTrips].sort((left, right) => new Date(left.startDate).getTime() - new Date(right.startDate).getTime())[0] || null;
   }, [visibleTrips]);
+
+  const dashboardTripCounts = useMemo(() => {
+    const all = visibleTrips.length;
+    const completed = visibleTrips.filter((trip) => getTripStageMeta(trip).className === 'is-complete').length;
+    const active = all - completed;
+    return { all, active, completed };
+  }, [visibleTrips]);
+
+  const filteredDashboardTrips = useMemo(() => {
+    const searchTerm = dashboardSearch.trim().toLowerCase();
+
+    return visibleTrips.filter((trip) => {
+      const stage = getTripStageMeta(trip).className;
+      const matchesFilter =
+        dashboardTripFilter === 'all' ||
+        (dashboardTripFilter === 'completed' && stage === 'is-complete') ||
+        (dashboardTripFilter === 'active' && stage !== 'is-complete');
+      const matchesSearch =
+        searchTerm.length === 0 ||
+        trip.name.toLowerCase().includes(searchTerm) ||
+        (trip.organizerNames || []).some((name) => name.toLowerCase().includes(searchTerm));
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [dashboardSearch, dashboardTripFilter, visibleTrips]);
 
   const routeState = useMemo(
     () =>
@@ -5046,14 +5086,13 @@ const Dashboard = ({
                     <button type="button" onClick={onDismissPaymentFeedback} aria-label="Dismiss notification">×</button>
                 </div>
             )}
-            <section className="dashboard-overview-hero dashboard-overview-v2">
-                <div className="dashboard-overview-copy dashboard-overview-copy-v2">
-                    <span className="section-eyebrow">Travel operations board</span>
-                    <h2>Trips, travelers, and payments in one calm, premium workspace</h2>
-                    <p>
-                        Start with the signals that matter most each day: active trips, unread updates, incoming payments, and the next operational focus.
-                    </p>
-                    <div className="dashboard-overview-actions">
+            <section className="dashboard-home-v5">
+                <div className="dashboard-home-head-v5">
+                    <div>
+                        <span className="section-eyebrow">Dashboard</span>
+                        <h2>Operations Overview</h2>
+                    </div>
+                    <div className="dashboard-home-actions-v5">
                         {user.role === 'admin' && (
                             <button onClick={() => setModalOpen(true)} className="btn btn-primary">
                                 Create trip
@@ -5066,56 +5105,98 @@ const Dashboard = ({
                         )}
                     </div>
                 </div>
-                <div className="dashboard-overview-rail dashboard-overview-rail-v2">
-                    <div className="dashboard-overview-stats dashboard-overview-stats-v2">
-                        <div className="overview-stat-card overview-stat-card-v2">
-                            <span>Active trips</span>
-                            <strong>{overviewMetrics.tripCount}</strong>
-                        </div>
-                        <div className="overview-stat-card overview-stat-card-v2">
-                            <span>Unread messages</span>
-                            <strong>{overviewMetrics.unreadMessages}</strong>
-                        </div>
-                        <div className="overview-stat-card overview-stat-card-v2">
-                            <span>Online payments</span>
-                            <strong>{overviewMetrics.onlinePaymentsCount}</strong>
-                        </div>
-                        <div className="overview-stat-card overview-stat-card-v2">
-                            <span>Balance</span>
-                            <strong>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
-                        </div>
+
+                <div className="dashboard-kpi-grid-v5">
+                    <div className="dashboard-kpi-card-v5">
+                        <span>Active & Preparing Trips</span>
+                        <strong>{dashboardTripCounts.active}</strong>
                     </div>
-                    <div className="dashboard-overview-note dashboard-overview-note-v2">
-                        <span className="dashboard-overview-note-label">Featured trip</span>
-                        <strong>{featuredTrip ? featuredTrip.name : 'No trip highlighted yet'}</strong>
-                        <p>
-                            {featuredTrip
-                                ? `${formatDisplayDate(featuredTrip.startDate)} - ${formatDisplayDate(featuredTrip.endDate)} · ${getTripStageMeta(featuredTrip).summary}`
-                                : 'Your next active or upcoming trip will surface here automatically.'}
-                        </p>
+                    <div className="dashboard-kpi-card-v5">
+                        <span>Unread Messages</span>
+                        <strong>{overviewMetrics.unreadMessages}</strong>
+                    </div>
+                    <div className="dashboard-kpi-card-v5">
+                        <span>Online Payments</span>
+                        <strong>{overviewMetrics.onlinePaymentsCount}</strong>
+                    </div>
+                    <div className="dashboard-kpi-card-v5">
+                        <span>Outstanding Balance</span>
+                        <strong className={overviewMetrics.myBalance < 0 ? 'is-negative' : ''}>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
                     </div>
                 </div>
-            </section>
-            <div className="dashboard-header dashboard-header-v2">
-                <div>
-                    <h2>Active trips</h2>
-                    <p className="dashboard-header-intro">Open a trip to move between itinerary, documents, finance, traveler data, and communications without losing context.</p>
+
+                <div className="dashboard-controls-v5">
+                    <div className="dashboard-tabs-v5" role="tablist" aria-label="Trip filter">
+                        <button
+                            type="button"
+                            className={dashboardTripFilter === 'all' ? 'active' : ''}
+                            onClick={() => setDashboardTripFilter('all')}
+                        >
+                            All trips
+                            <span>{dashboardTripCounts.all}</span>
+                        </button>
+                        <button
+                            type="button"
+                            className={dashboardTripFilter === 'active' ? 'active' : ''}
+                            onClick={() => setDashboardTripFilter('active')}
+                        >
+                            Active / Prep
+                            <span>{dashboardTripCounts.active}</span>
+                        </button>
+                        <button
+                            type="button"
+                            className={dashboardTripFilter === 'completed' ? 'active' : ''}
+                            onClick={() => setDashboardTripFilter('completed')}
+                        >
+                            Completed
+                            <span>{dashboardTripCounts.completed}</span>
+                        </button>
+                    </div>
+                    <div className="dashboard-tools-v5">
+                        <label className="dashboard-search-v5">
+                            <input
+                                type="search"
+                                value={dashboardSearch}
+                                onChange={(event) => setDashboardSearch(event.target.value)}
+                                placeholder="Search trips or organizers..."
+                            />
+                        </label>
+                        <div className="dashboard-view-toggle-v5" aria-label="Dashboard view mode">
+                            <button
+                                type="button"
+                                className={dashboardViewMode === 'grid' ? 'active' : ''}
+                                onClick={() => setDashboardViewMode('grid')}
+                            >
+                                Grid
+                            </button>
+                            <button
+                                type="button"
+                                className={dashboardViewMode === 'list' ? 'active' : ''}
+                                onClick={() => setDashboardViewMode('list')}
+                            >
+                                List
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div className="trip-list trip-list-v2">
-                {visibleTrips.length > 0 ? (
-                visibleTrips.map((trip: Trip) => (
+
+                <div className={`trip-list trip-list-v2 trip-list-v5 ${dashboardViewMode === 'list' ? 'is-list' : ''}`}>
+                {filteredDashboardTrips.length > 0 ? (
+                filteredDashboardTrips.map((trip: Trip) => (
                     <React.Fragment key={trip.id}>
                         <TripCard
                             trip={trip}
                             tripPath={getTripPath(trip.id)}
+                            unreadCount={unreadCounts[trip.id] || 0}
+                            viewMode={dashboardViewMode}
                         />
                     </React.Fragment>
                 ))
                 ) : (
-                <p className="no-trips">No trips are available for this account yet.</p>
+                <p className="no-trips">No trips match the current filters.</p>
                 )}
-            </div>
+                </div>
+            </section>
         </>
     );
   };
