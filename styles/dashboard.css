@@ -3345,3 +3345,299 @@ html[data-theme='dark'] .trip-card-metric {
         min-height: 108px;
     }
 }
+
+/* --- Contrast Rescue Pass --- */
+.sidebar {
+    background: #f7fafc;
+    border-right: 1px solid #d8e2ec;
+    box-shadow: none;
+}
+
+html[data-theme='dark'] .sidebar {
+    background: #0d1720;
+    border-right-color: #213747;
+}
+
+.sidebar-logo,
+.sidebar nav a,
+.sidebar-footer a,
+.user-badge,
+.dashboard-overview-note,
+.overview-stat-card,
+.trip-card-metric,
+.trip-summary-route div,
+.trip-summary-callout,
+.trip-summary .contact-card,
+.trip-mobile-subnav,
+.mobile-bottom-nav,
+.section-intro-meta,
+.field-manager,
+.personal-data-form,
+.participant-data-card,
+.document-category-group,
+.modal-content {
+    background-image: none;
+}
+
+.sidebar-logo {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    box-shadow: none;
+}
+
+html[data-theme='dark'] .sidebar-logo {
+    background: #12202c;
+    border-color: #22384a;
+}
+
+.sidebar nav a,
+.sidebar-footer a {
+    color: #3c5063;
+}
+
+html[data-theme='dark'] .sidebar nav a,
+html[data-theme='dark'] .sidebar-footer a {
+    color: #b8c7d4;
+}
+
+.sidebar nav a:hover,
+.sidebar-footer a:hover,
+.trip-item.active > a {
+    background: #edf3f8;
+    color: #102132;
+}
+
+html[data-theme='dark'] .sidebar nav a:hover,
+html[data-theme='dark'] .sidebar-footer a:hover,
+html[data-theme='dark'] .trip-item.active > a {
+    background: #152431;
+    color: #edf4f6;
+}
+
+.sidebar .main-nav-list > .nav-item > a.active,
+.sidebar-footer a.active {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.trip-item > a {
+    background: transparent;
+}
+
+.trip-submenu {
+    border-left-color: #d6e1ea;
+}
+
+html[data-theme='dark'] .trip-submenu {
+    border-left-color: #223847;
+}
+
+.trip-submenu a {
+    color: #55697d;
+}
+
+html[data-theme='dark'] .trip-submenu a {
+    color: #9cb0be;
+}
+
+.trip-submenu a.active {
+    background: #edf3f8;
+    color: #102132;
+}
+
+html[data-theme='dark'] .trip-submenu a.active {
+    background: #152431;
+    color: #edf4f6;
+}
+
+.app-header,
+.dashboard-overview-hero,
+.trip-summary-hero,
+.section-intro-card,
+.online-payment-panel,
+.financials-hero {
+    background: #ffffff;
+    border-color: #d8e2ec;
+    box-shadow: 0 10px 24px rgba(18, 35, 52, 0.06);
+}
+
+html[data-theme='dark'] .app-header,
+html[data-theme='dark'] .dashboard-overview-hero,
+html[data-theme='dark'] .trip-summary-hero,
+html[data-theme='dark'] .section-intro-card,
+html[data-theme='dark'] .online-payment-panel,
+html[data-theme='dark'] .financials-hero {
+    background: #10202b;
+    border-color: #223847;
+}
+
+.user-badge,
+.overview-stat-card,
+.trip-metric-card,
+.dashboard-overview-note,
+.trip-card-metric,
+.trip-summary-route div,
+.trip-summary-callout,
+.section-intro-meta,
+.trip-mobile-subnav,
+.mobile-bottom-nav,
+.field-manager,
+.personal-data-form,
+.participant-data-card,
+.document-category-group {
+    background: #f7fafc;
+    border-color: #d8e2ec;
+    box-shadow: none;
+}
+
+html[data-theme='dark'] .user-badge,
+html[data-theme='dark'] .overview-stat-card,
+html[data-theme='dark'] .trip-metric-card,
+html[data-theme='dark'] .dashboard-overview-note,
+html[data-theme='dark'] .trip-card-metric,
+html[data-theme='dark'] .trip-summary-route div,
+html[data-theme='dark'] .trip-summary-callout,
+html[data-theme='dark'] .section-intro-meta,
+html[data-theme='dark'] .trip-mobile-subnav,
+html[data-theme='dark'] .mobile-bottom-nav,
+html[data-theme='dark'] .field-manager,
+html[data-theme='dark'] .personal-data-form,
+html[data-theme='dark'] .participant-data-card,
+html[data-theme='dark'] .document-category-group {
+    background: #13232f;
+    border-color: #233a4a;
+}
+
+.dashboard-overview-copy h2,
+.section-intro-copy h2,
+.trip-summary-copy h2,
+.trip-card h3,
+.dashboard-header h2,
+.logo {
+    color: #102132;
+}
+
+html[data-theme='dark'] .dashboard-overview-copy h2,
+html[data-theme='dark'] .section-intro-copy h2,
+html[data-theme='dark'] .trip-summary-copy h2,
+html[data-theme='dark'] .trip-card h3,
+html[data-theme='dark'] .dashboard-header h2,
+html[data-theme='dark'] .logo {
+    color: #edf4f6;
+}
+
+.brand-kicker,
+.dashboard-header-intro,
+.trip-card-summary,
+.trip-card-range,
+.trip-card-foot span,
+.trip-card-metric span,
+.overview-stat-card span,
+.dashboard-overview-note p,
+.trip-summary-route span,
+.section-intro-copy p,
+.section-intro-meta,
+.user-badge-label,
+.user-badge-meta,
+.trip-mobile-subnav-label,
+.mobile-record-head span,
+.mobile-record-meta span,
+.document-item-copy small {
+    color: #5a6a7d;
+}
+
+html[data-theme='dark'] .brand-kicker,
+html[data-theme='dark'] .dashboard-header-intro,
+html[data-theme='dark'] .trip-card-summary,
+html[data-theme='dark'] .trip-card-range,
+html[data-theme='dark'] .trip-card-foot span,
+html[data-theme='dark'] .trip-card-metric span,
+html[data-theme='dark'] .overview-stat-card span,
+html[data-theme='dark'] .dashboard-overview-note p,
+html[data-theme='dark'] .trip-summary-route span,
+html[data-theme='dark'] .section-intro-copy p,
+html[data-theme='dark'] .section-intro-meta,
+html[data-theme='dark'] .user-badge-label,
+html[data-theme='dark'] .user-badge-meta,
+html[data-theme='dark'] .trip-mobile-subnav-label,
+html[data-theme='dark'] .mobile-record-head span,
+html[data-theme='dark'] .mobile-record-meta span,
+html[data-theme='dark'] .document-item-copy small {
+    color: #9fb0bf;
+}
+
+.trip-card,
+.summary-tile,
+.mobile-record-card,
+.document-item,
+.trip-summary-panel {
+    background: #ffffff;
+    border-color: #d8e2ec;
+    box-shadow: 0 8px 18px rgba(18, 35, 52, 0.05);
+}
+
+html[data-theme='dark'] .trip-card,
+html[data-theme='dark'] .summary-tile,
+html[data-theme='dark'] .mobile-record-card,
+html[data-theme='dark'] .document-item,
+html[data-theme='dark'] .trip-summary-panel {
+    background: #10202b;
+    border-color: #223847;
+}
+
+.summary-tile,
+.mobile-record-card,
+.document-item,
+.trip-card,
+.trip-summary-panel {
+    border-radius: 16px;
+}
+
+.summary-tile small {
+    color: #5a6a7d;
+}
+
+html[data-theme='dark'] .summary-tile small {
+    color: #9fb0bf;
+}
+
+.summary-tile.tile-itinerary { box-shadow: inset 0 3px 0 #0f766e, 0 8px 18px rgba(18, 35, 52, 0.05); }
+.summary-tile.tile-documents { box-shadow: inset 0 3px 0 #2563eb, 0 8px 18px rgba(18, 35, 52, 0.05); }
+.summary-tile.tile-messages { box-shadow: inset 0 3px 0 #7c3aed, 0 8px 18px rgba(18, 35, 52, 0.05); }
+.summary-tile.tile-financials { box-shadow: inset 0 3px 0 #c76d1c, 0 8px 18px rgba(18, 35, 52, 0.05); }
+.summary-tile.tile-personal { box-shadow: inset 0 3px 0 #0f766e, 0 8px 18px rgba(18, 35, 52, 0.05); }
+.summary-tile.tile-users { box-shadow: inset 0 3px 0 #19324a, 0 8px 18px rgba(18, 35, 52, 0.05); }
+.summary-tile.tile-settings { box-shadow: inset 0 3px 0 #64748b, 0 8px 18px rgba(18, 35, 52, 0.05); }
+
+.trip-card .btn,
+.dashboard-overview-actions .btn,
+.section-intro-actions .btn,
+.mobile-record-actions .btn {
+    box-shadow: none;
+}
+
+.mobile-bottom-nav button {
+    color: #5a6a7d;
+}
+
+html[data-theme='dark'] .mobile-bottom-nav button {
+    color: #a7b8c7;
+}
+
+.mobile-bottom-nav button.active,
+.trip-mobile-subnav-scroll button.active {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.trip-mobile-subnav-scroll button {
+    background: #f7fafc;
+    color: #4f6275;
+    border-color: #d8e2ec;
+}
+
+html[data-theme='dark'] .trip-mobile-subnav-scroll button {
+    background: #13232f;
+    color: #a7b8c7;
+    border-color: #233a4a;
+}

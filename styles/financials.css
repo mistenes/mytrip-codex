@@ -557,3 +557,51 @@ html[data-theme='dark'] .financial-table {
 .payment-activity-card {
     padding: 1rem 1.1rem;
 }
+
+/* --- Contrast Rescue Pass --- */
+.summary-card,
+.add-record-form,
+.payment-activity-card,
+.financial-table,
+.online-payment-form,
+.online-payment-highlights div,
+.provider-toggle {
+    background-image: none;
+}
+
+.summary-card,
+.add-record-form,
+.payment-activity-card,
+.financial-table,
+.online-payment-form,
+.online-payment-highlights div,
+.provider-toggle {
+    background: #ffffff;
+    border-color: #d8e2ec;
+    box-shadow: 0 8px 18px rgba(18, 35, 52, 0.05);
+}
+
+html[data-theme='dark'] .summary-card,
+html[data-theme='dark'] .add-record-form,
+html[data-theme='dark'] .payment-activity-card,
+html[data-theme='dark'] .financial-table,
+html[data-theme='dark'] .online-payment-form,
+html[data-theme='dark'] .online-payment-highlights div,
+html[data-theme='dark'] .provider-toggle {
+    background: #10202b;
+    border-color: #223847;
+}
+
+.payment-activity-card span,
+.payment-activity-card p,
+.online-payment-note,
+.online-payment-highlights span {
+    color: #5a6a7d;
+}
+
+html[data-theme='dark'] .payment-activity-card span,
+html[data-theme='dark'] .payment-activity-card p,
+html[data-theme='dark'] .online-payment-note,
+html[data-theme='dark'] .online-payment-highlights span {
+    color: #9fb0bf;
+}

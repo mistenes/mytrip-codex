@@ -419,3 +419,30 @@ html[data-theme='dark'] .login-box .form-group input {
     font-size: 2rem;
   }
 }
+
+/* --- Contrast Rescue Pass --- */
+.login-box {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #d8e2ec;
+  box-shadow: 0 18px 38px rgba(18, 35, 52, 0.12);
+}
+
+html[data-theme='dark'] .login-box {
+  background: rgba(16, 32, 43, 0.96);
+  border-color: #223847;
+}
+
+.login-box .form-group input {
+  background: #f7fafc;
+  border-color: #d8e2ec;
+}
+
+html[data-theme='dark'] .login-box .form-group input {
+  background: #13232f;
+  border-color: #233a4a;
+}
+
+.auth-side-panel {
+  background: rgba(11, 27, 39, 0.78);
+  border-color: rgba(255, 255, 255, 0.12);
+}

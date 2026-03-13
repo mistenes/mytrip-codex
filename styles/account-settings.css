@@ -243,3 +243,39 @@ html[data-theme='dark'] .brand-placeholder {
     padding: 1rem;
   }
 }
+
+/* --- Contrast Rescue Pass --- */
+.settings-hero,
+.settings-panel,
+.settings-hero-card,
+.brand-card,
+.brand-placeholder {
+  background-image: none;
+}
+
+.settings-hero,
+.settings-panel,
+.settings-hero-card,
+.brand-card {
+  background: #ffffff;
+  border-color: #d8e2ec;
+  box-shadow: 0 8px 18px rgba(18, 35, 52, 0.05);
+}
+
+html[data-theme='dark'] .settings-hero,
+html[data-theme='dark'] .settings-panel,
+html[data-theme='dark'] .settings-hero-card,
+html[data-theme='dark'] .brand-card {
+  background: #10202b;
+  border-color: #223847;
+}
+
+.brand-placeholder {
+  background: #f7fafc;
+  border-color: #d8e2ec;
+}
+
+html[data-theme='dark'] .brand-placeholder {
+  background: #13232f;
+  border-color: #233a4a;
+}
