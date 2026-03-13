@@ -5433,3 +5433,24 @@ html[data-theme='dark'] .message-editor-status-v2.error {
         grid-template-columns: 1fr;
     }
 }
+
+.ui-build-tag-v2 {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.35rem;
+    min-height: 1.6rem;
+    padding: 0.22rem 0.52rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 26%, var(--color-border) 74%);
+    background: color-mix(in srgb, var(--color-primary) 11%, var(--color-surface-secondary) 89%);
+    color: var(--color-primary);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+html[data-theme='dark'] .ui-build-tag-v2 {
+    background: color-mix(in srgb, var(--color-primary) 16%, var(--color-surface-secondary) 84%);
+}

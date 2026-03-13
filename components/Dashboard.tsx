@@ -15,6 +15,7 @@ const ROLE_LABELS: Record<Role, string> = {
     organizer: 'Organizer',
     traveler: 'Traveler',
 };
+const UI_BUILD_TAG = 'ui-refresh-cd94f61';
 
 type MainView = 'trips' | 'users' | 'files' | 'account' | 'site';
 
@@ -423,14 +424,15 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
             <h1 className="logo">myTrip</h1>
          </div>
     </div>
-    <div className="user-info">
-      <div className="user-badge user-badge-v2">
-        <span className="user-badge-label">Signed in</span>
-        <strong>{user.name}</strong>
-        <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
-      </div>
-    </div>
-  </header>
+	    <div className="user-info">
+	      <div className="user-badge user-badge-v2">
+	        <span className="user-badge-label">Signed in</span>
+	        <strong>{user.name}</strong>
+	        <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
+            <span className="ui-build-tag-v2">{UI_BUILD_TAG}</span>
+	      </div>
+	    </div>
+	  </header>
 );
 
 const CreateTripModal = ({
