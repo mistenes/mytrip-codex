@@ -1352,97 +1352,127 @@ const TripSummary = ({ trip, user, users, onSelectView }: { trip: Trip; user: Us
     }
 
     return (
-        <div className="trip-summary">
-            <div className="trip-summary-hero">
-                <div className="trip-summary-copy">
-                    <div className="trip-summary-headline-row">
+        <div className="trip-summary trip-summary-v2">
+            <section className="trip-summary-hero trip-summary-hero-v2">
+                <div className="trip-summary-shell-v2">
+                    <div className="trip-summary-copy trip-summary-copy-v2">
+                        <div className="trip-summary-headline-row trip-summary-headline-row-v2">
                         <span className="trip-summary-eyebrow">Trip cockpit</span>
                         <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
-                    </div>
-                    <h2 className="trip-title">{trip.name}</h2>
-                    <p className="trip-summary-subtitle">
-                        Everything this trip needs lives here: schedule, files, communications, traveler data, and payment activity.
-                    </p>
-                    <div className="trip-summary-route">
-                        <div>
-                            <span>Trip window</span>
-                            <strong>{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</strong>
                         </div>
-                        <div>
-                            <span>Operational focus</span>
-                            <strong>{stage.summary}</strong>
+                        <h2 className="trip-title">{trip.name}</h2>
+                        <p className="trip-summary-subtitle">
+                            Everything this trip needs lives here: schedule, files, communications, traveler data, and payment activity.
+                        </p>
+                        <div className="trip-summary-route trip-summary-route-v2">
+                            <div className="trip-summary-route-card-v2">
+                                <span>Trip window</span>
+                                <strong>{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</strong>
+                            </div>
+                            <div className="trip-summary-route-card-v2">
+                                <span>Operational focus</span>
+                                <strong>{stage.summary}</strong>
+                            </div>
                         </div>
                     </div>
+                    <aside className="trip-summary-aside-v2">
+                        <div className="trip-summary-metrics trip-summary-metrics-v2">
+                            <div className="trip-metric-card trip-metric-card-v2">
+                                <span className="trip-metric-label">Countdown</span>
+                                <strong>{countdown}</strong>
+                            </div>
+                            <div className="trip-metric-card trip-metric-card-v2">
+                                <span className="trip-metric-label">Duration</span>
+                                <strong>{durationDays} days</strong>
+                            </div>
+                            <div className="trip-metric-card trip-metric-card-v2">
+                                <span className="trip-metric-label">Travelers</span>
+                                <strong>{trip.travelerIds.length}</strong>
+                            </div>
+                            <div className="trip-metric-card trip-metric-card-v2">
+                                <span className="trip-metric-label">Organizers</span>
+                                <strong>{trip.organizerNames?.length || 0}</strong>
+                            </div>
+                        </div>
+                        <div className="trip-summary-callout trip-summary-callout-v2">
+                            <span>{user.role === 'traveler' ? 'Recommended next step' : 'Operational focus'}</span>
+                            <strong>{summaryFocus}</strong>
+                        </div>
+                    </aside>
                 </div>
-                <div className="trip-summary-metrics">
-                    <div className="trip-metric-card">
-                        <span className="trip-metric-label">Countdown</span>
-                        <strong>{countdown}</strong>
-                    </div>
-                    <div className="trip-metric-card">
-                        <span className="trip-metric-label">Duration</span>
-                        <strong>{durationDays} days</strong>
-                    </div>
-                    <div className="trip-metric-card">
-                        <span className="trip-metric-label">Travelers</span>
-                        <strong>{trip.travelerIds.length}</strong>
-                    </div>
-                </div>
-            </div>
-            <div className="summary-tiles summary-tiles-refresh">
+            </section>
+            <section className="summary-tiles summary-tiles-refresh summary-tiles-v2">
                 {tiles.map(t => (
                     <button
                         key={t.key}
-                        className={`summary-tile ${t.className}`}
+                        className={`summary-tile summary-tile-v2 ${t.className}`}
                         onClick={() => onSelectView(t.key)}
                     >
                         <span>{t.label}</span>
                         <small>{t.hint}</small>
                     </button>
                 ))}
-            </div>
-            <div className="trip-summary-side-grid">
-                <div className="trip-summary-panel">
-                    <h3>Operational overview</h3>
-                    <div className="trip-summary-facts">
-                        <div>
+            </section>
+            <section className="trip-summary-side-grid trip-summary-side-grid-v2">
+                <div className="trip-summary-panel trip-summary-panel-v2">
+                    <div className="trip-summary-panel-head-v2">
+                        <h3>Operational overview</h3>
+                        <p>Core trip facts and handoff context, laid out cleanly for quick scanning.</p>
+                    </div>
+                    <div className="trip-summary-facts trip-summary-facts-v2">
+                        <div className="trip-summary-fact-card-v2">
                             <span>Start</span>
                             <strong>{formatDisplayDate(trip.startDate)}</strong>
                         </div>
-                        <div>
+                        <div className="trip-summary-fact-card-v2">
                             <span>End</span>
                             <strong>{formatDisplayDate(trip.endDate)}</strong>
                         </div>
-                        <div>
-                            <span>Organizers</span>
+                        <div className="trip-summary-fact-card-v2 trip-summary-fact-card-wide-v2">
+                            <span>Lead organizers</span>
                             <strong>{trip.organizerNames?.join(', ') || 'Not assigned yet'}</strong>
                         </div>
                     </div>
-                    <div className="trip-summary-callout">
-                        <span>{user.role === 'traveler' ? 'Recommended next step' : 'Operational focus'}</span>
-                        <strong>{summaryFocus}</strong>
+                </div>
+                <div className="emergency-contacts trip-summary-panel trip-summary-panel-v2 emergency-contacts-v2">
+                    <div className="trip-summary-panel-head-v2">
+                        <h3>Emergency contacts</h3>
+                        <p>Published organizer contacts for quick traveler access and support.</p>
                     </div>
+                    {emergencyContacts.length > 0 ? (
+                        <div className="trip-summary-contact-list-v2">
+                            {emergencyContacts.map((o, index) => {
+                                const displayName = [o.firstName, o.lastName].filter(Boolean).join(' ') || o.name || 'Unknown contact';
+                                const key = o.id || o.contactEmail || o.contactPhone || `contact-${index}`;
+                                return (
+                                    <div key={key} className="contact-card contact-card-v2">
+                                        <div className="contact-card-top-v2">
+                                            <div className="contact-name">{displayName}</div>
+                                            {o.contactTitle && <div className="contact-title">{o.contactTitle}</div>}
+                                        </div>
+                                        <div className="contact-card-meta-v2">
+                                            {o.contactPhone && (
+                                                <div className="contact-detail-row-v2">
+                                                    <span>Phone</span>
+                                                    <strong>{o.contactPhone}</strong>
+                                                </div>
+                                            )}
+                                            {o.contactEmail && (
+                                                <div className="contact-detail-row-v2">
+                                                    <span>Email</span>
+                                                    <strong>{o.contactEmail}</strong>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <p className="contact-empty">No emergency contact has been published for this trip yet.</p>
+                    )}
                 </div>
-                <div className="emergency-contacts trip-summary-panel">
-                <h3>Emergency contact{emergencyContacts.length === 1 ? '' : 's'}</h3>
-                {emergencyContacts.length > 0 ? (
-                    emergencyContacts.map((o, index) => {
-                        const displayName = [o.firstName, o.lastName].filter(Boolean).join(' ') || o.name || 'Unknown contact';
-                        const key = o.id || o.contactEmail || o.contactPhone || `contact-${index}`;
-                        return (
-                            <div key={key} className="contact-card">
-                                <div className="contact-name">{displayName}</div>
-                                {o.contactTitle && <div className="contact-title">{o.contactTitle}</div>}
-                                {o.contactPhone && <div className="contact-phone">📞 {o.contactPhone}</div>}
-                                {o.contactEmail && <div className="contact-email">✉️ {o.contactEmail}</div>}
-                            </div>
-                        );
-                    })
-                ) : (
-                    <p className="contact-empty">No emergency contact has been published for this trip yet.</p>
-                )}
-                </div>
-            </div>
+            </section>
         </div>
     );
 };
