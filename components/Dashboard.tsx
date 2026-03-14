@@ -387,10 +387,24 @@ const ThemeSwitcher = ({ theme, onThemeChange }: { theme: Theme, onThemeChange: 
     </div>
 );
 
-const Header = ({ user, onToggleSidebar, showHamburger }: {
+const Header = ({
+    user,
+    onToggleSidebar,
+    showHamburger,
+    showSearch = false,
+    searchValue = '',
+    onSearchChange,
+    showCreateTrip = false,
+    onCreateTrip,
+}: {
     user: User;
     onToggleSidebar: () => void;
     showHamburger: boolean;
+    showSearch?: boolean;
+    searchValue?: string;
+    onSearchChange?: (value: string) => void;
+    showCreateTrip?: boolean;
+    onCreateTrip?: () => void;
 }) => (
   <header className="app-header app-header-v2 app-header-v3">
     <div className="header-left">
@@ -404,14 +418,32 @@ const Header = ({ user, onToggleSidebar, showHamburger }: {
             <h1 className="logo">myTrip</h1>
          </div>
     </div>
-	    <div className="user-info">
-	      <div className="user-badge user-badge-v2">
-	        <span className="user-badge-label">Signed in</span>
-	        <strong>{user.name}</strong>
-	        <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
-	      </div>
-	    </div>
-	  </header>
+    {showSearch && (
+        <label className="header-search-v5" aria-label="Search trips, travelers, or invoices">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+            <input
+                type="search"
+                value={searchValue}
+                onChange={(event) => onSearchChange?.(event.target.value)}
+                placeholder="Search trips, travelers, or invoices..."
+            />
+        </label>
+    )}
+    <div className="header-actions-v5">
+      {showCreateTrip && onCreateTrip && (
+        <button type="button" className="btn btn-primary header-create-btn-v5" onClick={onCreateTrip}>
+          Create trip
+        </button>
+      )}
+      <div className="user-info">
+        <button type="button" className="user-badge user-badge-v2 user-badge-button-v5" aria-label="Open account">
+          <span className="user-badge-label">Signed in</span>
+          <strong>{user.name}</strong>
+          <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
+        </button>
+      </div>
+    </div>
+  </header>
 );
 
 const CreateTripModal = ({
@@ -4908,6 +4940,7 @@ const Dashboard = ({
   );
 
   const { mainView, selectedTripId, activeTripView } = routeState;
+  const isDashboardHome = mainView === 'trips' && !selectedTripId;
 
   const tripMessages = useMemo(
     () => messages
@@ -5088,22 +5121,7 @@ const Dashboard = ({
             )}
             <section className="dashboard-home-v5">
                 <div className="dashboard-home-head-v5">
-                    <div>
-                        <span className="section-eyebrow">Dashboard</span>
-                        <h2>Operations Overview</h2>
-                    </div>
-                    <div className="dashboard-home-actions-v5">
-                        {user.role === 'admin' && (
-                            <button onClick={() => setModalOpen(true)} className="btn btn-primary">
-                                Create trip
-                            </button>
-                        )}
-                        {(user.role === 'admin' || user.role === 'organizer') && (
-                            <button onClick={() => setInviteOpen(true)} className="btn btn-secondary">
-                                Send invite
-                            </button>
-                        )}
-                    </div>
+                    <h2 className="dashboard-page-title-v5">Operations Overview</h2>
                 </div>
 
                 <div className="dashboard-kpi-grid-v5">
@@ -5153,14 +5171,6 @@ const Dashboard = ({
                         </button>
                     </div>
                     <div className="dashboard-tools-v5">
-                        <label className="dashboard-search-v5">
-                            <input
-                                type="search"
-                                value={dashboardSearch}
-                                onChange={(event) => setDashboardSearch(event.target.value)}
-                                placeholder="Search trips or organizers..."
-                            />
-                        </label>
                         <div className="dashboard-view-toggle-v5" aria-label="Dashboard view mode">
                             <button
                                 type="button"
@@ -5176,6 +5186,13 @@ const Dashboard = ({
                             >
                                 List
                             </button>
+                        </div>
+                        <div className="dashboard-tools-actions-v5">
+                            {(user.role === 'admin' || user.role === 'organizer') && (
+                                <button onClick={() => setInviteOpen(true)} className="btn btn-secondary">
+                                    Send invite
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -5226,6 +5243,11 @@ const Dashboard = ({
             user={user}
             onToggleSidebar={() => setMobileSidebarOpen(prev => !prev)}
             showHamburger={isTabletOrBelow}
+            showSearch={!isMobile && isDashboardHome}
+            searchValue={dashboardSearch}
+            onSearchChange={setDashboardSearch}
+            showCreateTrip={!isMobile && isDashboardHome && user.role === 'admin'}
+            onCreateTrip={() => setModalOpen(true)}
           />
           <main className="dashboard-content dashboard-content-v2 dashboard-content-v3">
             {renderContent()}
