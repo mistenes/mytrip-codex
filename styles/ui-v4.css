@@ -154,7 +154,7 @@ html[data-theme='dark'] .sidebar.sidebar-v3 {
   min-width: 0;
 }
 
-.app-header.app-header-v3 {
+.dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 {
   position: sticky;
   top: 0;
   z-index: 45;
@@ -165,18 +165,19 @@ html[data-theme='dark'] .sidebar.sidebar-v3 {
   border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border) 90%);
   background: var(--color-background);
   box-shadow: none;
+  backdrop-filter: none;
 }
 
-html[data-theme='dark'] .app-header.app-header-v3 {
+html[data-theme='dark'] .dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 {
   background: #0b1120;
   border-bottom-color: #1f2937;
 }
 
-.app-header.app-header-v3 .brand-lockup .logo {
+.dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 .brand-lockup .logo {
   font-size: clamp(2rem, 3.5vw, 2.8rem);
 }
 
-.app-header.app-header-v3 .user-badge.user-badge-v2 {
+.dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 .user-badge.user-badge-v2 {
   min-width: 200px;
   border-radius: 0;
   border: none;
@@ -243,7 +244,7 @@ html[data-theme='dark'] .header-search-v5 input::placeholder {
   color: #64748b;
 }
 
-html[data-theme='dark'] .app-header.app-header-v3 .user-badge.user-badge-v2 {
+html[data-theme='dark'] .dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 .user-badge.user-badge-v2 {
   border-left-color: #1f2937;
 }
 
