@@ -248,6 +248,27 @@ html[data-theme='dark'] .dashboard-layout.dashboard-layout-v3 .app-header.app-he
   border-left-color: #1f2937;
 }
 
+.trip-nav-group-v5 {
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trip-nav-group-label-v5 {
+  padding: 0 0.75rem 0.45rem;
+  color: rgba(214, 228, 239, 0.62);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.trip-nav-group-list-v5 {
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
 .dashboard-content.dashboard-content-v3 {
   padding: 1rem 1rem 1.45rem;
 }

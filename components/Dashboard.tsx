@@ -267,6 +267,20 @@ const getTripDurationDays = (trip: Trip) => {
     return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1);
 };
 
+const isPastTripOlderThanThirtyDays = (trip: Trip) => {
+    const end = new Date(trip.endDate);
+    if (Number.isNaN(end.getTime())) {
+        return false;
+    }
+
+    const cutoff = new Date();
+    cutoff.setHours(0, 0, 0, 0);
+    cutoff.setDate(cutoff.getDate() - 30);
+    end.setHours(0, 0, 0, 0);
+
+    return end < cutoff;
+};
+
 const getTripStageMeta = (trip: Trip) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -4495,6 +4509,8 @@ const Sidebar = ({
     logos: SiteSettings | null
 }) => {
     const mainNavItems: NavItem[] = [{ key: 'trips', label: 'Trips' }];
+    const activeTrips = trips.filter((trip) => !isPastTripOlderThanThirtyDays(trip));
+    const pastTrips = trips.filter((trip) => isPastTripOlderThanThirtyDays(trip));
 
     if (userRole === 'admin' || userRole === 'organizer') {
         mainNavItems.push({ key: 'files', label: 'Files' });
@@ -4531,7 +4547,7 @@ const Sidebar = ({
                                 </Link>
                                 {item.key === 'trips' && (
                                     <ul className="trip-nav-list">
-                                        {trips.map((trip) => {
+                                        {activeTrips.map((trip) => {
                                             const tripNavItems = getTripNavItems(trip, userRole, userId);
                                             return (
                                                 <li key={trip.id} className={`trip-item ${trip.id === selectedTripId ? 'active' : ''}`}>
@@ -4559,6 +4575,41 @@ const Sidebar = ({
                                                 </li>
                                             );
                                         })}
+                                        {pastTrips.length > 0 && (
+                                            <li className="trip-nav-group-v5">
+                                                <div className="trip-nav-group-label-v5">Past trips</div>
+                                                <ul className="trip-nav-group-list-v5">
+                                                    {pastTrips.map((trip) => {
+                                                        const tripNavItems = getTripNavItems(trip, userRole, userId);
+                                                        return (
+                                                            <li key={trip.id} className={`trip-item ${trip.id === selectedTripId ? 'active' : ''}`}>
+                                                                <Link to={getTripPath(trip.id)} onClick={onNavigate}>
+                                                                    {trip.name}
+                                                                </Link>
+                                                                {trip.id === selectedTripId && (
+                                                                    <ul className="trip-submenu">
+                                                                        {tripNavItems.map((submenuItem) => (
+                                                                            <li key={submenuItem.key}>
+                                                                                <Link
+                                                                                    to={getTripPath(trip.id, submenuItem.key)}
+                                                                                    onClick={onNavigate}
+                                                                                    className={activeView === submenuItem.key ? 'active' : ''}
+                                                                                >
+                                                                                    {submenuItem.label}
+                                                                                    {submenuItem.key === 'messages' && unreadCounts[trip.id] > 0 && (
+                                                                                        <span className="unread-badge">{unreadCounts[trip.id]}</span>
+                                                                                    )}
+                                                                                </Link>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                )}
+                                                            </li>
+                                                        );
+                                                    })}
+                                                </ul>
+                                            </li>
+                                        )}
                                     </ul>
                                 )}
                             </li>
