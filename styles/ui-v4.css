@@ -156,18 +156,20 @@ html[data-theme='dark'] .sidebar.sidebar-v3 {
 
 .app-header.app-header-v3 {
   position: sticky;
-  top: 0.8rem;
+  top: 0;
   z-index: 45;
-  margin: 1rem 1rem 0;
-  padding: 0.95rem 1.1rem;
-  border-radius: 16px;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border) 86%);
-  background: color-mix(in srgb, var(--color-surface) 92%, #f3f8fc 8%);
-  box-shadow: 0 10px 26px rgba(16, 35, 55, 0.1);
+  margin: 0;
+  padding: 0.9rem 1.4rem;
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border) 90%);
+  background: var(--color-background);
+  box-shadow: none;
 }
 
 html[data-theme='dark'] .app-header.app-header-v3 {
-  background: color-mix(in srgb, var(--color-surface) 92%, #0a1824 8%);
+  background: #0b1120;
+  border-bottom-color: #1f2937;
 }
 
 .app-header.app-header-v3 .brand-lockup .logo {
@@ -176,20 +178,22 @@ html[data-theme='dark'] .app-header.app-header-v3 {
 
 .app-header.app-header-v3 .user-badge.user-badge-v2 {
   min-width: 200px;
-  border-radius: 14px;
-  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--color-border) 84%);
-  background: var(--color-surface-secondary);
+  border-radius: 0;
+  border: none;
+  border-left: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border) 90%);
+  background: transparent;
+  padding-left: 1rem;
 }
 
 .header-search-v5 {
   flex: 1 1 auto;
-  max-width: 420px;
+  max-width: 340px;
   display: flex;
   align-items: center;
   gap: 0.55rem;
   min-height: 44px;
   padding: 0 0.85rem;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border) 90%);
   background: var(--color-surface);
   color: var(--color-text-secondary);
@@ -223,6 +227,24 @@ html[data-theme='dark'] .app-header.app-header-v3 {
 .user-badge-button-v5 {
   text-align: left;
   cursor: pointer;
+}
+
+html[data-theme='dark'] .header-search-v5 {
+  background: #111827;
+  border-color: #1f2937;
+  color: #94a3b8;
+}
+
+html[data-theme='dark'] .header-search-v5 input {
+  color: #f8fafc;
+}
+
+html[data-theme='dark'] .header-search-v5 input::placeholder {
+  color: #64748b;
+}
+
+html[data-theme='dark'] .app-header.app-header-v3 .user-badge.user-badge-v2 {
+  border-left-color: #1f2937;
 }
 
 .dashboard-content.dashboard-content-v3 {
