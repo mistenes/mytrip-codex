@@ -714,7 +714,7 @@ const App = () => {
   }
 
   const protectedElement = !currentUser ? (
-    <LoginPage onLogin={handleLogin} theme={currentTheme} />
+    <LoginPage onLogin={handleLogin} theme={currentTheme} onToggleTheme={() => handleThemeChange(currentTheme === 'dark' ? 'light' : 'dark')} />
   ) : currentUser.mustChangePassword ? (
     <ChangePasswordPage user={currentUser} onSuccess={() => setCurrentUser({ ...currentUser, mustChangePassword: false })} />
   ) : (
@@ -764,7 +764,7 @@ const App = () => {
         <BetaBanner onDismiss={handleDismissBetaBanner} />
       )}
       <Routes>
-        <Route path="/" element={!currentUser ? <LoginPage onLogin={handleLogin} theme={currentTheme} /> : currentUser.mustChangePassword ? <ChangePasswordPage user={currentUser} onSuccess={() => setCurrentUser({ ...currentUser, mustChangePassword: false })} /> : <Navigate to="/dashboard" replace />} />
+        <Route path="/" element={!currentUser ? <LoginPage onLogin={handleLogin} theme={currentTheme} onToggleTheme={() => handleThemeChange(currentTheme === 'dark' ? 'light' : 'dark')} /> : currentUser.mustChangePassword ? <ChangePasswordPage user={currentUser} onSuccess={() => setCurrentUser({ ...currentUser, mustChangePassword: false })} /> : <Navigate to="/dashboard" replace />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
