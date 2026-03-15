@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { User, SiteSettings } from "../types";
 import { API_BASE } from "../api";
-import "../styles/login.css";
-import "../styles/ui-v4.css";
 
 const LoginPage = ({
   onLogin,
@@ -24,12 +22,6 @@ const LoginPage = ({
       .then(setSiteSettings)
       .catch(() => {});
   }, []);
-
-  const shellStyle = siteSettings?.loginBackground
-    ? {
-        backgroundImage: `linear-gradient(135deg, rgba(248, 249, 248, 0.82), rgba(248, 249, 248, 0.58)), url(${siteSettings.loginBackground})`,
-      }
-    : undefined;
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +45,7 @@ const LoginPage = ({
   };
     
   return (
-    <div className="login-reference-shell" style={shellStyle}>
+    <div className="login-reference-shell">
       <div className="login-reference-orb login-reference-orb-left" aria-hidden="true"></div>
       <div className="login-reference-orb login-reference-orb-right" aria-hidden="true"></div>
 

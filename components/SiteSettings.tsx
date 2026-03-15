@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_BASE } from "../api";
 import { SiteSettings, User } from "../types";
-import "../styles/dashboard.css";
-import "../styles/account-settings.css";
 
 interface Props {
   settings: SiteSettings | null;

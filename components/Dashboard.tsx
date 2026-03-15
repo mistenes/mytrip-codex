@@ -6,10 +6,6 @@ import AccountSettings from "./AccountSettings";
 import SiteSettingsView from "./SiteSettings";
 import PassportReaderModal from "./PassportReaderModal";
 import { MrzResult } from "../utils/mrz";
-import "../styles/dashboard.css";
-import "../styles/user-management.css";
-import "../styles/financials.css";
-import "../styles/ui-v4.css";
 
 const ROLE_LABELS: Record<Role, string> = {
     admin: 'Admin',
