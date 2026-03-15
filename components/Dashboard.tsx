@@ -1582,26 +1582,26 @@ const TripCard = ({
         <Link to={tripPath} className={`trip-card trip-card-v2 trip-card-v5 trip-card-link-shell-v6 ${viewMode === 'list' ? 'is-list' : ''} ${stage.className === 'is-complete' ? 'is-completed-card-v6' : ''}`}>
             <div className="trip-card-sheen-v6" aria-hidden="true"></div>
             <div className="trip-card-header-v5">
-                <div className="trip-card-title-group-v5 trip-card-title-group-v6">
-                    <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
-                    <h3>{trip.name}</h3>
-                </div>
+                <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
                 <div className="trip-card-arrow-v6" aria-hidden="true">
                     <DashboardGlyph name="chevron" />
                 </div>
             </div>
-            <div className="trip-card-range-row-v6">
-                <DashboardGlyph name="route" />
-                <span className="trip-card-range-v5">{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</span>
+            <div className="trip-card-title-group-v5 trip-card-title-group-v6" style={{ marginTop: '0.8rem', gap: '0.5rem' }}>
+                <h3>{trip.name}</h3>
+                <div className="trip-card-range-row-v6" style={{ marginBottom: 0 }}>
+                    <DashboardGlyph name="route" />
+                    <span className="trip-card-range-v5">{formatDisplayDate(trip.startDate)} — {formatDisplayDate(trip.endDate)}</span>
+                </div>
             </div>
-            <div className="trip-card-footer-v5 trip-card-footer-v6">
-                <div className="trip-card-stats-v5 trip-card-stats-v6">
+            <div className="trip-card-footer-v5 trip-card-footer-v6" style={{ marginTop: '1.2rem', paddingTop: '1.2rem', borderTop: '1px solid var(--color-border)' }}>
+                <div className="trip-card-stats-v5 trip-card-stats-v6" style={{ marginTop: 0 }}>
                     <div className="trip-card-stat-v5">
-                        <span>Pax</span>
+                        <span>PAX</span>
                         <strong>{trip.travelerIds.length}</strong>
                     </div>
                     <div className="trip-card-stat-v5">
-                        <span>Lead</span>
+                        <span>LEAD</span>
                         <strong>{leadName}</strong>
                     </div>
                 </div>
@@ -5317,68 +5317,79 @@ const Dashboard = ({
                     <h2 className="dashboard-page-title-v5">Overview</h2>
                 </div>
 
-                <div className="dashboard-kpi-grid-v5">
-                    <div className="dashboard-kpi-card-v5">
-                        <div className="dashboard-kpi-icon-v6">
-                            <DashboardGlyph name="active" />
+                <div className="dashboard-kpi-grid-v5" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+                    <div className="dashboard-kpi-card-v5" style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', padding: '1.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div className="dashboard-kpi-icon-v6" style={{ width: '1.4rem', height: '1.4rem', marginBottom: 0 }}>
+                                <DashboardGlyph name="active" />
+                            </div>
+                            <span style={{ marginBottom: 0 }}>ACTIVE</span>
                         </div>
-                        <span>Active</span>
-                        <strong>{dashboardTripCounts.active}</strong>
+                        <strong style={{ fontSize: '2.5rem', lineHeight: 1 }}>{dashboardTripCounts.active}</strong>
                     </div>
-                    <div className="dashboard-kpi-card-v5">
-                        <div className="dashboard-kpi-icon-v6 is-attention">
-                            <DashboardGlyph name="attention" />
+                    <div className="dashboard-kpi-card-v5" style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', padding: '1.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div className="dashboard-kpi-icon-v6 is-attention" style={{ width: '1.4rem', height: '1.4rem', marginBottom: 0 }}>
+                                <DashboardGlyph name="attention" />
+                            </div>
+                            <span style={{ marginBottom: 0 }}>ACTION REQ</span>
                         </div>
-                        <span>Action Req</span>
-                        <strong>{overviewMetrics.unreadMessages}</strong>
+                        <strong style={{ fontSize: '2.5rem', lineHeight: 1 }}>{overviewMetrics.unreadMessages}</strong>
                     </div>
-                    <div className="dashboard-kpi-card-v5">
-                        <div className="dashboard-kpi-icon-v6 is-complete">
-                            <DashboardGlyph name="completed" />
+                    <div className="dashboard-kpi-card-v5" style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', padding: '1.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div className="dashboard-kpi-icon-v6 is-complete" style={{ width: '1.4rem', height: '1.4rem', marginBottom: 0 }}>
+                                <DashboardGlyph name="completed" />
+                            </div>
+                            <span style={{ marginBottom: 0 }}>COMPLETED</span>
                         </div>
-                        <span>Completed</span>
-                        <strong>{dashboardTripCounts.completed}</strong>
+                        <strong style={{ fontSize: '2.5rem', lineHeight: 1 }}>{dashboardTripCounts.completed}</strong>
                     </div>
-                    <div className="dashboard-kpi-card-v5">
-                        <div className="dashboard-kpi-icon-v6 is-balance">
-                            <DashboardGlyph name="balance" />
+                    <div className="dashboard-kpi-card-v5" style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', padding: '1.4rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <div className="dashboard-kpi-icon-v6 is-balance" style={{ width: '1.4rem', height: '1.4rem', marginBottom: 0 }}>
+                                <DashboardGlyph name="balance" />
+                            </div>
+                            <span style={{ marginBottom: 0 }}>BALANCE</span>
                         </div>
-                        <span>Balance</span>
-                        <strong className={overviewMetrics.myBalance < 0 ? 'is-negative' : ''}>{formatCompactMetric(overviewMetrics.myBalance)}</strong>
+                        <strong className={overviewMetrics.myBalance < 0 ? 'is-negative' : ''} style={{ fontSize: '2.5rem', lineHeight: 1, color: overviewMetrics.myBalance < 0 ? 'var(--color-negative)' : 'inherit' }}>{formatCompactMetric(overviewMetrics.myBalance)}</strong>
                     </div>
                 </div>
 
                 <div className="dashboard-controls-v5">
-                    <div className="dashboard-tabs-v5" role="tablist" aria-label="Trip filter">
+                    <div className="dashboard-tabs-v5" role="tablist" aria-label="Trip filter" style={{ display: 'inline-flex', gap: '0.25rem', padding: '0.35rem', borderRadius: '100px' }}>
                         <button
                             type="button"
                             className={dashboardTripFilter === 'all' ? 'active' : ''}
                             onClick={() => setDashboardTripFilter('all')}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '100px' }}
                         >
                             All trips
-                            <span>{dashboardTripCounts.all}</span>
+                            <span style={{ background: 'rgba(0,0,0,0.05)', padding: '0.1rem 0.4rem', borderRadius: '100px', fontSize: '0.75rem' }}>{dashboardTripCounts.all}</span>
                         </button>
                         <button
                             type="button"
                             className={dashboardTripFilter === 'active' ? 'active' : ''}
                             onClick={() => setDashboardTripFilter('active')}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '100px' }}
                         >
                             Active
-                            <span>{dashboardTripCounts.active}</span>
+                            <span style={{ background: 'rgba(0,0,0,0.05)', padding: '0.1rem 0.4rem', borderRadius: '100px', fontSize: '0.75rem' }}>{dashboardTripCounts.active}</span>
                         </button>
                         <button
                             type="button"
                             className={dashboardTripFilter === 'completed' ? 'active' : ''}
                             onClick={() => setDashboardTripFilter('completed')}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', borderRadius: '100px' }}
                         >
                             Past
-                            <span>{dashboardTripCounts.completed}</span>
+                            <span style={{ background: 'rgba(0,0,0,0.05)', padding: '0.1rem 0.4rem', borderRadius: '100px', fontSize: '0.75rem' }}>{dashboardTripCounts.completed}</span>
                         </button>
                     </div>
                     <div className="dashboard-tools-v5 dashboard-tools-v6">
                         <div className="dashboard-tools-actions-v5 dashboard-primary-actions-v6">
                             {user.role === 'admin' && (
-                                <button onClick={() => setModalOpen(true)} className="btn btn-primary">
+                                <button onClick={() => setModalOpen(true)} className="btn btn-primary" style={{ borderRadius: '100px', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                     <span aria-hidden="true">+</span>
                                     <span>New Trip</span>
                                 </button>
@@ -5387,7 +5398,7 @@ const Dashboard = ({
                     </div>
                 </div>
 
-                <div className="trip-list trip-list-v2 trip-list-v5">
+                <div className="trip-list trip-list-v2 trip-list-v5" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.2rem' }}>
                 {filteredDashboardTrips.length > 0 ? (
                 filteredDashboardTrips.map((trip: Trip) => (
                     <React.Fragment key={trip.id}>
