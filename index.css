@@ -111,3 +111,43 @@ a {
   background: color-mix(in srgb, var(--color-primary) 28%, white 72%);
   color: var(--color-text-primary);
 }
+
+.app-error-boundary {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.app-error-boundary-card {
+  width: min(100%, 34rem);
+  padding: 1.4rem;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 18px 40px var(--color-shadow);
+}
+
+.app-error-boundary-eyebrow {
+  display: inline-flex;
+  margin-bottom: 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.app-error-boundary-card h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.app-error-boundary-card p {
+  margin: 0.6rem 0 0;
+  color: var(--color-text-secondary);
+}
+
+.app-error-boundary-action {
+  margin-top: 1rem;
+}

@@ -429,7 +429,7 @@ const Header = ({
          )}
          <div className="brand-lockup">
             <span className="brand-kicker">Travel operations</span>
-            <h1 className="logo">myTrip</h1>
+            <h1 className="logo">myTrip.</h1>
          </div>
     </div>
     {showSearch && (
@@ -446,7 +446,7 @@ const Header = ({
     <div className="header-actions-v5">
       {showCreateTrip && onCreateTrip && (
         <button type="button" className="btn btn-primary header-create-btn-v5" onClick={onCreateTrip}>
-          Create trip
+          New trip
         </button>
       )}
       <div className="user-info">
@@ -4526,7 +4526,7 @@ const Sidebar = ({
             <div className="sidebar-mobile-head-v2">
                 <div className="sidebar-logo sidebar-logo-v2">
                     <span className="sidebar-brand-label">Travel ops</span>
-                    <h2>myTrip</h2>
+                    <h2>myTrip.</h2>
                 </div>
                 <button type="button" className="sidebar-close-btn-v2" onClick={onClose} aria-label="Close navigation">
                     ×
@@ -5172,7 +5172,7 @@ const Dashboard = ({
             )}
             <section className="dashboard-home-v5">
                 <div className="dashboard-home-head-v5">
-                    <h2 className="dashboard-page-title-v5">Operations Overview</h2>
+                    <h2 className="dashboard-page-title-v5">Overview</h2>
                 </div>
 
                 <div className="dashboard-kpi-grid-v5">
