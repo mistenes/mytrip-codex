@@ -387,6 +387,57 @@ const SectionIntro = ({
     </section>
 );
 
+const DashboardGlyph = ({ name }: { name: 'active' | 'attention' | 'completed' | 'balance' | 'route' | 'chevron' }) => {
+    switch (name) {
+        case 'active':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M2 12h7"></path>
+                    <path d="M15 12h7"></path>
+                    <path d="M12 2v7"></path>
+                    <path d="M12 15v7"></path>
+                    <path d="m4.9 4.9 4.2 4.2"></path>
+                    <path d="m14.9 14.9 4.2 4.2"></path>
+                    <path d="m19.1 4.9-4.2 4.2"></path>
+                    <path d="m9.1 14.9-4.2 4.2"></path>
+                </svg>
+            );
+        case 'attention':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            );
+        case 'completed':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+            );
+        case 'balance':
+            return (
+                <span className="dashboard-glyph-currency" aria-hidden="true">Ft</span>
+            );
+        case 'route':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+            );
+        case 'chevron':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6"></path>
+                </svg>
+            );
+        default:
+            return null;
+    }
+};
+
 const ThemeSwitcher = ({ theme, onThemeChange }: { theme: Theme, onThemeChange: (theme: Theme) => void }) => (
     <div className="theme-switcher">
         <button className={theme === 'light' ? 'active' : ''} onClick={() => onThemeChange('light')} aria-label="Light theme">
@@ -1465,43 +1516,56 @@ const TripCard = ({
 }) => {
     const stage = getTripStageMeta(trip);
     const durationDays = getTripDurationDays(trip);
+    const leadName = trip.organizerNames?.[0] || 'Not assigned yet';
+    const leadInitial = leadName.trim().charAt(0).toUpperCase() || '?';
+    const extraTravelerCount = Math.max(0, trip.travelerIds.length - 1);
 
     return (
-        <article className={`trip-card trip-card-v2 trip-card-v5 ${viewMode === 'list' ? 'is-list' : ''}`}>
+        <Link to={tripPath} className={`trip-card trip-card-v2 trip-card-v5 trip-card-link-shell-v6 ${viewMode === 'list' ? 'is-list' : ''}`}>
+            <div className="trip-card-sheen-v6" aria-hidden="true"></div>
             <div className="trip-card-header-v5">
-                <div className="trip-card-title-group-v5">
+                <div className="trip-card-title-group-v5 trip-card-title-group-v6">
+                    <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
                     <h3>{trip.name}</h3>
-                    <p className="trip-card-range-v5">{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</p>
                 </div>
-                <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
+                <div className="trip-card-arrow-v6" aria-hidden="true">
+                    <DashboardGlyph name="chevron" />
+                </div>
+            </div>
+            <div className="trip-card-range-row-v6">
+                <DashboardGlyph name="route" />
+                <span className="trip-card-range-v5">{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</span>
             </div>
             <p className="trip-card-summary trip-card-summary-v5">{stage.summary}</p>
-            <div className="trip-card-stats-v5">
-                <div className="trip-card-stat-v5">
-                    <span>Duration</span>
-                    <strong>{durationDays} days</strong>
-                </div>
-                <div className="trip-card-stat-v5">
-                    <span>Participants</span>
-                    <strong>{trip.travelerIds.length}</strong>
-                </div>
-                {unreadCount > 0 && (
+            <div className="trip-card-footer-v5 trip-card-footer-v6">
+                <div className="trip-card-stats-v5 trip-card-stats-v6">
                     <div className="trip-card-stat-v5">
-                        <span>Unread</span>
-                        <strong>{unreadCount}</strong>
+                        <span>Pax</span>
+                        <strong>{trip.travelerIds.length}</strong>
                     </div>
-                )}
-            </div>
-            <div className="trip-card-footer-v5">
-                <div className="trip-card-organizer-v5">
-                    <span>Lead</span>
-                    <strong>{trip.organizerNames?.join(', ') || 'Not assigned yet'}</strong>
+                    <div className="trip-card-stat-v5">
+                        <span>Lead</span>
+                        <strong>{leadName}</strong>
+                    </div>
+                    <div className="trip-card-stat-v5">
+                        <span>Days</span>
+                        <strong>{durationDays}</strong>
+                    </div>
+                    {unreadCount > 0 && (
+                        <div className="trip-card-stat-v5">
+                            <span>Unread</span>
+                            <strong>{unreadCount}</strong>
+                        </div>
+                    )}
                 </div>
-                <Link to={tripPath} className="trip-card-link-v5">
-                    Open trip
-                </Link>
+                <div className="trip-card-avatars-v6" aria-hidden="true">
+                    <span className="trip-card-avatar-v6">{leadInitial}</span>
+                    {extraTravelerCount > 0 && (
+                        <span className="trip-card-avatar-v6 is-muted">+{extraTravelerCount}</span>
+                    )}
+                </div>
             </div>
-        </article>
+        </Link>
     );
 };
 
@@ -5166,19 +5230,31 @@ const Dashboard = ({
 
                 <div className="dashboard-kpi-grid-v5">
                     <div className="dashboard-kpi-card-v5">
-                        <span>Active & Preparing Trips</span>
+                        <div className="dashboard-kpi-icon-v6">
+                            <DashboardGlyph name="active" />
+                        </div>
+                        <span>Active</span>
                         <strong>{dashboardTripCounts.active}</strong>
                     </div>
                     <div className="dashboard-kpi-card-v5">
-                        <span>Unread Messages</span>
+                        <div className="dashboard-kpi-icon-v6 is-attention">
+                            <DashboardGlyph name="attention" />
+                        </div>
+                        <span>Action Req</span>
                         <strong>{overviewMetrics.unreadMessages}</strong>
                     </div>
                     <div className="dashboard-kpi-card-v5">
-                        <span>Online Payments</span>
-                        <strong>{overviewMetrics.onlinePaymentsCount}</strong>
+                        <div className="dashboard-kpi-icon-v6 is-complete">
+                            <DashboardGlyph name="completed" />
+                        </div>
+                        <span>Completed</span>
+                        <strong>{dashboardTripCounts.completed}</strong>
                     </div>
                     <div className="dashboard-kpi-card-v5">
-                        <span>Outstanding Balance</span>
+                        <div className="dashboard-kpi-icon-v6 is-balance">
+                            <DashboardGlyph name="balance" />
+                        </div>
+                        <span>Balance</span>
                         <strong className={overviewMetrics.myBalance < 0 ? 'is-negative' : ''}>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
                     </div>
                 </div>
@@ -5198,7 +5274,7 @@ const Dashboard = ({
                             className={dashboardTripFilter === 'active' ? 'active' : ''}
                             onClick={() => setDashboardTripFilter('active')}
                         >
-                            Active / Prep
+                            Active
                             <span>{dashboardTripCounts.active}</span>
                         </button>
                         <button
@@ -5206,7 +5282,7 @@ const Dashboard = ({
                             className={dashboardTripFilter === 'completed' ? 'active' : ''}
                             onClick={() => setDashboardTripFilter('completed')}
                         >
-                            Completed
+                            Past
                             <span>{dashboardTripCounts.completed}</span>
                         </button>
                     </div>
@@ -5227,7 +5303,12 @@ const Dashboard = ({
                                 List
                             </button>
                         </div>
-                        <div className="dashboard-tools-actions-v5">
+                        <div className="dashboard-tools-actions-v5 dashboard-primary-actions-v6">
+                            {user.role === 'admin' && (
+                                <button onClick={() => setModalOpen(true)} className="btn btn-primary">
+                                    New trip
+                                </button>
+                            )}
                             {(user.role === 'admin' || user.role === 'organizer') && (
                                 <button onClick={() => setInviteOpen(true)} className="btn btn-secondary">
                                     Send invite
@@ -5286,7 +5367,7 @@ const Dashboard = ({
             showSearch={!isMobile && isDashboardHome}
             searchValue={dashboardSearch}
             onSearchChange={setDashboardSearch}
-            showCreateTrip={!isMobile && isDashboardHome && user.role === 'admin'}
+            showCreateTrip={false}
             onCreateTrip={() => setModalOpen(true)}
           />
           <main className="dashboard-content dashboard-content-v2 dashboard-content-v3">
