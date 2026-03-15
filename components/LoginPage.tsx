@@ -125,6 +125,10 @@ const LoginPage = ({
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
             </button>
+
+            <p className="login-reference-footnote">
+              Use the credentials assigned to your account.
+            </p>
           </form>
         </section>
       </main>

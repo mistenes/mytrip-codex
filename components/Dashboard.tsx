@@ -1586,17 +1586,17 @@ const TripCard = ({
         <Link to={tripPath} className={`trip-card trip-card-v2 trip-card-v5 trip-card-link-shell-v6 ${viewMode === 'list' ? 'is-list' : ''} ${stage.className === 'is-complete' ? 'is-completed-card-v6' : ''}`}>
             <div className="trip-card-sheen-v6" aria-hidden="true"></div>
             <div className="trip-card-header-v5">
-                <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
+                <div className="trip-card-title-group-v5 trip-card-title-group-v6">
+                    <span className={`trip-stage-badge ${stage.className}`}>{stage.label}</span>
+                    <h3>{trip.name}</h3>
+                </div>
                 <div className="trip-card-arrow-v6" aria-hidden="true">
                     <DashboardGlyph name="chevron" />
                 </div>
             </div>
-            <div className="trip-card-title-group-v5 trip-card-title-group-v6">
-                <h3>{trip.name}</h3>
-                <div className="trip-card-range-row-v6">
-                    <DashboardGlyph name="route" />
-                    <span className="trip-card-range-v5">{formatDisplayDate(trip.startDate)} — {formatDisplayDate(trip.endDate)}</span>
-                </div>
+            <div className="trip-card-range-row-v6">
+                <DashboardGlyph name="route" />
+                <span className="trip-card-range-v5">{formatDisplayDate(trip.startDate)} — {formatDisplayDate(trip.endDate)}</span>
             </div>
             <div className="trip-card-footer-v5 trip-card-footer-v6">
                 <div className="trip-card-stats-v5 trip-card-stats-v6">
