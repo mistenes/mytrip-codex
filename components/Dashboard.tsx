@@ -923,11 +923,6 @@ const TripContactInfo = ({ user, onSaved }: { user: User; onSaved: () => void })
   };
 
   const handleSave = async () => {
-    if (!user.token) {
-      setStatus('error');
-      setStatusMessage('You do not have permission to update this contact card.');
-      return;
-    }
     clearStatusTimer();
     setStatus('saving');
     setStatusMessage('Saving changes...');
@@ -936,7 +931,6 @@ const TripContactInfo = ({ user, onSaved }: { user: User; onSaved: () => void })
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
         },
         body: JSON.stringify({ contactPhone, contactEmail, contactTitle, contactShowEmergency }),
       });
@@ -3031,7 +3025,7 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
 	                                            <strong>{doc.name}</strong>
 	                                            <small>Uploaded {doc.uploadDate}</small>
 	                                        </div>
-	                                        <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} download className="btn btn-secondary document-item-action-v2">
+	                                        <a href={`${API_BASE}/api/documents/${doc.id}/file`} download className="btn btn-secondary document-item-action-v2">
 	                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
 	                                            Download
 	                                        </a>
@@ -3103,7 +3097,7 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
                                     <td>{doc.uploadDate}</td>
                                     <td>{visibleToText}</td>
                                     <td className="actions">
-                                        <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Open</a>
+                                        <a href={`${API_BASE}/api/documents/${doc.id}/file`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Open</a>
                                         <button onClick={() => setEditingDoc(doc)} className="btn btn-secondary btn-small">Edit</button>
                                         <button onClick={() => handleDelete(doc.id)} className="btn btn-danger btn-small">Delete</button>
                                     </td>
@@ -3140,7 +3134,7 @@ const TripDocuments = ({ trip, user, documents, onAddDocument, onUpdateDocument,
                                     </div>
 	                            </div>
 	                            <div className="mobile-record-actions document-mobile-actions-v2">
-	                                <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Open</a>
+	                                <a href={`${API_BASE}/api/documents/${doc.id}/file`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small" download>Open</a>
 	                                <button onClick={() => setEditingDoc(doc)} className="btn btn-secondary btn-small">Edit</button>
 	                                <button onClick={() => handleDelete(doc.id)} className="btn btn-danger btn-small">Delete</button>
                             </div>
@@ -3697,14 +3691,13 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
         };
 
         const handleFileChange = async (fieldId: string, file: File | null) => {
-            if (file && user.token) {
+            if (file) {
                 const formDataData = new FormData();
                 formDataData.append('file', file);
                 setUploadingField(fieldId);
                 try {
                     const res = await fetch(`${API_BASE}/api/users/${user.id}/personal-data/${fieldId}/file`, {
                         method: 'POST',
-                        headers: { Authorization: `Bearer ${user.token}` },
                         body: formDataData
                     });
                     if (!res.ok) {
@@ -3721,13 +3714,11 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
         };
 
         const handleFileDelete = async (fieldId: string) => {
-            if (!user.token) return;
             setDeletingField(fieldId);
             const previousValue = formData[fieldId];
             try {
                 const res = await fetch(`${API_BASE}/api/users/${user.id}/personal-data/${fieldId}/file`, {
                     method: 'DELETE',
-                    headers: { Authorization: `Bearer ${user.token}` }
                 });
                 if (!res.ok) {
                     throw new Error('delete_failed');
@@ -3802,7 +3793,7 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                     {(uploadingField === config.id || deletingField === config.id) && <span className="upload-loader" />}
                     {formData[config.id] && (
                         <div className="file-info">
-                            Uploaded: <a href={`${API_BASE}/api/users/${user.id}/personal-data/${config.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer">{getFileName(formData[config.id])}</a>
+                            Uploaded: <a href={`${API_BASE}/api/users/${user.id}/personal-data/${config.id}/file`} target="_blank" rel="noopener noreferrer">{getFileName(formData[config.id])}</a>
                             <button
                                 type="button"
                                 className="btn remove-file-btn"
@@ -4065,20 +4056,18 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
     };
 
     const handleRemoveFile = (userId: string, fieldId: string) => {
-        if (!user.token) return;
-        fetch(`${API_BASE}/api/users/${userId}/personal-data/${fieldId}/file`, { method: 'DELETE', headers: { Authorization: `Bearer ${user.token}` } })
+        fetch(`${API_BASE}/api/users/${userId}/personal-data/${fieldId}/file`, { method: 'DELETE' })
             .then(() => onUpdateRecord({ userId, fieldId, value: '', tripId: trip.id }).catch(() => {}))
             .catch(() => {});
     };
 
     const handleTravelerFileChange = async (userId: string, fieldId: string, file: File | null) => {
-        if (file && user.token) {
+        if (file) {
             const fd = new FormData();
             fd.append('file', file);
             try {
                 const res = await fetch(`${API_BASE}/api/users/${userId}/personal-data/${fieldId}/file`, {
                     method: 'POST',
-                    headers: { Authorization: `Bearer ${user.token}` },
                     body: fd
                 });
                 if (!res.ok) {
@@ -4197,7 +4186,7 @@ const TripPersonalData = ({ trip, user, records, configs, onUpdateRecord, onTogg
                     <div className="field-file-card">
                         {record?.value && (
                             <div className="file-info">
-                                <a href={`${API_BASE}/api/users/${participant.id}/personal-data/${config.id}/file?token=${user.token || ''}`} className="file-link">{record.value}</a>
+                                <a href={`${API_BASE}/api/users/${participant.id}/personal-data/${config.id}/file`} className="file-link">{record.value}</a>
                                 <button className="btn remove-file-btn" onClick={() => handleRemoveFile(participant.id, config.id)}>Remove file</button>
                             </div>
                         )}
@@ -4443,7 +4432,7 @@ const AllFilesView = ({ documents, users, trips, user }: { documents: Document[]
                                 <td>{tripName(doc.tripId)}</td>
                                 <td>{doc.category}</td>
                                 <td>{doc.uploadDate}</td>
-                                <td><a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer">Open</a></td>
+                                <td><a href={`${API_BASE}/api/documents/${doc.id}/file`} target="_blank" rel="noopener noreferrer">Open</a></td>
                             </tr>
                         ))}
                     </tbody>
@@ -4457,7 +4446,7 @@ const AllFilesView = ({ documents, users, trips, user }: { documents: Document[]
                                 <strong>{doc.name}</strong>
                                 <span>{doc.category}</span>
                             </div>
-                            <a href={`${API_BASE}/api/documents/${doc.id}/file?token=${user.token || ''}`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small">Open</a>
+                            <a href={`${API_BASE}/api/documents/${doc.id}/file`} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-small">Open</a>
                         </div>
                         <div className="mobile-record-meta">
                             <span>Participant</span>

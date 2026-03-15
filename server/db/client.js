@@ -83,6 +83,8 @@ export async function ensureSchema() {
       personal_data JSONB NOT NULL DEFAULT '[]'::jsonb,
       passport_photo TEXT DEFAULT '',
       must_change_password BOOLEAN NOT NULL DEFAULT FALSE,
+      theme_preference TEXT NOT NULL DEFAULT 'auto',
+      beta_banner_dismissed BOOLEAN NOT NULL DEFAULT FALSE,
       session_token TEXT,
       session_expires_at TIMESTAMPTZ,
       reset_token TEXT,
@@ -90,6 +92,12 @@ export async function ensureSchema() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS theme_preference TEXT NOT NULL DEFAULT 'auto';
+
+    ALTER TABLE users
+      ADD COLUMN IF NOT EXISTS beta_banner_dismissed BOOLEAN NOT NULL DEFAULT FALSE;
 
     CREATE UNIQUE INDEX IF NOT EXISTS users_session_token_unique
       ON users (session_token)

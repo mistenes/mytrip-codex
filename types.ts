@@ -23,7 +23,8 @@ export interface User {
   contactShowEmergency?: boolean;
   role: Role;
   mustChangePassword?: boolean;
-  token?: string;
+  themePreference?: Theme;
+  betaBannerDismissed?: boolean;
 }
 
 export interface EmergencyContact {

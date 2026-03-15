@@ -28,9 +28,7 @@ const SiteSettingsView: React.FC<Props> = ({ settings, onChange, user }) => {
   }, []);
 
   const openWidget = async (field: "logoLight" | "logoDark" | "loginBackground") => {
-    const sigRes = await fetch(`${API_BASE}/api/cloudinary-signature`, {
-      headers: { Authorization: `Bearer ${user.token}` },
-    });
+    const sigRes = await fetch(`${API_BASE}/api/cloudinary-signature`);
     if (!sigRes.ok) return;
     const sig = await sigRes.json();
     // @ts-ignore
@@ -59,7 +57,6 @@ const SiteSettingsView: React.FC<Props> = ({ settings, onChange, user }) => {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${user.token}`,
       },
       body: JSON.stringify(local),
     });

@@ -13,6 +13,18 @@ import { INITIAL_TRIPS, INITIAL_FINANCIAL_RECORDS, DEFAULT_PERSONAL_DATA_FIELD_C
 import { User, Trip, FinancialRecord, Document, PersonalDataRecord, PersonalDataFieldConfig, PersonalDataUpdatePayload, ItineraryItem, Theme, Message, PaymentTransaction } from "./types";
 import { API_BASE, SESSION_EXPIRED_EVENT } from "./api";
 
+const getResolvedTheme = (theme: Theme): 'light' | 'dark' => {
+  if (theme !== 'auto') {
+    return theme;
+  }
+
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+
+  return 'light';
+};
+
 const App = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,8 +35,7 @@ const App = () => {
   const [paymentFeedback, setPaymentFeedback] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
 
   const refreshTrips = () => {
-    const token = currentUser?.token || localStorage.getItem('sessionToken');
-    if (!token) {
+    if (!currentUser) {
       setTrips([]);
       return;
     }
@@ -53,13 +64,12 @@ const App = () => {
   };
 
   const refreshFinancials = () => {
-    const token = currentUser?.token || localStorage.getItem('sessionToken');
-    if (!token) {
+    if (!currentUser) {
       setFinancialRecords([]);
       return Promise.resolve();
     }
 
-    return fetch(`${API_BASE}/api/financials`, { headers: { Authorization: `Bearer ${token}` } })
+    return fetch(`${API_BASE}/api/financials`)
       .then(res => res.json())
       .then(data => setFinancialRecords(data.map((r: any) => ({
         id: r.id,
@@ -73,13 +83,12 @@ const App = () => {
   };
 
   const refreshPaymentTransactions = () => {
-    const token = currentUser?.token || localStorage.getItem('sessionToken');
-    if (!token) {
+    if (!currentUser) {
       setPaymentTransactions([]);
       return Promise.resolve();
     }
 
-    return fetch(`${API_BASE}/api/payment-transactions`, { headers: { Authorization: `Bearer ${token}` } })
+    return fetch(`${API_BASE}/api/payment-transactions`)
       .then(res => res.json())
       .then(data => setPaymentTransactions(data.map((transaction: any) => ({
         id: transaction.id,
@@ -104,37 +113,26 @@ const App = () => {
     if (!isSessionLoading) {
       refreshTrips();
     }
-  }, [currentUser?.token, isSessionLoading]);
+  }, [currentUser, isSessionLoading]);
   const [financialRecords, setFinancialRecords] = useState<FinancialRecord[]>(INITIAL_FINANCIAL_RECORDS);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [personalDataRecords, setPersonalDataRecords] = useState<PersonalDataRecord[]>(INITIAL_PERSONAL_DATA_RECORDS);
   const [personalDataConfigs, setPersonalDataConfigs] = useState<PersonalDataFieldConfig[]>(DEFAULT_PERSONAL_DATA_FIELD_CONFIGS);
   const [itineraryItems, setItineraryItems] = useState<ItineraryItem[]>(INITIAL_ITINERARY_ITEMS);
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'auto');
-  const getEffectiveTheme = (t: Theme) => t === 'auto'
-    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-    : t;
-  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>(getEffectiveTheme(theme));
+  const [theme, setTheme] = useState<Theme>('auto');
+  const [currentTheme, setCurrentTheme] = useState<'light' | 'dark'>(() => getResolvedTheme('auto'));
 
   useEffect(() => {
-    const token = localStorage.getItem('sessionToken');
-    if (token) {
-      fetch(`${API_BASE}/api/session`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(res => (res.ok ? res.json() : Promise.reject()))
-        .then(data => setCurrentUser({ ...data, token }))
-        .catch(() => localStorage.removeItem('sessionToken'))
-        .finally(() => setIsSessionLoading(false));
-    } else {
-      setIsSessionLoading(false);
-    }
+    fetch(`${API_BASE}/api/session`)
+      .then(res => (res.ok ? res.json() : Promise.reject()))
+      .then(data => setCurrentUser(data))
+      .catch(() => setCurrentUser(null))
+      .finally(() => setIsSessionLoading(false));
   }, []);
 
   useEffect(() => {
     const handleSessionExpired = () => {
-      localStorage.removeItem('sessionToken');
       setCurrentUser(null);
     };
 
@@ -143,14 +141,21 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    setTheme(currentUser?.themePreference || 'auto');
+  }, [currentUser?.id, currentUser?.themePreference]);
+
+  useEffect(() => {
     const applyTheme = (t: Theme) => {
-      const resolved = getEffectiveTheme(t);
+      const resolved = getResolvedTheme(t);
       document.documentElement.setAttribute('data-theme', resolved);
       setCurrentTheme(resolved);
     };
 
     applyTheme(theme);
-    localStorage.setItem('theme', theme);
+
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined;
+    }
 
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = () => {
@@ -164,7 +169,7 @@ const App = () => {
   }, [theme]);
 
   useEffect(() => {
-    if (!currentUser?.token) {
+    if (!currentUser) {
       setPersonalDataConfigs(DEFAULT_PERSONAL_DATA_FIELD_CONFIGS);
       return;
     }
@@ -183,10 +188,10 @@ const App = () => {
         section: c.section,
       }))))
       .catch(() => { });
-  }, [currentUser?.token]);
+  }, [currentUser]);
 
   useEffect(() => {
-    if (!currentUser?.token) {
+    if (!currentUser) {
       setPersonalDataRecords([]);
       return;
     }
@@ -203,7 +208,7 @@ const App = () => {
         setPersonalDataRecords(records);
       })
       .catch(() => { });
-  }, [currentUser?.token]);
+  }, [currentUser]);
 
   useEffect(() => {
     refreshFinancials();
@@ -214,8 +219,8 @@ const App = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    if (currentUser?.token) {
-      fetch(`${API_BASE}/api/documents`, { headers: { Authorization: `Bearer ${currentUser.token}` } })
+    if (currentUser) {
+      fetch(`${API_BASE}/api/documents`)
         .then(res => res.json())
         .then(data => setDocuments(data.map((d: any) => ({
           id: d.id,
@@ -234,8 +239,8 @@ const App = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    if (currentUser?.token) {
-      fetch(`${API_BASE}/api/itinerary`, { headers: { Authorization: `Bearer ${currentUser.token}` } })
+    if (currentUser) {
+      fetch(`${API_BASE}/api/itinerary`)
         .then(res => res.json())
         .then(data => setItineraryItems(data.map((i: any) => ({
           id: i.id,
@@ -255,8 +260,8 @@ const App = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    if (currentUser?.token) {
-      fetch(`${API_BASE}/api/messages`, { headers: { Authorization: `Bearer ${currentUser.token}` } })
+    if (currentUser) {
+      fetch(`${API_BASE}/api/messages`)
         .then(res => res.json())
         .then(data => setMessages(data.map((m: any) => ({
           id: m.id,
@@ -274,7 +279,7 @@ const App = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    if (!currentUser?.token) {
+    if (!currentUser) {
       return;
     }
 
@@ -294,10 +299,7 @@ const App = () => {
           const paymentTransactionId = searchParams.get('paymentTransactionId') || '';
           const res = await fetch(`${API_BASE}/api/payments/paypal/capture`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${currentUser.token}`,
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ orderId, paymentTransactionId }),
           });
 
@@ -336,21 +338,14 @@ const App = () => {
     return () => {
       cancelled = true;
     };
-  }, [currentUser?.token, location.pathname, location.search, navigate]);
+  }, [currentUser, location.pathname, location.search, navigate]);
 
   const handleLogin = (user: User) => {
     setCurrentUser(user);
-    if (user.token) {
-      localStorage.setItem('sessionToken', user.token);
-    }
   };
 
   const handleLogout = () => {
-    const token = localStorage.getItem('sessionToken');
-    if (token) {
-      fetch(`${API_BASE}/api/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => { });
-      localStorage.removeItem('sessionToken');
-    }
+    fetch(`${API_BASE}/api/logout`, { method: 'POST' }).catch(() => { });
     setCurrentUser(null);
   };
 
@@ -358,14 +353,58 @@ const App = () => {
     setTrips(prevTrips => [...prevTrips, newTrip]);
   };
 
+  const handleThemeChange = async (nextTheme: Theme) => {
+    setTheme(nextTheme);
+
+    if (!currentUser) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/users/${currentUser.id}/preferences`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ themePreference: nextTheme }),
+      });
+
+      if (!res.ok) {
+        throw new Error('save_theme_failed');
+      }
+
+      const updatedUser = await res.json();
+      setCurrentUser((prev) => (prev ? { ...prev, ...updatedUser } : prev));
+    } catch {
+      setTheme(currentUser.themePreference || 'auto');
+    }
+  };
+
+  const handleDismissBetaBanner = async () => {
+    if (!currentUser) {
+      return;
+    }
+
+    setCurrentUser((prev) => (prev ? { ...prev, betaBannerDismissed: true } : prev));
+
+    try {
+      const res = await fetch(`${API_BASE}/api/users/${currentUser.id}/preferences`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ betaBannerDismissed: true }),
+      });
+
+      if (!res.ok) {
+        throw new Error('save_banner_preference_failed');
+      }
+    } catch {
+      setCurrentUser((prev) => (prev ? { ...prev, betaBannerDismissed: false } : prev));
+    }
+  };
+
   const handleAddFinancialRecord = async (newRecordData: Omit<FinancialRecord, 'id'>) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/trips/${newRecordData.tripId}/financials`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newRecordData)
     });
     if (res.ok) {
@@ -384,13 +423,10 @@ const App = () => {
   };
 
   const handleUpdateFinancialRecord = async (id: string, updatedData: Omit<FinancialRecord, 'id'>) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/financials/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedData)
     });
     if (!res.ok) {
@@ -409,10 +445,9 @@ const App = () => {
   };
 
   const handleRemoveFinancialRecord = async (id: string) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/financials/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${currentUser.token}` }
     });
     if (!res.ok) {
       throw new Error('Could not delete the financial record.');
@@ -421,7 +456,7 @@ const App = () => {
   };
 
   const handleAddDocument = async (tripId: string, data: { name: string; category: string; visibleTo: 'all' | string[]; file: File }) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const formData = new FormData();
     formData.append('name', data.name);
     formData.append('category', data.category);
@@ -429,7 +464,6 @@ const App = () => {
     formData.append('file', data.file);
     const res = await fetch(`${API_BASE}/api/trips/${tripId}/documents`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${currentUser.token}` },
       body: formData
     });
     if (res.ok) {
@@ -448,7 +482,7 @@ const App = () => {
   };
 
   const handleUpdateDocument = async (updated: Document, file?: File) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const formData = new FormData();
     formData.append('name', updated.name);
     formData.append('category', updated.category);
@@ -456,7 +490,6 @@ const App = () => {
     if (file) formData.append('file', file);
     const res = await fetch(`${API_BASE}/api/documents/${updated.id}`, {
       method: 'PUT',
-      headers: { Authorization: `Bearer ${currentUser.token}` },
       body: formData
     });
     if (res.ok) {
@@ -475,10 +508,9 @@ const App = () => {
   };
 
   const handleRemoveDocument = async (id: string) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/documents/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${currentUser.token}` }
     });
     if (res.ok) {
       setDocuments(prev => prev.filter(doc => doc.id !== id));
@@ -537,13 +569,10 @@ const App = () => {
   };
 
   const handleAddItineraryItem = async (newItemData: Omit<ItineraryItem, 'id'>) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/trips/${newItemData.tripId}/itinerary`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newItemData),
     });
     if (res.ok) {
@@ -553,13 +582,10 @@ const App = () => {
   };
 
   const handleUpdateItineraryItem = async (id: string, updatedData: Omit<ItineraryItem, 'id' | 'tripId'>) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/itinerary/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updatedData)
     });
     if (res.ok) {
@@ -569,10 +595,9 @@ const App = () => {
   };
 
   const handleRemoveItineraryItem = async (idToRemove: string) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/itinerary/${idToRemove}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${currentUser.token}` },
     });
     if (res.ok) {
       setItineraryItems(prev => prev.filter(item => item.id !== idToRemove));
@@ -580,13 +605,10 @@ const App = () => {
   };
 
   const handleAddMessage = async (tripId: string, recipientIds: string[], content: string) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/trips/${tripId}/messages`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content, recipientIds }),
     });
     if (res.ok) {
@@ -604,13 +626,10 @@ const App = () => {
   };
 
   const handleUpdateMessage = async (tripId: string, id: string, recipientIds: string[], content: string) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/trips/${tripId}/messages/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content, recipientIds }),
     });
     if (res.ok) {
@@ -628,10 +647,9 @@ const App = () => {
   };
 
   const handleRemoveMessage = async (tripId: string, id: string) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     const res = await fetch(`${API_BASE}/api/trips/${tripId}/messages/${id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${currentUser.token}` },
     });
     if (res.ok) {
       setMessages(prev => prev.filter(m => m.id !== id));
@@ -639,25 +657,21 @@ const App = () => {
   };
 
   const handleMarkMessageRead = async (id: string) => {
-    if (!currentUser?.token) return;
+    if (!currentUser) return;
     setMessages(prev => prev.map(m => m.id === id ? { ...m, readBy: [...m.readBy, currentUser.id] } : m));
     await fetch(`${API_BASE}/api/messages/${id}/read`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${currentUser.token}` },
     }).catch(() => { });
   };
 
   const handleStartStripePayment = async (tripId: string, amount: number, description: string) => {
-    if (!currentUser?.token) {
+    if (!currentUser) {
       throw new Error('Nincs aktiv munkamenet.');
     }
 
     const res = await fetch(`${API_BASE}/api/trips/${tripId}/payments/stripe/checkout`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount, description }),
     });
 
@@ -670,16 +684,13 @@ const App = () => {
   };
 
   const handleStartPaypalPayment = async (tripId: string, amount: number, description: string) => {
-    if (!currentUser?.token) {
+    if (!currentUser) {
       throw new Error('Nincs aktiv munkamenet.');
     }
 
     const res = await fetch(`${API_BASE}/api/trips/${tripId}/payments/paypal/order`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${currentUser.token}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount, description }),
     });
 
@@ -740,7 +751,7 @@ const App = () => {
       onRemoveMessage={handleRemoveMessage}
       onMarkMessageRead={handleMarkMessageRead}
       theme={theme}
-      onThemeChange={setTheme}
+      onThemeChange={handleThemeChange}
       currentTheme={currentTheme}
       paymentFeedback={paymentFeedback}
       onDismissPaymentFeedback={() => setPaymentFeedback(null)}
@@ -749,7 +760,9 @@ const App = () => {
 
   return (
     <>
-      <BetaBanner />
+      {currentUser && !currentUser.betaBannerDismissed && (
+        <BetaBanner onDismiss={handleDismissBetaBanner} />
+      )}
       <Routes>
         <Route path="/" element={!currentUser ? <LoginPage onLogin={handleLogin} theme={currentTheme} /> : currentUser.mustChangePassword ? <ChangePasswordPage user={currentUser} onSuccess={() => setCurrentUser({ ...currentUser, mustChangePassword: false })} /> : <Navigate to="/dashboard" replace />} />
         <Route path="/signup" element={<SignupPage />} />

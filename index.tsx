@@ -14,6 +14,8 @@ type AppErrorBoundaryState = {
 };
 
 class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, AppErrorBoundaryState> {
+  declare props: Readonly<AppErrorBoundaryProps>;
+
   state: AppErrorBoundaryState = {
     error: null,
   };
@@ -46,19 +48,53 @@ class AppErrorBoundary extends React.Component<AppErrorBoundaryProps, AppErrorBo
       );
     }
 
-    const { children } = this as React.Component<AppErrorBoundaryProps, AppErrorBoundaryState>;
-    return children;
+    return this.props.children;
   }
 }
 
+const renderBootstrapError = (message: string) => {
+  const container = document.getElementById('root');
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = `
+    <main class="app-error-boundary" role="alert">
+      <div class="app-error-boundary-card">
+        <span class="app-error-boundary-eyebrow">Bootstrap error</span>
+        <h1>The app could not start.</h1>
+        <p>${message}</p>
+      </div>
+    </main>
+  `;
+};
+
+window.addEventListener('error', (event) => {
+  const message = event.error?.message || event.message || 'An unexpected startup error occurred.';
+  renderBootstrapError(message);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  const reason = event.reason;
+  const message =
+    (reason && typeof reason === 'object' && 'message' in reason && typeof reason.message === 'string' && reason.message) ||
+    (typeof reason === 'string' ? reason : 'An unhandled async startup error occurred.');
+  renderBootstrapError(message);
+});
+
 const container = document.getElementById('root');
 if (container) {
-  installApiAuthInterceptor();
-  createRoot(container).render(
-    <AppErrorBoundary>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </AppErrorBoundary>
-  );
+  try {
+    installApiAuthInterceptor();
+    createRoot(container).render(
+      <AppErrorBoundary>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </AppErrorBoundary>
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unexpected startup error occurred.';
+    renderBootstrapError(message);
+  }
 }

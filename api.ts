@@ -17,6 +17,7 @@ function isApiRequest(url: URL, apiBaseUrl: URL) {
 function shouldIgnoreUnauthorized(pathname: string) {
   return (
     pathname.endsWith('/api/login') ||
+    pathname.endsWith('/api/session') ||
     pathname.endsWith('/api/forgot-password') ||
     pathname.endsWith('/api/reset-password') ||
     pathname.includes('/api/register/')
@@ -39,33 +40,24 @@ export function installApiAuthInterceptor() {
       window.location.origin
     );
 
-    let addedAuthHeader = false;
+    const isApiCall = isApiRequest(requestUrl, apiBaseUrl);
 
-    if (isApiRequest(requestUrl, apiBaseUrl)) {
-      const headers = new Headers(input instanceof Request ? input.headers : init?.headers);
-      const sessionToken = localStorage.getItem('sessionToken');
-
-      if (sessionToken && !headers.has('Authorization')) {
-        headers.set('Authorization', `Bearer ${sessionToken}`);
-        addedAuthHeader = true;
-      }
-
+    if (isApiCall) {
       if (input instanceof Request) {
-        input = new Request(input, { ...init, headers });
+        input = new Request(input, { ...init, credentials: 'include' });
         init = undefined;
       } else {
-        init = { ...init, headers };
+        init = { ...init, credentials: 'include' };
       }
     }
 
     const response = await originalFetch(input, init);
 
     if (
-      addedAuthHeader &&
+      isApiCall &&
       response.status === 401 &&
       !shouldIgnoreUnauthorized(requestUrl.pathname)
     ) {
-      localStorage.removeItem('sessionToken');
       window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
     }
 

@@ -7,14 +7,29 @@ import Invitation from '../models/Invitation.js';
 import Trip from '../models/Trip.js';
 import { sendPasswordResetEmail } from '../utils/email.js';
 import { buildAppUrl } from '../utils/request.js';
+import { getSessionTokenFromRequest } from '../middleware/auth.js';
 
 const router = express.Router();
+const SESSION_COOKIE_NAME = 'mytrip_session';
+
+function getSessionCookieOptions(req) {
+    const forwardedProto = req.get('x-forwarded-proto');
+    const isSecure = req.secure || forwardedProto === 'https' || process.env.NODE_ENV === 'production';
+
+    return {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: isSecure,
+        path: '/',
+        maxAge: 4 * 60 * 60 * 1000,
+    };
+}
 
 function isBcryptHash(value = '') {
     return value.startsWith('$2a$') || value.startsWith('$2b$') || value.startsWith('$2y$');
 }
 
-function serializeUser(user, token) {
+function serializeUser(user) {
     return {
         id: String(user._id),
         role: user.role,
@@ -27,7 +42,8 @@ function serializeUser(user, token) {
         contactTitle: user.contactTitle,
         contactShowEmergency: user.contactShowEmergency,
         mustChangePassword: user.mustChangePassword,
-        ...(token ? { token } : {}),
+        themePreference: user.themePreference || 'auto',
+        betaBannerDismissed: !!user.betaBannerDismissed,
     };
 }
 
@@ -61,21 +77,21 @@ router.post('/login', async (req, res) => {
     user.sessionExpiresAt = new Date(Date.now() + 4 * 60 * 60 * 1000);
     await user.save();
 
-    return res.json(serializeUser(user, token));
+    res.cookie(SESSION_COOKIE_NAME, token, getSessionCookieOptions(req));
+    return res.json(serializeUser(user));
 });
 
 router.post('/logout', async (req, res) => {
-    const auth = req.headers.authorization || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    const token = getSessionTokenFromRequest(req);
     if (token) {
         await User.updateOne({ sessionToken: token }, { $unset: { sessionToken: 1, sessionExpiresAt: 1 } });
     }
+    res.clearCookie(SESSION_COOKIE_NAME, { path: '/' });
     return res.sendStatus(204);
 });
 
 router.get('/session', async (req, res) => {
-    const auth = req.headers.authorization || '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : '';
+    const token = getSessionTokenFromRequest(req);
     if (!token) return res.sendStatus(401);
 
     const user = await User.findOne({ sessionToken: token, sessionExpiresAt: { $gt: new Date() } });

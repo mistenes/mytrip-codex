@@ -35,6 +35,8 @@ function serializeUser(user, includePersonalData = false) {
         contactShowEmergency: !!plainUser.contactShowEmergency,
         role: plainUser.role,
         mustChangePassword: !!plainUser.mustChangePassword,
+        themePreference: plainUser.themePreference || 'auto',
+        betaBannerDismissed: !!plainUser.betaBannerDismissed,
         passportPhoto: plainUser.passportPhoto || '',
         personalData: includePersonalData ? (Array.isArray(plainUser.personalData) ? plainUser.personalData : []) : [],
     };
@@ -226,6 +228,32 @@ router.put('/users/:id/contact', auth, async (req, res) => {
     }
 
     return res.sendStatus(204);
+});
+
+router.put('/users/:id/preferences', auth, async (req, res) => {
+    if (String(req.user._id) !== req.params.id && !isAdmin(req.user)) {
+        return res.sendStatus(403);
+    }
+
+    const user = await User.findById(req.params.id);
+    if (!user) {
+        return res.sendStatus(404);
+    }
+
+    if (typeof req.body.themePreference !== 'undefined') {
+        const themePreference = String(req.body.themePreference || '').trim();
+        if (!['light', 'dark', 'auto'].includes(themePreference)) {
+            return res.status(400).json({ message: 'Invalid theme preference' });
+        }
+        user.themePreference = themePreference;
+    }
+
+    if (typeof req.body.betaBannerDismissed !== 'undefined') {
+        user.betaBannerDismissed = !!req.body.betaBannerDismissed;
+    }
+
+    await user.save();
+    return res.json(serializeUser(user, true));
 });
 
 router.put('/users/:id/role', auth, async (req, res) => {

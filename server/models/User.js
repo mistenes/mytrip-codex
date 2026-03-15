@@ -21,6 +21,8 @@ export default class User extends BaseModel {
     personalData: [],
     passportPhoto: '',
     mustChangePassword: false,
+    themePreference: 'auto',
+    betaBannerDismissed: false,
     sessionToken: undefined,
     sessionExpiresAt: undefined,
     resetToken: undefined,
