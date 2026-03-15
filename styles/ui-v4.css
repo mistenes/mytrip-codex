@@ -2280,3 +2280,688 @@ html[data-theme='dark'] .login-box.login-box-v3 {
     background: rgba(18, 18, 18, 0.84);
   }
 }
+
+/* --- ZIP UI alignment layer --- */
+
+:root {
+  --color-primary: #344e41;
+  --color-primary-hover: #3a5a40;
+  --color-secondary: #588157;
+  --color-secondary-hover: #6b9169;
+  --color-background: #f8f9f8;
+  --color-surface: #ffffff;
+  --color-surface-secondary: #f3f5f1;
+  --color-surface-tertiary: #ecefe8;
+  --color-text-primary: #344e41;
+  --color-text-secondary: rgba(52, 78, 65, 0.74);
+  --color-border: rgba(218, 215, 205, 0.78);
+  --color-shadow: rgba(16, 35, 55, 0.06);
+  --brand-100: #dad7cd;
+  --brand-200: #a3b18a;
+  --brand-300: #588157;
+  --brand-400: #3a5a40;
+  --brand-500: #344e41;
+  --brand-glass: rgba(255, 255, 255, 0.82);
+}
+
+html[data-theme='dark'] {
+  --color-primary: #f1efe9;
+  --color-primary-hover: #ffffff;
+  --color-secondary: #a3b18a;
+  --color-secondary-hover: #b7c5a1;
+  --color-background: #0a0a0a;
+  --color-surface: #121212;
+  --color-surface-secondary: #171717;
+  --color-surface-tertiary: #1d1d1d;
+  --color-text-primary: #f3f1ea;
+  --color-text-secondary: rgba(243, 241, 234, 0.68);
+  --color-border: rgba(82, 82, 91, 0.7);
+  --color-shadow: rgba(0, 0, 0, 0.28);
+  --brand-glass: rgba(18, 18, 18, 0.82);
+}
+
+body {
+  background:
+    radial-gradient(640px 640px at -10% -10%, rgba(163, 177, 138, 0.2), transparent 60%),
+    radial-gradient(520px 520px at 110% 110%, rgba(88, 129, 87, 0.12), transparent 58%),
+    linear-gradient(180deg, #fafbf8 0%, var(--color-background) 64%, #f1f3ee 100%);
+}
+
+html[data-theme='dark'] body {
+  background:
+    radial-gradient(720px 720px at -12% -14%, rgba(88, 129, 87, 0.18), transparent 58%),
+    radial-gradient(520px 520px at 112% 112%, rgba(163, 177, 138, 0.12), transparent 56%),
+    linear-gradient(180deg, #0a0a0a 0%, #0a0a0a 70%, #111111 100%);
+}
+
+h1,
+h2,
+h3,
+.logo,
+.dashboard-page-title-v5,
+.trip-card.trip-card-v5 h3,
+.trip-summary.trip-summary-v2 .trip-title,
+.section-intro-card h2,
+.login-hero.login-hero-v3 h2,
+.login-box.login-box-v3 .login-box-header h1 {
+  font-family: var(--font-display);
+  letter-spacing: -0.05em;
+}
+
+.btn {
+  min-height: 44px;
+  border-radius: 16px;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(52, 78, 65, 0.08);
+}
+
+.btn.btn-primary {
+  background: linear-gradient(135deg, var(--brand-400), var(--brand-500));
+  color: #ffffff;
+}
+
+.btn.btn-primary:hover {
+  background: linear-gradient(135deg, var(--brand-300), var(--brand-400));
+}
+
+.btn.btn-secondary {
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 86%, white 14%);
+  color: var(--brand-500);
+  box-shadow: none;
+}
+
+.btn.btn-secondary:hover {
+  background: color-mix(in srgb, var(--brand-glass) 72%, white 28%);
+  color: var(--brand-500);
+}
+
+html[data-theme='dark'] .btn.btn-secondary {
+  background: rgba(18, 18, 18, 0.78);
+  color: var(--color-text-primary);
+}
+
+.dashboard-layout.dashboard-layout-v3.with-sidebar {
+  padding-left: 308px;
+}
+
+.sidebar.sidebar-v3 {
+  top: 1.5rem;
+  left: 1.5rem;
+  width: 260px;
+  height: calc(100dvh - 3rem - var(--beta-banner-height));
+  padding: 1.2rem 1rem;
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 86%, white 14%);
+  box-shadow: 0 8px 30px rgba(16, 35, 55, 0.04);
+  backdrop-filter: blur(22px);
+  color: var(--brand-500);
+}
+
+body.has-beta-banner .sidebar.sidebar-v3 {
+  top: calc(1.5rem + var(--beta-banner-height));
+}
+
+html[data-theme='dark'] .sidebar.sidebar-v3 {
+  background: rgba(18, 18, 18, 0.82);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.22);
+}
+
+.sidebar.sidebar-v3 .sidebar-mobile-head-v2 {
+  padding: 0 0.35rem 0.85rem;
+}
+
+.sidebar.sidebar-v3 .sidebar-brand-label,
+.sidebar.sidebar-v3 .sidebar-section-label,
+.sidebar.sidebar-v3 .trip-nav-group-label-v5 {
+  color: var(--color-text-secondary);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.sidebar.sidebar-v3 .sidebar-logo.sidebar-logo-v2 h2 {
+  font-size: 2rem;
+  color: var(--brand-500);
+}
+
+html[data-theme='dark'] .sidebar.sidebar-v3 .sidebar-logo.sidebar-logo-v2 h2 {
+  color: var(--color-text-primary);
+}
+
+.sidebar.sidebar-v3 nav a,
+.sidebar.sidebar-v3 .sidebar-footer a {
+  border-radius: 16px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.sidebar.sidebar-v3 nav a:hover,
+.sidebar.sidebar-v3 .sidebar-footer a:hover {
+  background: rgba(163, 177, 138, 0.14);
+  color: var(--brand-500);
+}
+
+.sidebar.sidebar-v3 .main-nav-list > .nav-item > a.active,
+.sidebar.sidebar-v3 .sidebar-footer a.active {
+  background: var(--brand-500);
+  color: #ffffff;
+}
+
+.sidebar.sidebar-v3 .trip-item.active > a,
+.sidebar.sidebar-v3 .trip-submenu a.active {
+  background: rgba(163, 177, 138, 0.18);
+  color: var(--brand-500);
+}
+
+html[data-theme='dark'] .sidebar.sidebar-v3 .trip-item.active > a,
+html[data-theme='dark'] .sidebar.sidebar-v3 .trip-submenu a.active {
+  background: rgba(58, 90, 64, 0.42);
+  color: var(--color-text-primary);
+}
+
+.sidebar.sidebar-v3 .sidebar-footer {
+  border-top: 1px solid var(--color-border);
+}
+
+.dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 1.45rem 2rem 1rem;
+  gap: 1rem;
+}
+
+.dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 .brand-lockup {
+  min-width: 0;
+}
+
+.dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 .brand-lockup .brand-kicker {
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+}
+
+.dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 .brand-lockup .logo {
+  font-size: clamp(2rem, 3vw, 2.7rem);
+  color: var(--brand-500);
+}
+
+.header-search-v5 {
+  max-width: 330px;
+  min-height: 48px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 82%, white 18%);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 4px 12px rgba(16, 35, 55, 0.03);
+}
+
+html[data-theme='dark'] .header-search-v5 {
+  background: rgba(18, 18, 18, 0.76);
+}
+
+.dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 .user-badge.user-badge-v2 {
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 82%, white 18%);
+  min-width: 184px;
+  padding: 0.7rem 0.9rem;
+}
+
+html[data-theme='dark'] .dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 .user-badge.user-badge-v2 {
+  background: rgba(18, 18, 18, 0.76);
+}
+
+.dashboard-content.dashboard-content-v3 {
+  padding: 0 2rem 2.5rem;
+}
+
+.dashboard-home-v5 {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding-top: 0.35rem;
+}
+
+.dashboard-page-title-v5 {
+  font-size: clamp(2.4rem, 4vw, 3.75rem);
+  color: var(--brand-500);
+}
+
+.dashboard-kpi-grid-v5 {
+  gap: 1rem;
+}
+
+.dashboard-kpi-card-v5,
+.section-intro-card,
+.trip-summary.trip-summary-v2 .trip-summary-copy.trip-summary-copy-v2,
+.trip-summary.trip-summary-v2 .trip-summary-aside-v2,
+.trip-summary.trip-summary-v2 .trip-summary-panel.trip-summary-panel-v2,
+.mobile-record-card,
+.dashboard-modal,
+.settings-panel,
+.brand-card,
+.dashboard-mobile-priority-panel-v4,
+.dashboard-mobile-trip-card-v4,
+.dashboard-mobile-empty-v4 {
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 88%, white 12%);
+  box-shadow: 0 8px 30px rgba(16, 35, 55, 0.04);
+  backdrop-filter: blur(22px);
+}
+
+html[data-theme='dark'] .dashboard-kpi-card-v5,
+html[data-theme='dark'] .section-intro-card,
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .trip-summary-copy.trip-summary-copy-v2,
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .trip-summary-aside-v2,
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .trip-summary-panel.trip-summary-panel-v2,
+html[data-theme='dark'] .mobile-record-card,
+html[data-theme='dark'] .dashboard-modal,
+html[data-theme='dark'] .settings-panel,
+html[data-theme='dark'] .brand-card,
+html[data-theme='dark'] .dashboard-mobile-priority-panel-v4,
+html[data-theme='dark'] .dashboard-mobile-trip-card-v4,
+html[data-theme='dark'] .dashboard-mobile-empty-v4 {
+  background: rgba(18, 18, 18, 0.84);
+}
+
+.dashboard-kpi-card-v5 {
+  padding: 1.15rem 1.2rem;
+}
+
+.dashboard-kpi-card-v5 span {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--color-text-secondary);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.dashboard-kpi-card-v5 strong {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3vw, 2.85rem);
+  color: var(--brand-500);
+}
+
+html[data-theme='dark'] .dashboard-kpi-card-v5 strong {
+  color: var(--color-text-primary);
+}
+
+.dashboard-controls-v5 {
+  align-items: center;
+  gap: 1rem;
+}
+
+.dashboard-tabs-v5,
+.dashboard-view-toggle-v5 {
+  padding: 0.3rem;
+  border-radius: 18px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 84%, white 16%);
+  box-shadow: 0 4px 12px rgba(16, 35, 55, 0.03);
+}
+
+html[data-theme='dark'] .dashboard-tabs-v5,
+html[data-theme='dark'] .dashboard-view-toggle-v5 {
+  background: rgba(18, 18, 18, 0.76);
+}
+
+.dashboard-tabs-v5 button,
+.dashboard-view-toggle-v5 button {
+  border-radius: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.dashboard-tabs-v5 button.active,
+.dashboard-view-toggle-v5 button.active {
+  background: #ffffff;
+  color: var(--brand-500);
+  box-shadow: 0 4px 12px rgba(16, 35, 55, 0.06);
+}
+
+html[data-theme='dark'] .dashboard-tabs-v5 button.active,
+html[data-theme='dark'] .dashboard-view-toggle-v5 button.active {
+  background: #27272a;
+  color: var(--color-text-primary);
+}
+
+.trip-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.trip-stage-badge.is-upcoming {
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.2);
+  color: #b45309;
+}
+
+.trip-stage-badge.is-live {
+  background: rgba(58, 123, 82, 0.12);
+  border-color: rgba(58, 123, 82, 0.18);
+  color: #2f6f47;
+}
+
+.trip-stage-badge.is-complete {
+  background: rgba(163, 177, 138, 0.16);
+  border-color: rgba(163, 177, 138, 0.24);
+  color: var(--brand-500);
+}
+
+html[data-theme='dark'] .trip-stage-badge.is-upcoming {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.14);
+}
+
+html[data-theme='dark'] .trip-stage-badge.is-live {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.14);
+}
+
+html[data-theme='dark'] .trip-stage-badge.is-complete {
+  color: var(--color-text-primary);
+  background: rgba(163, 177, 138, 0.12);
+}
+
+.trip-card.trip-card-v5 {
+  position: relative;
+  overflow: hidden;
+  padding: 1.4rem 1.45rem;
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 86%, white 14%);
+  box-shadow: 0 8px 30px rgba(16, 35, 55, 0.04);
+}
+
+html[data-theme='dark'] .trip-card.trip-card-v5 {
+  background: rgba(18, 18, 18, 0.82);
+}
+
+.trip-card.trip-card-v5::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(163, 177, 138, 0.12), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.trip-card.trip-card-v5:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 34px rgba(16, 35, 55, 0.08);
+}
+
+.trip-card.trip-card-v5:hover::before {
+  opacity: 1;
+}
+
+.trip-card.trip-card-v5 h3 {
+  font-size: clamp(1.75rem, 2vw, 2.15rem);
+  color: var(--brand-500);
+}
+
+html[data-theme='dark'] .trip-card.trip-card-v5 h3 {
+  color: var(--color-text-primary);
+}
+
+.trip-card-range-v5,
+.trip-card-summary-v5,
+.trip-card-organizer-v5 span,
+.trip-card-stat-v5 span,
+.trip-summary.trip-summary-v2 .trip-summary-subtitle,
+.section-intro-card p {
+  color: var(--color-text-secondary);
+}
+
+.trip-card-stats-v5,
+.trip-card-footer-v5 {
+  border-top-color: var(--color-border);
+}
+
+.trip-card-stat-v5 span,
+.trip-card-organizer-v5 span,
+.trip-summary.trip-summary-v2 .trip-summary-route-card-v2 span,
+.trip-summary.trip-summary-v2 .trip-metric-card.trip-metric-card-v2 span,
+.trip-summary.trip-summary-v2 .trip-summary-fact-card-v2 span,
+.section-eyebrow {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+}
+
+.trip-card-link-v5 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.75rem 1.1rem;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--brand-400), var(--brand-500));
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.trip-summary.trip-summary-v2 .trip-summary-hero.trip-summary-hero-v2 {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
+.trip-summary.trip-summary-v2 .trip-summary-copy.trip-summary-copy-v2 {
+  position: relative;
+  overflow: hidden;
+}
+
+.trip-summary.trip-summary-v2 .trip-summary-copy.trip-summary-copy-v2::after {
+  content: '';
+  position: absolute;
+  top: -22%;
+  right: -16%;
+  width: 24rem;
+  height: 24rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(163, 177, 138, 0.2) 0%, rgba(163, 177, 138, 0) 70%);
+  pointer-events: none;
+}
+
+.trip-summary.trip-summary-v2 .trip-title {
+  font-size: clamp(2.6rem, 4vw, 4.6rem);
+  color: var(--brand-500);
+}
+
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .trip-title {
+  color: var(--color-text-primary);
+}
+
+.trip-summary.trip-summary-v2 .trip-summary-route-card-v2,
+.trip-summary.trip-summary-v2 .trip-metric-card.trip-metric-card-v2,
+.trip-summary.trip-summary-v2 .trip-summary-fact-card-v2,
+.trip-summary.trip-summary-v2 .contact-card.contact-card-v2,
+.trip-summary.trip-summary-v2 .contact-empty {
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 74%, white 26%);
+}
+
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .trip-summary-route-card-v2,
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .trip-metric-card.trip-metric-card-v2,
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .trip-summary-fact-card-v2,
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .contact-card.contact-card-v2,
+html[data-theme='dark'] .trip-summary.trip-summary-v2 .contact-empty {
+  background: rgba(24, 24, 27, 0.86);
+}
+
+.dashboard-mobile-masthead-v4 h2,
+.dashboard-mobile-priority-header-v4 h3,
+.dashboard-mobile-trip-top-v4 strong {
+  font-family: var(--font-display);
+  letter-spacing: -0.04em;
+}
+
+.dashboard-mobile-role-pill-v4,
+.dashboard-mobile-featured-meta-v4 span,
+.dashboard-mobile-trip-meta-v4 span {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 80%, white 20%);
+}
+
+.dashboard-mobile-metric-card-v4 {
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 84%, white 16%);
+}
+
+html[data-theme='dark'] .dashboard-mobile-metric-card-v4 {
+  background: rgba(18, 18, 18, 0.78);
+}
+
+.login-container.login-container-v3 {
+  min-height: 100dvh;
+  padding: 2rem;
+  background-position: center;
+}
+
+.login-container.login-container-v3::before {
+  background:
+    linear-gradient(135deg, rgba(248, 249, 248, 0.78), rgba(248, 249, 248, 0.5)),
+    radial-gradient(circle at top left, rgba(163, 177, 138, 0.18), transparent 48%);
+}
+
+.login-stage-v3 {
+  max-width: 1120px;
+  gap: 3.5rem;
+  align-items: center;
+}
+
+.login-hero.login-hero-v3 {
+  max-width: 34rem;
+  color: var(--brand-500);
+  padding: 0;
+}
+
+.login-hero.login-hero-v3 .login-kicker {
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.58);
+  border: 1px solid var(--color-border);
+}
+
+.login-hero.login-hero-v3 h2 {
+  color: var(--brand-500);
+}
+
+.login-hero.login-hero-v3 p {
+  color: var(--color-text-secondary);
+}
+
+.login-hero-band-v2 .login-stat-card {
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 88%, white 12%);
+  box-shadow: 0 8px 30px rgba(16, 35, 55, 0.04);
+}
+
+.login-box.login-box-v3 {
+  max-width: 420px;
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--brand-glass) 90%, white 10%);
+  box-shadow: 0 16px 34px rgba(16, 35, 55, 0.08);
+  backdrop-filter: blur(20px);
+}
+
+html[data-theme='dark'] .login-box.login-box-v3 {
+  background: rgba(18, 18, 18, 0.9);
+}
+
+.login-box.login-box-v3 .form-group label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text-secondary) 86%, white 14%);
+}
+
+.login-box.login-box-v3 .form-group input {
+  min-height: 52px;
+  padding: 0.95rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+html[data-theme='dark'] .login-box.login-box-v3 .form-group input {
+  background: rgba(10, 10, 10, 0.88);
+}
+
+.login-box.login-box-v3 .btn {
+  min-height: 54px;
+  border-radius: 16px;
+}
+
+@media (max-width: 1199px) {
+  .dashboard-layout.dashboard-layout-v3.with-sidebar {
+    padding-left: 0;
+  }
+
+  .sidebar.sidebar-v3 {
+    left: 0.9rem;
+    top: 0.9rem;
+    height: calc(100dvh - 1.8rem - var(--beta-banner-height));
+  }
+
+  body.has-beta-banner .sidebar.sidebar-v3 {
+    top: calc(0.9rem + var(--beta-banner-height));
+  }
+}
+
+@media (max-width: 767px) {
+  .dashboard-layout.dashboard-layout-v3 .app-header.app-header-v3 {
+    padding: 1rem 0.85rem 0.5rem;
+  }
+
+  .dashboard-content.dashboard-content-v3 {
+    padding: 0 0.85rem 1.5rem;
+  }
+
+  .login-container.login-container-v3 {
+    padding: 1rem;
+  }
+
+  .login-stage-v3 {
+    gap: 1.5rem;
+  }
+
+  .dashboard-kpi-card-v5,
+  .trip-card.trip-card-v5,
+  .section-intro-card,
+  .trip-summary.trip-summary-v2 .trip-summary-copy.trip-summary-copy-v2,
+  .trip-summary.trip-summary-v2 .trip-summary-aside-v2,
+  .trip-summary.trip-summary-v2 .trip-summary-panel.trip-summary-panel-v2 {
+    border-radius: 20px;
+  }
+
+  .dashboard-kpi-grid-v5,
+  .trip-list.trip-list-v2,
+  .dashboard-mobile-metrics-v4,
+  .dashboard-mobile-trip-list-v4 {
+    gap: 0.85rem;
+  }
+}
