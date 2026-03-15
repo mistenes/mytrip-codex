@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { User } from "../types";
 import { API_BASE } from "../api";
+import "../styles/account-settings.css";
 
 const AccountSettings = ({ user }: { user: User }) => {
   const [currentPassword, setCurrentPassword] = useState("");

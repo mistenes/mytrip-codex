@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import "../styles/login.css";
 
 const ResetPasswordConfirmPage = () => {
   useEffect(() => {

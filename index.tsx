@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { installApiAuthInterceptor } from './api';
+import './index.css';
 
 type AppErrorBoundaryProps = {
   children: React.ReactNode;

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import '../styles/beta-banner.css';
 
 const BetaBanner = ({ onDismiss }: { onDismiss: () => void }) => {
   const ref = useRef<HTMLDivElement>(null);

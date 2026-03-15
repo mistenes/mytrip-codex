@@ -704,11 +704,20 @@ const App = () => {
 
   if (isSessionLoading) {
     return (
-      <div className="login-container">
-        <div className="login-box">
-          <h1>myTrip</h1>
-          <p>Checking session...</p>
-        </div>
+      <div className="login-reference-shell">
+        <div className="login-reference-orb login-reference-orb-left" aria-hidden="true"></div>
+        <div className="login-reference-orb login-reference-orb-right" aria-hidden="true"></div>
+        <header className="login-reference-topbar">
+          <div className="login-reference-brand">myTrip</div>
+        </header>
+        <main className="login-reference-main">
+          <section className="login-reference-card">
+            <div className="login-reference-copy">
+              <h1>Welcome back</h1>
+              <p>Checking session...</p>
+            </div>
+          </section>
+        </main>
       </div>
     );
   }

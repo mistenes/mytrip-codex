@@ -3523,3 +3523,82 @@ html[data-theme='dark'] .header-avatar-v6 {
     min-height: 52px;
   }
 }
+
+.dashboard-kpi-card-v6 {
+  gap: 0.7rem;
+}
+
+.dashboard-kpi-top-v6 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.dashboard-kpi-card-v6 .dashboard-kpi-icon-v6 {
+  width: 1.55rem;
+  height: 1.55rem;
+  margin-bottom: 0;
+}
+
+.dashboard-kpi-label-v6 {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.dashboard-kpi-value-v6 {
+  font-family: var(--font-display);
+  font-size: clamp(2.25rem, 3vw, 2.95rem);
+  line-height: 1;
+  color: var(--brand-500);
+}
+
+html[data-theme='dark'] .dashboard-kpi-value-v6 {
+  color: var(--color-text-primary);
+}
+
+.dashboard-kpi-value-v6.is-negative {
+  color: var(--color-negative);
+}
+
+.dashboard-tab-button-v6 {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dashboard-tab-badge-v6 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.45rem;
+  min-height: 1.3rem;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(52, 78, 65, 0.08);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  color: inherit;
+}
+
+html[data-theme='dark'] .dashboard-tab-badge-v6 {
+  background: rgba(244, 244, 245, 0.08);
+}
+
+.dashboard-new-trip-v6 {
+  border-radius: 999px;
+}
+
+.trip-card-title-group-v6 {
+  margin-top: 0.8rem;
+  gap: 0.5rem;
+}
+
+.trip-card-title-group-v6 .trip-card-range-row-v6 {
+  margin-bottom: 0;
+}

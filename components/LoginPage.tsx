@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { User, SiteSettings } from "../types";
+import React, { useState } from "react";
+import { User } from "../types";
 import { API_BASE } from "../api";
+import "../styles/login.css";
+import "../styles/ui-v4.css";
 
 const LoginPage = ({
   onLogin,
@@ -14,15 +16,6 @@ const LoginPage = ({
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
-
-  useEffect(() => {
-    fetch(`${API_BASE}/api/settings/logo`)
-      .then(res => res.json())
-      .then(setSiteSettings)
-      .catch(() => {});
-  }, []);
-
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -79,11 +72,6 @@ const LoginPage = ({
 
       <main className="login-reference-main">
         <section className="login-reference-card">
-          {(() => {
-            const src = theme === 'dark' ? (siteSettings?.logoDark || siteSettings?.logoLight) : (siteSettings?.logoLight || siteSettings?.logoDark);
-            return src ? <img src={src} alt="myTrip logo" className="login-reference-logo" /> : null;
-          })()}
-
           <div className="login-reference-copy">
             <h1>Welcome back</h1>
             <p>Sign in to access your travel workspace.</p>

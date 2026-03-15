@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { API_BASE } from '../api';
+import '../styles/report-problem.css';
 
 const ProblemReportButton = () => {
   const [open, setOpen] = useState(false);
