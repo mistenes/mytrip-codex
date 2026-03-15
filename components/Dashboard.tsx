@@ -22,6 +22,7 @@ type MainView = 'trips' | 'users' | 'files' | 'account' | 'site';
 type NavItem = {
     key: MainView;
     label: string;
+    icon?: 'trips' | 'files' | 'users' | 'site';
 };
 
 type ResolvedDashboardRoute = {
@@ -256,6 +257,12 @@ const formatDisplayDate = (value: string) => {
     });
 };
 
+const formatCompactMetric = (value: number) =>
+    new Intl.NumberFormat('en', {
+        notation: 'compact',
+        maximumFractionDigits: 1,
+    }).format(value);
+
 const getTripDurationDays = (trip: Trip) => {
     const start = new Date(trip.startDate);
     const end = new Date(trip.endDate);
@@ -387,7 +394,7 @@ const SectionIntro = ({
     </section>
 );
 
-const DashboardGlyph = ({ name }: { name: 'active' | 'attention' | 'completed' | 'balance' | 'route' | 'chevron' }) => {
+const DashboardGlyph = ({ name }: { name: 'active' | 'attention' | 'completed' | 'balance' | 'route' | 'chevron' | 'trips' | 'files' | 'users' | 'site' | 'sun' | 'moon' | 'bell' | 'logout' }) => {
     switch (name) {
         case 'active':
             return (
@@ -433,6 +440,71 @@ const DashboardGlyph = ({ name }: { name: 'active' | 'attention' | 'completed' |
                     <path d="m9 18 6-6-6-6"></path>
                 </svg>
             );
+        case 'trips':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z"></path>
+                    <path d="M9 4v13.5"></path>
+                    <path d="M15 6.5V20"></path>
+                </svg>
+            );
+        case 'files':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path>
+                </svg>
+            );
+        case 'users':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9.5" cy="7" r="3"></circle>
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 4.13a3 3 0 0 1 0 5.74"></path>
+                </svg>
+            );
+        case 'site':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 8.92 4.6H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c.36.64.93 1 1.51 1H21a2 2 0 1 1 0 4h-.09c-.58 0-1.15.36-1.51 1z"></path>
+                </svg>
+            );
+        case 'sun':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="4"></circle>
+                    <path d="M12 2v2"></path>
+                    <path d="M12 20v2"></path>
+                    <path d="m4.93 4.93 1.41 1.41"></path>
+                    <path d="m17.66 17.66 1.41 1.41"></path>
+                    <path d="M2 12h2"></path>
+                    <path d="M20 12h2"></path>
+                    <path d="m6.34 17.66-1.41 1.41"></path>
+                    <path d="m19.07 4.93-1.41 1.41"></path>
+                </svg>
+            );
+        case 'moon':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z"></path>
+                </svg>
+            );
+        case 'bell':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5"></path>
+                    <path d="M10 17a2 2 0 0 0 4 0"></path>
+                </svg>
+            );
+        case 'logout':
+            return (
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <path d="m16 17 5-5-5-5"></path>
+                    <path d="M21 12H9"></path>
+                </svg>
+            );
         default:
             return null;
     }
@@ -456,20 +528,20 @@ const Header = ({
     user,
     onToggleSidebar,
     showHamburger,
+    title = 'Overview',
     showSearch = false,
     searchValue = '',
     onSearchChange,
-    showCreateTrip = false,
-    onCreateTrip,
+    onOpenAccount,
 }: {
     user: User;
     onToggleSidebar: () => void;
     showHamburger: boolean;
+    title?: string;
     showSearch?: boolean;
     searchValue?: string;
     onSearchChange?: (value: string) => void;
-    showCreateTrip?: boolean;
-    onCreateTrip?: () => void;
+    onOpenAccount?: () => void;
 }) => (
   <header className="app-header app-header-v2 app-header-v3">
     <div className="header-left">
@@ -478,10 +550,7 @@ const Header = ({
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
             </button>
          )}
-         <div className="brand-lockup">
-            <span className="brand-kicker">Travel operations</span>
-            <h1 className="logo">myTrip.</h1>
-         </div>
+         <h1 className="header-title-v6">{title}</h1>
     </div>
     {showSearch && (
         <label className="header-search-v5" aria-label="Search trips, travelers, or invoices">
@@ -490,23 +559,18 @@ const Header = ({
                 type="search"
                 value={searchValue}
                 onChange={(event) => onSearchChange?.(event.target.value)}
-                placeholder="Search trips, travelers, or invoices..."
+                placeholder="Search trips..."
             />
         </label>
     )}
-    <div className="header-actions-v5">
-      {showCreateTrip && onCreateTrip && (
-        <button type="button" className="btn btn-primary header-create-btn-v5" onClick={onCreateTrip}>
-          New trip
-        </button>
-      )}
-      <div className="user-info">
-        <button type="button" className="user-badge user-badge-v2 user-badge-button-v5" aria-label="Open account">
-          <span className="user-badge-label">Signed in</span>
-          <strong>{user.name}</strong>
-          <span className="user-badge-meta">{ROLE_LABELS[user.role]}</span>
-        </button>
-      </div>
+    <div className="header-actions-v5 header-actions-v6">
+      <button type="button" className="header-bell-v6" aria-label="Notifications">
+        <DashboardGlyph name="bell" />
+        <span className="header-bell-dot-v6" aria-hidden="true"></span>
+      </button>
+      <button type="button" className="header-avatar-v6" aria-label="Open account" onClick={onOpenAccount}>
+        {(user.name || 'U').trim().charAt(0).toUpperCase()}
+      </button>
     </div>
   </header>
 );
@@ -1506,22 +1570,20 @@ const UserManagement = ({ onInvite, trips, users, refreshKey, onUsersChanged, cu
 const TripCard = ({
     trip,
     tripPath,
-    unreadCount = 0,
     viewMode = 'grid',
 }: {
     trip: Trip;
     tripPath: string;
-    unreadCount?: number;
     viewMode?: 'grid' | 'list';
 }) => {
     const stage = getTripStageMeta(trip);
-    const durationDays = getTripDurationDays(trip);
     const leadName = trip.organizerNames?.[0] || 'Not assigned yet';
     const leadInitial = leadName.trim().charAt(0).toUpperCase() || '?';
     const extraTravelerCount = Math.max(0, trip.travelerIds.length - 1);
+    const showAvatarStack = stage.className !== 'is-complete' && (extraTravelerCount > 0 || leadInitial !== '?');
 
     return (
-        <Link to={tripPath} className={`trip-card trip-card-v2 trip-card-v5 trip-card-link-shell-v6 ${viewMode === 'list' ? 'is-list' : ''}`}>
+        <Link to={tripPath} className={`trip-card trip-card-v2 trip-card-v5 trip-card-link-shell-v6 ${viewMode === 'list' ? 'is-list' : ''} ${stage.className === 'is-complete' ? 'is-completed-card-v6' : ''}`}>
             <div className="trip-card-sheen-v6" aria-hidden="true"></div>
             <div className="trip-card-header-v5">
                 <div className="trip-card-title-group-v5 trip-card-title-group-v6">
@@ -1536,7 +1598,6 @@ const TripCard = ({
                 <DashboardGlyph name="route" />
                 <span className="trip-card-range-v5">{formatDisplayDate(trip.startDate)} - {formatDisplayDate(trip.endDate)}</span>
             </div>
-            <p className="trip-card-summary trip-card-summary-v5">{stage.summary}</p>
             <div className="trip-card-footer-v5 trip-card-footer-v6">
                 <div className="trip-card-stats-v5 trip-card-stats-v6">
                     <div className="trip-card-stat-v5">
@@ -1547,23 +1608,15 @@ const TripCard = ({
                         <span>Lead</span>
                         <strong>{leadName}</strong>
                     </div>
-                    <div className="trip-card-stat-v5">
-                        <span>Days</span>
-                        <strong>{durationDays}</strong>
+                </div>
+                {showAvatarStack && (
+                    <div className="trip-card-avatars-v6" aria-hidden="true">
+                        <span className="trip-card-avatar-v6">{leadInitial}</span>
+                        {extraTravelerCount > 0 && (
+                            <span className="trip-card-avatar-v6 is-muted">+{extraTravelerCount}</span>
+                        )}
                     </div>
-                    {unreadCount > 0 && (
-                        <div className="trip-card-stat-v5">
-                            <span>Unread</span>
-                            <strong>{unreadCount}</strong>
-                        </div>
-                    )}
-                </div>
-                <div className="trip-card-avatars-v6" aria-hidden="true">
-                    <span className="trip-card-avatar-v6">{leadInitial}</span>
-                    {extraTravelerCount > 0 && (
-                        <span className="trip-card-avatar-v6 is-muted">+{extraTravelerCount}</span>
-                    )}
-                </div>
+                )}
             </div>
         </Link>
     );
@@ -4561,17 +4614,20 @@ const Sidebar = ({
     onThemeChange: (theme: Theme) => void,
     logos: SiteSettings | null
 }) => {
-    const mainNavItems: NavItem[] = [{ key: 'trips', label: 'Trips' }];
+    const mainNavItems: NavItem[] = [{ key: 'trips', label: 'Trips', icon: 'trips' }];
     const activeTrips = trips.filter((trip) => !isPastTripOlderThanThirtyDays(trip));
     const pastTrips = trips.filter((trip) => isPastTripOlderThanThirtyDays(trip));
+    const recentTrips = [...trips]
+        .sort((left, right) => new Date(right.startDate).getTime() - new Date(left.startDate).getTime())
+        .slice(0, 2);
 
     if (userRole === 'admin' || userRole === 'organizer') {
-        mainNavItems.push({ key: 'files', label: 'Files' });
+        mainNavItems.push({ key: 'files', label: 'Files', icon: 'files' });
     }
 
     if (userRole === 'admin') {
-        mainNavItems.push({ key: 'users', label: 'People' });
-        mainNavItems.push({ key: 'site', label: 'Brand settings' });
+        mainNavItems.push({ key: 'users', label: 'People', icon: 'users' });
+        mainNavItems.push({ key: 'site', label: 'Brand settings', icon: 'site' });
     }
 
     return (
@@ -4586,7 +4642,6 @@ const Sidebar = ({
                 </button>
             </div>
             <nav>
-                <div className="sidebar-section-label">Workspace</div>
                 <ul className="main-nav-list">
                     {mainNavItems.map((item) => {
                         return (
@@ -4596,9 +4651,14 @@ const Sidebar = ({
                                     onClick={onNavigate}
                                     className={mainView === item.key ? 'active' : ''}
                                 >
+                                    {item.icon && (
+                                        <span className="sidebar-nav-icon-v6" aria-hidden="true">
+                                            <DashboardGlyph name={item.icon} />
+                                        </span>
+                                    )}
                                     {item.label}
                                 </Link>
-                                {item.key === 'trips' && (
+                                {item.key === 'trips' && selectedTripId && (
                                     <ul className="trip-nav-list">
                                         {activeTrips.map((trip) => {
                                             const tripNavItems = getTripNavItems(trip, userRole, userId);
@@ -4669,17 +4729,44 @@ const Sidebar = ({
                         );
                     })}
                 </ul>
+                {!selectedTripId && recentTrips.length > 0 && (
+                    <>
+                        <div className="sidebar-section-label sidebar-section-label-v6">Recent</div>
+                        <ul className="sidebar-recent-list-v6">
+                            {recentTrips.map((trip) => (
+                                <li key={trip.id}>
+                                    <Link to={getTripPath(trip.id)} onClick={onNavigate}>
+                                        {trip.name}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </>
+                )}
             </nav>
             <div className="sidebar-footer">
-                <Link
-                    to={getMainViewPath('account')}
-                    onClick={onNavigate}
-                    className={mainView === 'account' ? 'active' : ''}
-                >
-                    Account
-                </Link>
-                <ThemeSwitcher theme={theme} onThemeChange={onThemeChange} />
-                <button onClick={onLogout} className="btn btn-logout">Sign out</button>
+                <div className="sidebar-theme-rail-v6" role="group" aria-label="Theme">
+                    <button
+                        type="button"
+                        className={currentTheme === 'light' ? 'active' : ''}
+                        onClick={() => onThemeChange('light')}
+                        aria-label="Light theme"
+                    >
+                        <DashboardGlyph name="sun" />
+                    </button>
+                    <button
+                        type="button"
+                        className={currentTheme === 'dark' ? 'active' : ''}
+                        onClick={() => onThemeChange('dark')}
+                        aria-label="Dark theme"
+                    >
+                        <DashboardGlyph name="moon" />
+                    </button>
+                </div>
+                <button onClick={onLogout} className="sidebar-signout-v6" type="button">
+                    <DashboardGlyph name="logout" />
+                    <span>Sign out</span>
+                </button>
             </div>
         </aside>
     );
@@ -4922,7 +5009,6 @@ const Dashboard = ({
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userRefresh, setUserRefresh] = useState(0);
   const [dashboardTripFilter, setDashboardTripFilter] = useState<'all' | 'active' | 'completed'>('active');
-  const [dashboardViewMode, setDashboardViewMode] = useState<'grid' | 'list'>('grid');
   const [dashboardSearch, setDashboardSearch] = useState('');
   const isMobile = useMediaQuery('(max-width: 767px)');
   const isTabletOrBelow = useMediaQuery('(max-width: 1199px)');
@@ -5057,6 +5143,13 @@ const Dashboard = ({
     if (!selectedTripId) return null;
     return visibleTrips.find(t => t.id === selectedTripId) || null;
   }, [selectedTripId, visibleTrips]);
+
+  const headerTitle = selectedTrip?.name
+    || (mainView === 'users' ? 'People'
+      : mainView === 'files' ? 'Files'
+      : mainView === 'account' ? 'Account'
+      : mainView === 'site' ? 'Brand settings'
+      : 'Overview');
 
   const tripFinancialRecords = useMemo(() => {
       if (!selectedTripId) return [];
@@ -5255,7 +5348,7 @@ const Dashboard = ({
                             <DashboardGlyph name="balance" />
                         </div>
                         <span>Balance</span>
-                        <strong className={overviewMetrics.myBalance < 0 ? 'is-negative' : ''}>{overviewMetrics.myBalance.toLocaleString()} HUF</strong>
+                        <strong className={overviewMetrics.myBalance < 0 ? 'is-negative' : ''}>{formatCompactMetric(overviewMetrics.myBalance)}</strong>
                     </div>
                 </div>
 
@@ -5286,47 +5379,25 @@ const Dashboard = ({
                             <span>{dashboardTripCounts.completed}</span>
                         </button>
                     </div>
-                    <div className="dashboard-tools-v5">
-                        <div className="dashboard-view-toggle-v5" aria-label="Dashboard view mode">
-                            <button
-                                type="button"
-                                className={dashboardViewMode === 'grid' ? 'active' : ''}
-                                onClick={() => setDashboardViewMode('grid')}
-                            >
-                                Grid
-                            </button>
-                            <button
-                                type="button"
-                                className={dashboardViewMode === 'list' ? 'active' : ''}
-                                onClick={() => setDashboardViewMode('list')}
-                            >
-                                List
-                            </button>
-                        </div>
+                    <div className="dashboard-tools-v5 dashboard-tools-v6">
                         <div className="dashboard-tools-actions-v5 dashboard-primary-actions-v6">
                             {user.role === 'admin' && (
                                 <button onClick={() => setModalOpen(true)} className="btn btn-primary">
-                                    New trip
-                                </button>
-                            )}
-                            {(user.role === 'admin' || user.role === 'organizer') && (
-                                <button onClick={() => setInviteOpen(true)} className="btn btn-secondary">
-                                    Send invite
+                                    <span aria-hidden="true">+</span>
+                                    <span>New Trip</span>
                                 </button>
                             )}
                         </div>
                     </div>
                 </div>
 
-                <div className={`trip-list trip-list-v2 trip-list-v5 ${dashboardViewMode === 'list' ? 'is-list' : ''}`}>
+                <div className="trip-list trip-list-v2 trip-list-v5">
                 {filteredDashboardTrips.length > 0 ? (
                 filteredDashboardTrips.map((trip: Trip) => (
                     <React.Fragment key={trip.id}>
                         <TripCard
                             trip={trip}
                             tripPath={getTripPath(trip.id)}
-                            unreadCount={unreadCounts[trip.id] || 0}
-                            viewMode={dashboardViewMode}
                         />
                     </React.Fragment>
                 ))
@@ -5364,11 +5435,11 @@ const Dashboard = ({
             user={user}
             onToggleSidebar={() => setMobileSidebarOpen(prev => !prev)}
             showHamburger={isTabletOrBelow}
+            title={headerTitle}
             showSearch={!isMobile && isDashboardHome}
             searchValue={dashboardSearch}
             onSearchChange={setDashboardSearch}
-            showCreateTrip={false}
-            onCreateTrip={() => setModalOpen(true)}
+            onOpenAccount={handleShowAccount}
           />
           <main className="dashboard-content dashboard-content-v2 dashboard-content-v3">
             {renderContent()}
